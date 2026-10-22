@@ -29,11 +29,13 @@ function CopyField({ value, label, secret = false }: { value: string; label: str
 export function IntegrationsSettings() {
   const [chitthiOn, setChitthiOn] = useState<boolean | null>(null);
   return (
-    <div className="stack">
-      <EmailCard />
-      <ChitthiCard onChange={setChitthiOn} />
-      <ConnectionCards />
-      <WhatsAppBotCard key={String(chitthiOn)} />
+    <div className="stack" style={{ gap: 22 }}>
+      <div className="int-grid">
+        <EmailCard />
+        <ChitthiCard onChange={setChitthiOn} />
+        <WhatsAppBotCard key={String(chitthiOn)} />
+        <ConnectionCards />
+      </div>
       <ApiKeysCard />
     </div>
   );
