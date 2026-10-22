@@ -48,6 +48,7 @@ img { max-width: 100%; height: auto; display: block; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; }
 .hero-cta.center { justify-content: center; }
 .hero-note { color: #9fbfb6; font-size: 14.5px; margin: 16px 0 0; }
+.hero-note a { color: #fff; text-decoration: underline; }
 .hero-shot { position: relative; }
 .hero-shot > img:first-child { border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); }
 .hero-phone { position: absolute; width: 26%; right: -10px; bottom: -40px; border-radius: 22px; border: 6px solid #0b1f1b; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
