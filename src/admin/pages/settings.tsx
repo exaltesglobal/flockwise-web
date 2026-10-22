@@ -12,6 +12,7 @@ import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
+import { IntegrationsSettings } from './integrations';
 import { CustomFieldsSettings, PublicPageSettings } from './publishing';
 
 const ROLE_HELP: Record<StaffRole, string> = {
@@ -25,7 +26,7 @@ const ROLE_HELP: Record<StaffRole, string> = {
 };
 const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
-type Tab = 'church' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'team' | 'audit' | 'server';
+type Tab = 'church' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'team' | 'audit' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
@@ -36,6 +37,7 @@ export function SettingsPage() {
     { value: 'kids', label: 'Kids check-in', show: can('settings') },
     { value: 'fields', label: 'Custom fields', show: can('settings') },
     { value: 'page', label: 'Public page', show: can('settings') },
+    { value: 'integrations', label: 'Integrations', show: can('settings') },
     { value: 'team', label: 'Team & roles', show: can('staff') },
     { value: 'audit', label: 'Activity log', show: can('settings') },
     { value: 'server', label: 'Server', show: true },
@@ -57,6 +59,7 @@ export function SettingsPage() {
       {tab === 'kids' && <Rooms />}
       {tab === 'fields' && <CustomFieldsSettings />}
       {tab === 'page' && <PublicPageSettings />}
+      {tab === 'integrations' && <IntegrationsSettings />}
       {tab === 'team' && <Team />}
       {tab === 'audit' && <Audit />}
       {tab === 'server' && <div className="card card-pad" id="server"><ServerSettings /></div>}

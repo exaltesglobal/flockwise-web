@@ -1,5 +1,6 @@
 import { Clock, Copy, FileText, Inbox, Mail, MessageCircle, Pencil, Plus, Send, Smartphone, Trash2, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 
 import type { Audience, AudiencePreview, AudienceType, Automation, Automations, Channel, Message, Template } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
@@ -48,6 +49,7 @@ export function MessagesPage() {
     return listId ? { audience: { type: 'list', ids: [listId] } } : null;
   });
   const channels = useApi(AdminApi.messages.channels);
+  const can = useCan();
   const list = useApi(AdminApi.messages.list);
   const toast = useToast();
 
@@ -78,6 +80,7 @@ export function MessagesPage() {
                   {s.configured ? s.provider : 'Not connected'}
                 </strong>
                 {!s.configured && <span className="small muted">Messages are logged, not delivered.</span>}
+                {!s.configured && c.value === 'whatsapp' && can('settings') && <Link className="small" to="/admin/settings#integrations">Connect Chitthi</Link>}
               </div>
             );
           })}

@@ -2,6 +2,9 @@
 // Member endpoints match the mobile app exactly (docs/API.md); admin ones are in docs/API-ADMIN.md.
 import type {
   AdminAnnouncement,
+  ApiKeyView,
+  ChitthiStatus,
+  ChitthiTemplate,
   AdminDonation,
   AdminEvent,
   AdminFund,
@@ -352,6 +355,17 @@ export const AdminApi = {
     get: () => a.get<ChurchSettings>('/admin/settings'),
     update: (patch: Partial<ChurchSettings>) => a.patch<ChurchSettings>('/admin/settings', patch),
     connectPayments: () => a.post<{ onboardingUrl: string }>('/admin/settings/payments/connect'),
+  },
+  integrations: {
+    get: () => a.get<{ chitthi: ChitthiStatus }>('/admin/integrations'),
+    connectChitthi: (input: { apiKey: string; template?: string; language?: string; params?: number }) => a.post<ChitthiStatus>('/admin/integrations/chitthi', input),
+    updateChitthi: (input: { template: string; language: string; params: number }) => a.patch<ChitthiStatus>('/admin/integrations/chitthi', input),
+    disconnectChitthi: () => a.del<ChitthiStatus>('/admin/integrations/chitthi'),
+    chitthiTemplates: () => a.get<{ available: boolean; data: ChitthiTemplate[] }>('/admin/integrations/chitthi/templates'),
+    testChitthi: (phone: string) => a.post<{ ok: true }>('/admin/integrations/chitthi/test', { phone }),
+    apiKeys: () => a.get<ApiKeyView[]>('/admin/api-keys'),
+    createKey: (input: { name: string; access: 'read' | 'full' }) => a.post<{ key: ApiKeyView; secret: string }>('/admin/api-keys', input),
+    revokeKey: (id: string) => a.del<void>(`/admin/api-keys/${id}`),
   },
   staff: {
     list: () => a.get<StaffMember[]>('/admin/staff'),
