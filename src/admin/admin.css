@@ -354,3 +354,7 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .import-row { overflow: hidden; }
 .import-preview { border-top: 1px solid var(--border); padding: 10px 12px; max-height: 320px; overflow: auto; }
 .import-preview pre { white-space: pre-wrap; font-family: inherit; margin: 0; }
+/* Door QR: the leader's phone at the entrance */
+.kiosk.door { padding: 20px max(16px, calc((100vw - 560px) / 2)); }
+.door-card { align-items: center; text-align: center; }
+.door-card svg { max-width: 100%; height: auto; }

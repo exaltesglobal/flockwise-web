@@ -1,9 +1,11 @@
-import { Baby, BellRing, Camera, CheckCircle2, CloudOff, LogOut, Maximize2, Minimize2, Printer, QrCode, RefreshCw, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users, Wifi } from 'lucide-react';
+import { Baby, BellRing, Camera, CheckCircle2, CloudOff, DoorOpen, LogOut, Maximize2, Minimize2, Printer, QrCode, RefreshCw, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users, Wifi } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-import type { AdminEvent, Checkin, CheckinFamily, CheckinLabel, CheckinResult, PageReason } from '@/api/admin-types';
+import type { AdminEvent, Checkin, CheckinFamily, CheckinLabel, CheckinResult, DoorQr as DoorQrView, PageReason } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import { QrCode as QrCodeSvg } from '@/components/qr';
+import { churchUrl } from '@/lib/church';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { formatDay, formatTime } from '@/lib/format';
 import { type OfflineDesk, useOfflineDesk } from '@/lib/offline-checkin';
@@ -109,6 +111,7 @@ export function CheckinPage() {
   const eventId = params.get('event') ?? list?.find((e) => new Date(e.endsAt) > new Date())?.id ?? list?.[0]?.id ?? '';
   const desk = useOfflineDesk(eventId);
   const [kiosk, setKiosk] = useState(false);
+  const [door, setDoor] = useState(false);
 
   if (events.error && !list) return <ErrorState error={events.error} onRetry={events.reload} />;
   if (!list) return <Loading />;
@@ -129,13 +132,14 @@ export function CheckinPage() {
     );
 
   if (kiosk) return <Kiosk event={ev} desk={desk} onExit={() => setKiosk(false)} />;
+  if (door) return <DoorQr event={ev} onExit={() => setDoor(false)} />;
 
   return (
     <>
       <PageHeader
         title="Check-in"
         subtitle="Search a family, scan a member's QR code, print labels. Children get a security code their parent must show at pickup."
-        actions={<>{picker}<PhoneCheckinToggle /><button className="btn" onClick={() => setKiosk(true)}><Maximize2 size={16} /> Kiosk mode</button></>}
+        actions={<>{picker}<PhoneCheckinToggle /><button className="btn" title="Show a QR at the entrance that members scan to be marked present" onClick={() => setDoor(true)}><DoorOpen size={16} /> Door QR</button><button className="btn" onClick={() => setKiosk(true)}><Maximize2 size={16} /> Kiosk mode</button></>}
       />
       <OfflineBanner desk={desk} />
       <Desk event={ev} desk={desk} />
@@ -568,6 +572,60 @@ function Kiosk({ event, desk, onExit }: { event: AdminEvent; desk: OfflineDesk; 
         </div>
       )}
       <p className="small muted" style={{ textAlign: 'center' }}>Flockwise · {now.toLocaleDateString('en-IN')}</p>
+    </div>
+  );
+}
+
+/** The door code on the leader's phone. It changes every minute; the count updates as people scan. */
+function DoorQr({ event, onExit }: { event: AdminEvent; onExit: () => void }) {
+  const [data, setData] = useState<DoorQrView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    let timer = 0;
+    const load = async () => {
+      try {
+        const d = await AdminApi.checkin.door(event.id);
+        if (!live) return;
+        setData(d);
+        setError(null);
+        // Refresh a little before the code changes, and every 10 s for the count.
+        timer = window.setTimeout(load, Math.max(3000, Math.min(10_000, (d.rotatesInSeconds - 1) * 1000)));
+      } catch (e) {
+        if (!live) return;
+        setError(toApiError(e).message);
+        timer = window.setTimeout(load, 5000);
+      }
+    };
+    void load();
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+    };
+  }, [event.id]);
+  const url = data ? `${window.location.origin}${churchUrl(data.path)}` : '';
+  return (
+    <div className="kiosk door">
+      <div className="row between">
+        <div>
+          <h1 style={{ fontSize: 26 }}>{event.title}</h1>
+          <p className="muted" style={{ fontSize: 16 }}>{formatDay(event.startsAt)} {formatTime(event.startsAt)}{event.location ? ` · ${event.location}` : ''}</p>
+        </div>
+        <button className="btn ghost" onClick={onExit}><Minimize2 size={16} /> Exit</button>
+      </div>
+      <div className="card card-pad stack door-card">
+        <h2 style={{ fontSize: 24, margin: 0 }}>Scan to mark yourself present</h2>
+        <p className="muted" style={{ margin: 0 }}>Open your phone camera and point it at this code. It opens the Flockwise app.</p>
+        {data ? <QrCodeSvg value={url} size={300} label="Door check-in code" /> : error ? <p style={{ color: 'var(--danger)' }}>{error}</p> : <Loading />}
+        {data && <p className="small muted" style={{ margin: 0 }}>Code <b className="mono">{data.token}</b> · new code in {data.rotatesInSeconds}s · a photo of it stops working after 3 minutes</p>}
+      </div>
+      {data && (
+        <div className="card card-pad row wrap" style={{ gap: 18, alignItems: 'center' }}>
+          <div><div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1 }}>{data.present}</div><div className="small muted">present</div></div>
+          <div><div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1 }}>{data.scanned}</div><div className="small muted">scanned here</div></div>
+          <div className="grow small muted">{data.recent.length ? <>Just in: {data.recent.map((r) => r.name).join(', ')}</> : 'No scans yet.'}</div>
+        </div>
+      )}
     </div>
   );
 }

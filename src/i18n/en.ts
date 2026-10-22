@@ -306,6 +306,12 @@ export const en = {
   happyBirthdayYou: 'Happy birthday from your church family! 🎂',
   happyAnniversaryYou: 'Happy anniversary from your church family! 💐',
   wishesCount: '{count} wishes',
+  doorTitle: 'You\'re at the door',
+  doorWho: 'Who is here?',
+  doorHere: 'I\'m here',
+  doorDone: 'Marked present. Welcome!',
+  doorExpired: 'This door code has expired. Scan the QR at the door again.',
+  doorScanHint: 'Scan the QR on the leader\'s phone with your camera.',
 };
 
 export type Strings = typeof en;

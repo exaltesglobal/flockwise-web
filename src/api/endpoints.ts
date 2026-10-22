@@ -87,6 +87,7 @@ import type {
   SongView,
   StaffMember,
   TeamLoginView,
+  DoorQr,
   TeamView,
   Template,
   Batch,
@@ -226,6 +227,11 @@ export const MemberApi = {
     update: (id: string, input: Partial<FamilyMemberInput>) => m.patch<FamilyMember>(`/me/family/members/${id}`, input),
     checkinEvents: () => m.get<FamilyCheckinEvent[]>('/me/family/checkin'),
     checkIn: (eventId: string, personIds: string[]) => m.post<FamilyCheckinResult>(`/me/family/checkin/${eventId}`, { personIds }),
+  },
+  // Door QR attendance: scanned from the leader's phone at the entrance.
+  door: {
+    get: (eventId: string, token: string) => m.get<FamilyCheckinEvent>(`/door/${eventId}${qs({ t: token })}`),
+    checkIn: (eventId: string, token: string, personIds: string[]) => m.post<FamilyCheckinResult>(`/door/${eventId}`, { token, personIds }),
   },
   bulletins: {
     list: () => m.get<{ id: string; title: string; date: string }[]>('/bulletins'),
@@ -491,6 +497,7 @@ export const AdminApi = {
   },
   checkin: {
     events: () => a.get<AdminEvent[]>('/admin/checkin/events'),
+    door: (eventId: string) => a.get<DoorQr>(`/admin/checkin/${eventId}/door`),
     summary: (eventId: string) => a.get<CheckinSummary>(`/admin/checkin/${eventId}`),
     search: (eventId: string, q: string) => a.get<CheckinFamily[]>(`/admin/checkin/${eventId}/search${qs({ q })}`),
     checkIn: (eventId: string, personIds: string[], method: 'staff' | 'kiosk' = 'staff') => a.post<CheckinResult>(`/admin/checkin/${eventId}`, { personIds, method }),

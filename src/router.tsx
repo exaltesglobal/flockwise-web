@@ -54,6 +54,7 @@ import { MemberGroupsPage } from '@/member/pages/groups';
 import { MemberHomePage } from '@/member/pages/home';
 import { MemberDirectoryPage } from '@/member/pages/directory';
 import { MemberMePage } from '@/member/pages/me';
+import { MemberDoorPage } from '@/member/pages/door';
 import { MemberPrayerPage } from '@/member/pages/prayer';
 import { MemberServingPage } from '@/member/pages/serving';
 
@@ -144,6 +145,7 @@ const routes = [
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },
+      { path: 'door', element: <MemberDoorPage /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

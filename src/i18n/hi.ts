@@ -309,4 +309,10 @@ export const hi: Strings = {
   happyBirthdayYou: 'आपके चर्च परिवार की ओर से जन्मदिन मुबारक! 🎂',
   happyAnniversaryYou: 'आपके चर्च परिवार की ओर से सालगिरह मुबारक! 💐',
   wishesCount: '{count} शुभकामनाएँ',
+  doorTitle: 'आप दरवाज़े पर हैं',
+  doorWho: 'कौन आया है?',
+  doorHere: 'मैं आ गया/गई',
+  doorDone: 'उपस्थिति दर्ज हो गई। स्वागत है!',
+  doorExpired: 'यह कोड समाप्त हो गया। दरवाज़े पर QR फिर से स्कैन करें।',
+  doorScanHint: 'अपने कैमरे से लीडर के फ़ोन पर QR स्कैन करें।',
 };

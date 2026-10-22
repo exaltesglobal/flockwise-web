@@ -17,7 +17,7 @@ export function MemberLayout() {
   const session = useSession(memberSession);
   const location = useLocation();
   const { t } = useT();
-  if (!session) return <Navigate to="/app/sign-in" replace state={{ from: location.pathname }} />;
+  if (!session) return <Navigate to="/app/sign-in" replace state={{ from: location.pathname + location.search }} />;
 
   const tabs = [
     { to: '/app', label: t('tabHome'), icon: Home, end: true },
