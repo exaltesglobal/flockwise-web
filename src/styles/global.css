@@ -367,3 +367,11 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
   .ss-prizes .card { break-inside: avoid; box-shadow: none; }
 }
 .seg-scroll { overflow-x: auto; max-width: 100%; }
+
+/* Missions */
+.ms-card { text-align: left; font: inherit; color: inherit; cursor: pointer; gap: 10px; min-width: 0; }
+.ms-card:hover { border-color: var(--primary); }
+.ms-card.ended { opacity: 0.6; }
+.ms-avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: var(--tint); color: var(--primary); font-family: var(--font-heading); font-weight: 600; font-size: 18px; }
+.ms-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ms-name, .ms-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

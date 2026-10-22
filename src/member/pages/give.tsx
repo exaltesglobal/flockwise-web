@@ -1,6 +1,6 @@
-import { CheckCircle2, FileText, Plus, Printer, Repeat, Target, Trash2 } from 'lucide-react';
+import { CheckCircle2, FileText, Globe, Plus, Printer, Repeat, Target, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
@@ -25,12 +25,13 @@ export function MemberGivePage() {
 
   const funds = useApi(MemberApi.giving.funds);
   const history = useApi(() => MemberApi.giving.history());
-  const [fundId, setFundId] = useState('');
-  const [amount, setAmount] = useState(String(presets[1]));
-  const [frequency, setFrequency] = useState<GiveFrequency>('once');
+  const [params, setParams] = useSearchParams();
+  // Other screens link here with ?fund=&amount=&monthly=1 (for example a missionary's page).
+  const [fundId, setFundId] = useState(params.get('fund') ?? '');
+  const [amount, setAmount] = useState(params.get('amount') ?? String(presets[1]));
+  const [frequency, setFrequency] = useState<GiveFrequency>(params.get('monthly') ? 'monthly' : 'once');
   const [indian, setIndian] = useState(true);
   const [pan, setPan] = useState('');
-  const [params, setParams] = useSearchParams();
   // Razorpay/Stripe send the donor back here with ?payment=success|cancelled
   const [done, setDone] = useState(params.get('payment') === 'success');
   const [cancelled] = useState(params.get('payment') === 'cancelled');
@@ -69,6 +70,7 @@ export function MemberGivePage() {
         <h1>{t('giveTitle')}</h1>
         <p className="muted">{t('giveBody', { church: church.name })}</p>
       </div>
+      <MissionsLink />
       <Campaigns onPick={(id) => { setDone(false); setFundId(id); document.getElementById('give-form')?.scrollIntoView({ behavior: 'smooth' }); }} />
 
       {done ? (
@@ -331,5 +333,18 @@ function Statement() {
         </div>
       )}
     </section>
+  );
+}
+
+/** Shown when the church lists missionaries for members. */
+function MissionsLink() {
+  const { t } = useT();
+  const { data } = useApi(MemberApi.missions.list);
+  if (!data?.length) return null;
+  return (
+    <Link to="/app/missions" className="card card-pad row" style={{ gap: 12 }}>
+      <Globe size={22} className="muted" />
+      <span className="grow" style={{ minWidth: 0 }}><b>{t('missionsTitle')}</b><span className="small muted" style={{ display: 'block' }}>{t('missionsTeaser', { count: data.length })}</span></span>
+    </Link>
   );
 }

@@ -5,6 +5,7 @@ import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
 import { BulletinPage } from '@/admin/pages/bulletin';
 import { SundaySchoolPage } from '@/admin/pages/sunday-school';
+import { MissionsPage } from '@/admin/pages/missions';
 import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CelebrationsPage } from '@/admin/pages/celebrations';
@@ -39,6 +40,7 @@ import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/pre
 import { StudioPage } from '@/present/studio';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberBulletinPage } from '@/member/pages/bulletin';
+import { MemberMissionsPage } from '@/member/pages/missions';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
 import { MemberGroupPage } from '@/member/pages/group';
@@ -83,6 +85,8 @@ const routes = [
       { path: 'sunday-school', element: <SundaySchoolPage /> },
       { path: 'sunday-school/class/:classId', element: <SundaySchoolPage /> },
       { path: 'sunday-school/exam/:examId', element: <SundaySchoolPage /> },
+      { path: 'missions', element: <MissionsPage /> },
+      { path: 'missions/:id', element: <MissionsPage /> },
       { path: 'offerings', element: <OfferingsPage /> },
       { path: 'offerings/:id', element: <OfferingsPage /> },
       { path: 'razorpay-setup', element: <RazorpaySetupPage /> },
@@ -122,6 +126,7 @@ const routes = [
       { path: 'forms/:id', element: <MemberFormPage /> },
       { path: 'sermons', element: <MemberSermonsPage /> },
       { path: 'bulletin', element: <MemberBulletinPage /> },
+      { path: 'missions', element: <MemberMissionsPage /> },
       { path: 'bulletin/:id', element: <MemberBulletinPage /> },
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },

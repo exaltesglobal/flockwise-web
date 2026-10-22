@@ -2,7 +2,9 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister } from '@/core/types';
+export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
+export type ReportDelivery = { sent: number; failed: number; unreachable: number };
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
@@ -212,6 +214,11 @@ export const MemberApi = {
   },
   sermons: () => m.get<Sermon[]>('/sermons'),
   sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
+  missions: {
+    list: () => m.get<MemberMission[]>('/missions'),
+    support: (id: string, amount: number) => m.put<MemberMission>(`/missions/${id}/support`, { amount }),
+    stop: (id: string) => m.del<MemberMission>(`/missions/${id}/support`),
+  },
   bulletins: {
     list: () => m.get<{ id: string; title: string; date: string }[]>('/bulletins'),
     latest: () => m.get<BulletinView | null>('/bulletins/latest'),
@@ -375,6 +382,21 @@ export const AdminApi = {
     erase: (id: string) => a.post<DataRequest>(`/admin/privacy/requests/${id}/erase`),
     exportPerson: (personId: string) => a.get<Record<string, unknown>>(`/admin/people/${personId}/export`),
     consentLog: (personId: string) => a.get<ConsentEvent[]>(`/admin/people/${personId}/consent`),
+  },
+  missions: {
+    overview: () => a.get<MissionsOverview>('/admin/missions'),
+    create: (input: MissionaryInput) => a.post<MissionaryDetail>('/admin/missions', input),
+    get: (id: string) => a.get<MissionaryDetail>(`/admin/missions/${id}`),
+    update: (id: string, input: Partial<MissionaryInput> & { status?: 'active' | 'ended' }) => a.patch<MissionaryDetail>(`/admin/missions/${id}`, input),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/missions/${id}`),
+    addSupport: (id: string, input: { personId?: string | null; name?: string; amount: number; kind?: 'member' | 'church'; startedOn?: string }) => a.post<MissionaryDetail>(`/admin/missions/${id}/support`, input),
+    updateSupport: (id: string, sid: string, input: { amount?: number; endedOn?: string | null; name?: string }) => a.patch<MissionaryDetail>(`/admin/missions/${id}/support/${sid}`, input),
+    removeSupport: (id: string, sid: string) => a.del<MissionaryDetail>(`/admin/missions/${id}/support/${sid}`),
+    addPayout: (id: string, input: { amount: number; date: string; method: MissionPayout['method']; reference?: string; note?: string }) => a.post<MissionaryDetail>(`/admin/missions/${id}/payouts`, input),
+    removePayout: (id: string, pid: string) => a.del<MissionaryDetail>(`/admin/missions/${id}/payouts/${pid}`),
+    addReport: (id: string, input: { title: string; body: string; prayerPoints: string; date?: string; published: boolean; send: boolean }) => a.post<MissionaryDetail & { delivery?: ReportDelivery }>(`/admin/missions/${id}/reports`, input),
+    sendReport: (id: string, rid: string) => a.post<MissionaryDetail & { delivery: ReportDelivery }>(`/admin/missions/${id}/reports/${rid}/send`),
+    removeReport: (id: string, rid: string) => a.del<MissionaryDetail>(`/admin/missions/${id}/reports/${rid}`),
   },
   sundaySchool: {
     overview: () => a.get<SsOverview>('/admin/sunday-school'),
