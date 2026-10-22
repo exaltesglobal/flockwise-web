@@ -42,6 +42,8 @@ function networkHost(id: string): NonNullable<typeof env.network> {
   return { list: () => h().list(), preview: (c) => h().preview(c), join: (c, s, by) => h().join(c, s, by), update: (n, s) => h().update(n, s), leave: (n) => h().leave(n) };
 }
 env.network = networkHost(MAIN);
+// Team additions to the shared song database (Team panel > Songs), shared by every demo church.
+env.songCatalog = { stored: () => platform.songs() };
 
 function makeEngine(id: string, db = new Db()) {
   const engine = createChurchEngine(db, id === MAIN ? env : churchEnv(id));

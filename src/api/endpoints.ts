@@ -115,6 +115,10 @@ import type {
   ObsSettings,
   PresentationView,
   SongStats,
+  CatalogList,
+  CatalogSong,
+  CatalogSongDetail,
+  SongLicenceStatus,
   CustomField,
   FormInput,
   FormResponse,
@@ -349,7 +353,15 @@ export const TeamApi = {
   setups: () => platformApi.get<TeamSetups>('/platform/razorpay-setups'),
   setupDoc: (churchId: string, docId: string) => platformApi.get<{ fileName: string; mime: string; data: string }>(`/platform/razorpay-setups/${churchId}/docs/${docId}`),
   updateSetup: (churchId: string, patch: { status?: RazorpaySetup['status']; teamNote?: string }) => platformApi.patch<TeamSetupRow>(`/platform/razorpay-setups/${churchId}`, patch),
+  // The shared song database: public-domain songs the team adds or corrects.
+  songs: (q: { q?: string; lang?: string } = {}) => platformApi.get<{ total: number; songs: TeamSongRow[] }>(`/platform/songs${qs(q)}`),
+  song: (id: string) => platformApi.get<CatalogSong & { edited: boolean }>(`/platform/songs/${encodeURIComponent(id)}`),
+  addSong: (input: TeamSongInput) => platformApi.post<CatalogSong>('/platform/songs', input),
+  saveSong: (id: string, input: TeamSongInput) => platformApi.put<CatalogSong>(`/platform/songs/${encodeURIComponent(id)}`, input),
+  removeSong: (id: string) => platformApi.del<void>(`/platform/songs/${encodeURIComponent(id)}`),
 };
+export type TeamSongRow = Omit<CatalogSong, 'lyrics' | 'chordChart'> & { hasLyrics: boolean; hasChords: boolean; edited: boolean };
+export type TeamSongInput = Omit<CatalogSong, 'id' | 'copyright'>;
 export type TeamSetupRow = RazorpaySetup & { churchId: string; churchName: string; city?: string; ownerEmail?: string; missing: KycDocKind[]; keysConnected: boolean; stored?: string[] };
 export type TeamSetups = { price: number; open: number; earned: number; rows: TeamSetupRow[] };
 
@@ -579,6 +591,14 @@ export const AdminApi = {
     createSong: (input: Omit<Song, 'id'>) => a.post<Song>('/admin/songs', input),
     updateSong: (id: string, input: Partial<Omit<Song, 'id'>>) => a.patch<Song>(`/admin/songs/${id}`, input),
     removeSong: (id: string) => a.del<void>(`/admin/songs/${id}`),
+  },
+  // The shared song database (public-domain hymns) and the church's song licences.
+  songCatalog: {
+    list: (q: { q?: string; lang?: string; theme?: string; limit?: string; offset?: string } = {}) => a.get<CatalogList>(`/admin/song-catalog${qs(q)}`),
+    get: (id: string) => a.get<CatalogSongDetail>(`/admin/song-catalog/${encodeURIComponent(id)}`),
+    add: (id: string) => a.post<{ song: Song; created: boolean; licensed: boolean }>(`/admin/song-catalog/${encodeURIComponent(id)}/add`),
+    licence: () => a.get<SongLicenceStatus>('/admin/song-catalog/licence'),
+    saveLicence: (input: { ccliLicence: string; streamingLicence: string; otherLicences: string }) => a.put<SongLicenceStatus>('/admin/song-catalog/licence', input),
   },
   messages: {
     list: () => a.get<Paginated<Message>>('/admin/messages'),
