@@ -105,6 +105,20 @@ function sampleChurches() {
     if (s.plan === 'trial') startTrial(engine.db, new Date(Date.now() - 18 * DAY));
     else saveSubscription(engine.db, { plan: s.plan, status: 'active', interval: s.plan === 'thrive' ? 'yearly' : 'monthly', trialEndsAt: null, currentPeriodEnd: new Date(Date.now() + 20 * DAY).toISOString(), providerRef: s.plan === 'seed' ? null : `sub_demo_${s.id}`, updatedAt: created.toISOString() });
     platform.ensureChurch({ id: s.id, slug: s.slug, name: s.name, city: s.city, country: 'IN', currency: 'INR', ownerEmail: `pastor@${s.slug}.example`, ownerName: 'Pastor', createdAt: created.toISOString(), source: 'signup' });
+    // Two churches bought assisted Razorpay setup, so the team's KYC queue has work in it.
+    if (s.id === 'ch_sample1' || s.id === 'ch_sample4') {
+      const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+      const kinds = s.id === 'ch_sample1' ? (['pan', 'registration', 'bank_proof', 'signatory_id'] as const) : (['pan', 'bank_proof'] as const);
+      const paidAt = new Date(Date.now() - (s.id === 'ch_sample1' ? 1.5 : 3) * DAY).toISOString();
+      const docs = kinds.map((kind, i) => ({ id: `kyc_${s.id}_${i}`, kind, fileName: `${kind.replace('_', '-')}.png`, mime: 'image/png', size: 68, uploadedAt: paidAt, uploadedBy: 'Pastor' }));
+      for (const d of docs) engine.db.put('kycFiles', { id: d.id, sealed: env.seal(png) });
+      engine.db.put('integrations', {
+        id: 'razorpaySetup', status: s.id === 'ch_sample1' ? 'paid' : 'in_progress', amount: 199_900, paymentRef: `plink_demo_${s.id}`, paymentUrl: null,
+        requestedBy: 'Pastor', requestedByEmail: `pastor@${s.slug}.example`, createdAt: paidAt, paidAt, doneAt: null, orgType: s.id === 'ch_sample1' ? 'trust' : 'society',
+        contactPhone: s.id === 'ch_sample1' ? '+91 98220 41230' : '+91 98110 55210', docs, docsSubmittedAt: s.id === 'ch_sample1' ? paidAt : null,
+        teamNote: s.id === 'ch_sample4' ? 'Please upload the society registration certificate and the secretary’s Aadhaar.' : '',
+      });
+    }
   }
 }
 

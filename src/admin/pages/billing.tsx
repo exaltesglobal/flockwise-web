@@ -1,6 +1,7 @@
 // Settings › Plan and billing, and the church's own Razorpay keys for online giving.
 import { Check, CreditCard, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 import { AdminApi, type BillingView, type RazorpayKeysInput } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -202,6 +203,12 @@ export function RazorpayCard({ india }: { india: boolean }) {
               {!editing && <button className="btn" onClick={() => setEditing(true)}>{st.keyId ? 'Change keys' : 'Connect Razorpay'}</button>}
               {!editing && st.keyId && <button className="btn ghost" disabled={disconnect.busy} onClick={async () => { const r = await disconnect.run(); if (r) { q.setData(r); toast('Razorpay disconnected'); } }}>Disconnect</button>}
             </div>
+            {!st.keyId && !editing && india && (
+              <div className="callout row wrap" style={{ gap: 10 }}>
+                <span className="grow small"><strong>No Razorpay account yet?</strong> Our team can open it and do the church’s KYC for you, for a one-time ₹1,999.</span>
+                <Link to="/admin/razorpay-setup" className="btn sm">Get assisted setup</Link>
+              </div>
+            )}
             {editing && (
               <div className="stack razorpay-form">
                 <ol className="small muted steps">

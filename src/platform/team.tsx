@@ -1,11 +1,13 @@
 // The Flockwise team panel (/platform): every church, revenue, plans, trials and support access.
 // Separate from any church office; team members sign in with their Flockwise email.
-import { Activity, ArrowLeft, Building2, IndianRupee, LayoutDashboard, LogOut, Search, ShieldCheck, Users } from 'lucide-react';
+import { Activity, ArrowLeft, BadgeCheck, Building2, Download, IndianRupee, LayoutDashboard, LogOut, Search, ShieldCheck, Users } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 
 import { adminSession, memberSession, platformSession, type PlatformSession } from '@/api/client';
-import { TeamApi, type TeamChurch, type TeamChurchDetail, type TeamOverview } from '@/api/endpoints';
+import { TeamApi, type TeamChurch, type TeamChurchDetail, type TeamOverview, type TeamSetupRow } from '@/api/endpoints';
+import { DOC_KINDS, ORG_TYPES } from '@/core/modules/razorpay-setup';
+import type { RazorpaySetupStatus } from '@/core/types';
 import type { OtpRequest } from '@/api/types';
 import { DemoBanner } from '@/components/server-settings';
 import { BarChart, Empty, ErrorState, Field, FormError, Loading, Logo, Modal, useToast } from '@/components/ui';
@@ -88,7 +90,7 @@ function TeamSignIn() {
 
 function TeamShell({ session }: { session: PlatformSession }) {
   const { pathname } = useLocation();
-  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : 'overview';
+  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : pathname.startsWith('/platform/razorpay') ? 'razorpay' : 'overview';
   async function signOut() {
     await TeamApi.signOut().catch(() => undefined);
     platformSession.set(null);
@@ -103,6 +105,7 @@ function TeamShell({ session }: { session: PlatformSession }) {
           <nav className="admin-nav">
             <NavLink to="/platform" end><LayoutDashboard size={18} /> Overview</NavLink>
             <NavLink to="/platform/churches"><Building2 size={18} /> Churches</NavLink>
+            <NavLink to="/platform/razorpay"><BadgeCheck size={18} /> Razorpay setups</NavLink>
             <NavLink to="/platform/activity"><Activity size={18} /> Team activity</NavLink>
           </nav>
           <div className="admin-user">
@@ -117,10 +120,12 @@ function TeamShell({ session }: { session: PlatformSession }) {
             <span className="grow" />
             <Link to="/platform" className="btn ghost sm">Overview</Link>
             <Link to="/platform/churches" className="btn ghost sm">Churches</Link>
+            <Link to="/platform/razorpay" className="btn ghost sm">KYC</Link>
           </div>
           {view === 'overview' && <Overview />}
           {view === 'churches' && <Churches />}
           {view === 'activity' && <TeamActivity />}
+          {view === 'razorpay' && <RazorpaySetups />}
         </main>
       </div>
     </div>
@@ -135,10 +140,11 @@ function Overview() {
   return (
     <>
       <div className="page-head"><div><h1>Overview</h1><p className="muted">All churches on Flockwise</p></div></div>
-      <div className="grid cols-4">
+      <div className="grid cols-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
         <div className="card kpi"><span className="label"><Building2 size={15} /> Churches</span><span className="value">{o.churches.toLocaleString('en-IN')}</span><span className="delta muted">+{o.newLast30} in 30 days · {o.activeLast30} active</span></div>
         <div className="card kpi"><span className="label"><IndianRupee size={15} /> Monthly revenue</span><span className="value">{inr(o.mrr.INR)}</span><span className="delta muted">{o.mrr.USD ? `+ ${usd(o.mrr.USD)} · ` : ''}{inr(o.arr.INR)} a year</span></div>
         <div className="card kpi"><span className="label"><ShieldCheck size={15} /> Paying</span><span className="value">{o.paying}</span><span className="delta muted">{o.trials} on trial</span></div>
+        <Link to="/platform/razorpay" className="card kpi" style={{ color: 'inherit', textDecoration: 'none' }}><span className="label"><BadgeCheck size={15} /> Razorpay setups</span><span className="value">{o.razorpaySetupsOpen}</span><span className="delta muted">to work on</span></Link>
         <div className="card kpi"><span className="label"><Users size={15} /> People</span><span className="value">{o.people.toLocaleString('en-IN')}</span><span className="delta muted">{o.messages.toLocaleString('en-IN')} messages · {o.aiCredits} AI credits this month</span></div>
       </div>
       <div className="grid cols-2">
@@ -380,5 +386,95 @@ function TeamActivity() {
       </div>
       <p className="small muted"><Link to="/admin"><ArrowLeft size={13} /> Back to the church office</Link></p>
     </>
+  );
+}
+
+const SETUP_LABEL: Record<RazorpaySetupStatus, [string, string]> = {
+  pending_payment: ['', 'Not paid yet'],
+  paid: ['danger', 'Paid, not started'],
+  in_progress: ['warn', 'In progress'],
+  done: ['ok', 'Done'],
+  refunded: ['', 'Refunded'],
+};
+
+/** The assisted Razorpay KYC queue: churches that paid for setup, their papers, and progress. */
+function RazorpaySetups() {
+  const q = useApi(TeamApi.setups);
+  return (
+    <>
+      <div className="page-head">
+        <div>
+          <h1>Razorpay setups</h1>
+          <p className="muted">{q.data ? `${q.data.open} to work on · ${inr(q.data.earned)} earned from setup fees · ` : ''}Promise to churches: we message within one working day, live in about 48 hours.</p>
+        </div>
+      </div>
+      {q.error ? <ErrorState error={q.error} onRetry={q.reload} /> : !q.data ? <Loading /> : q.data.rows.length === 0 ? (
+        <div className="card"><Empty icon={<BadgeCheck size={28} />} title="No assisted setups yet" body={`Churches buy assisted setup for ${inr(q.data.price)} from Settings › Giving.`} /></div>
+      ) : (
+        <div className="stack">{q.data.rows.map((r) => <SetupCard key={r.churchId} r={r} onChanged={q.reload} />)}</div>
+      )}
+    </>
+  );
+}
+
+function SetupCard({ r, onChanged }: { r: TeamSetupRow; onChanged: () => void }) {
+  const toast = useToast();
+  const [status, setStatus] = useState(r.status);
+  const [note, setNote] = useState(r.teamNote);
+  const save = useAction(() => TeamApi.updateSetup(r.churchId, { status, teamNote: note }));
+  const open = useAction((docId: string) => TeamApi.setupDoc(r.churchId, docId));
+  const late = r.status === 'paid' && r.paidAt && Date.now() - new Date(r.paidAt).getTime() > 24 * 3600_000;
+  const stored = new Set(r.stored ?? []);
+
+  async function download(docId: string) {
+    const f = await open.run(docId);
+    if (!f) return;
+    const bytes = Uint8Array.from(atob(f.data), (c) => c.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: f.mime }));
+    Object.assign(document.createElement('a'), { href: url, download: f.fileName }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
+  return (
+    <div className="card card-body stack-sm">
+      <div className="row wrap" style={{ gap: 8 }}>
+        <div className="grow" style={{ minWidth: 0 }}>
+          <Link to={`/platform/churches?open=${r.churchId}`}><strong>{r.churchName}</strong></Link>
+          <div className="small muted">{[r.city, r.requestedBy, r.requestedByEmail, r.contactPhone].filter(Boolean).join(' · ')}</div>
+        </div>
+        <span className={`badge ${SETUP_LABEL[r.status][0]}`}>{SETUP_LABEL[r.status][1]}</span>
+        {late && <span className="badge danger">Over 24h</span>}
+        {r.keysConnected && <span className="badge ok">Keys connected</span>}
+      </div>
+      <div className="small muted">
+        {r.orgType ? ORG_TYPES[r.orgType] : 'Registration type not chosen'} · {r.paidAt ? `paid ${day(r.paidAt)}` : `started ${day(r.createdAt)}`}
+        {r.docsSubmittedAt ? ` · documents sent ${day(r.docsSubmittedAt)}` : r.status !== 'pending_payment' ? ' · documents not sent yet' : ''}
+        {r.missing.length > 0 && r.status !== 'pending_payment' ? ` · missing: ${r.missing.map((k) => DOC_KINDS[k]).join('; ')}` : ''}
+      </div>
+      {r.docs.length > 0 && (
+        <ul className="plain-list small">
+          {r.docs.map((d) => (
+            <li key={d.id} className="row" style={{ gap: 6 }}>
+              <span className="grow ellipsis">{DOC_KINDS[d.kind]}: {d.fileName}</span>
+              {stored.has(d.id) && <button className="btn ghost sm" disabled={open.busy} onClick={() => download(d.id)}><Download size={14} /> Download</button>}
+            </li>
+          ))}
+        </ul>
+      )}
+      <FormError error={open.error} />
+      {r.status !== 'pending_payment' && (
+        <div className="row wrap" style={{ gap: 8 }}>
+          <select className="select" style={{ width: 'auto' }} value={status} onChange={(e) => setStatus(e.target.value as RazorpaySetupStatus)}>
+            <option value="paid">Paid, not started</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Done (deletes documents)</option>
+            <option value="refunded">Refunded (deletes documents)</option>
+          </select>
+          <input className="input grow" style={{ minWidth: 180 }} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note the church sees, e.g. please send a clearer cheque photo" />
+          <button className="btn sm primary" disabled={save.busy} onClick={async () => { if (await save.run()) { toast('Saved'); onChanged(); } }}>Save</button>
+        </div>
+      )}
+      <FormError error={save.error} />
+    </div>
   );
 }

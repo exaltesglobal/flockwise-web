@@ -9,6 +9,7 @@ import { CelebrationsPage } from '@/admin/pages/celebrations';
 import { RegistersPage } from '@/admin/pages/registers';
 import { ZonesPage } from '@/admin/pages/zones';
 import { AccountsPage } from '@/admin/pages/accounts';
+import { RazorpaySetupPage } from '@/admin/pages/razorpay-setup';
 import { CheckinPage } from '@/admin/pages/checkin';
 import { DashboardPage } from '@/admin/pages/dashboard';
 import { EventsPage } from '@/admin/pages/events';
@@ -75,6 +76,7 @@ const routes = [
       { path: 'registers', element: <RegistersPage /> },
       { path: 'zones', element: <ZonesPage /> },
       { path: 'accounts', element: <AccountsPage /> },
+      { path: 'razorpay-setup', element: <RazorpaySetupPage /> },
       { path: 'groups', element: <GroupsPage /> },
       { path: 'giving', element: <GivingPage /> },
       { path: 'messages', element: <MessagesPage /> },

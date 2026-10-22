@@ -2,6 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView } from '@/core/types';
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
@@ -249,6 +250,7 @@ export type TeamOverview = {
   aiCredits: number;
   messages: number;
   signups: { weekStart: string; signups: number }[];
+  razorpaySetupsOpen: number;
 };
 export type SubscriptionChange = { plan?: PlanId; status?: Subscription['status']; trialDays?: number; peopleLimit?: number | null; founding?: boolean };
 
@@ -274,7 +276,12 @@ export const TeamApi = {
   subscription: (id: string, change: SubscriptionChange) => platformApi.post<TeamChurch>(`/platform/churches/${id}/subscription`, change),
   open: (id: string, reason: string) => platformApi.post<{ church: { id: string; slug: string; name: string }; session: Session }>(`/platform/churches/${id}/open`, { reason }),
   audit: () => platformApi.get<AuditEntry[]>('/platform/audit'),
+  setups: () => platformApi.get<TeamSetups>('/platform/razorpay-setups'),
+  setupDoc: (churchId: string, docId: string) => platformApi.get<{ fileName: string; mime: string; data: string }>(`/platform/razorpay-setups/${churchId}/docs/${docId}`),
+  updateSetup: (churchId: string, patch: { status?: RazorpaySetup['status']; teamNote?: string }) => platformApi.patch<TeamSetupRow>(`/platform/razorpay-setups/${churchId}`, patch),
 };
+export type TeamSetupRow = RazorpaySetup & { churchId: string; churchName: string; city?: string; ownerEmail?: string; missing: KycDocKind[]; keysConnected: boolean; stored?: string[] };
+export type TeamSetups = { price: number; open: number; earned: number; rows: TeamSetupRow[] };
 
 // ---------- Church admin dashboard ----------
 const a = createApi(adminSession);
@@ -423,6 +430,12 @@ export const AdminApi = {
     status: () => a.get<PaymentsStatus>('/admin/settings/payments'),
     connect: (input: RazorpayKeysInput) => a.post<PaymentsStatus>('/admin/settings/payments/razorpay', input),
     disconnect: () => a.del<PaymentsStatus>('/admin/settings/payments/razorpay'),
+    setup: () => a.get<RazorpaySetupView>('/admin/settings/payments/setup'),
+    buySetup: () => a.post<{ checkoutUrl?: string; activated?: boolean; view?: RazorpaySetupView }>('/admin/settings/payments/setup'),
+    updateSetup: (patch: { orgType?: ChurchOrgType; contactPhone?: string }) => a.patch<RazorpaySetupView>('/admin/settings/payments/setup', patch),
+    uploadDoc: (input: { kind: KycDocKind; fileName: string; data: string }) => a.post<RazorpaySetupView>('/admin/settings/payments/setup/docs', input),
+    removeDoc: (id: string) => a.del<RazorpaySetupView>(`/admin/settings/payments/setup/docs/${id}`),
+    submitSetup: () => a.post<RazorpaySetupView>('/admin/settings/payments/setup/submit'),
   },
   billing: {
     get: () => a.get<BillingView>('/admin/billing'),
