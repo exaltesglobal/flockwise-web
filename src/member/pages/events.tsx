@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Share2, Ticket, Users, Video } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CalendarPlus, CheckCircle2, ClipboardList, Copy, MapPin, ScanLine, Share2, Ticket, Users, Video } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
@@ -6,7 +6,7 @@ import { memberSession } from '@/api/client';
 import type { RsvpStatus } from '@/api/types';
 import { MemberApi } from '@/api/endpoints';
 import { InvitationModal } from '@/components/invitation';
-import { ErrorState, FormError, Loading } from '@/components/ui';
+import { ErrorState, FormError, Loading, Modal } from '@/components/ui';
 import { useT } from '@/i18n';
 import { churchUrl } from '@/lib/church';
 import { formatDay, formatMoney, formatTime } from '@/lib/format';
@@ -18,15 +18,42 @@ import { EventCard } from './shared';
 export function MemberEventsPage() {
   const { t } = useT();
   const { data, error, reload } = useApi(() => MemberApi.events.list());
+  const [calendar, setCalendar] = useState(false);
   return (
     <>
-      <h1>{t('tabEvents')}</h1>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <h1>{t('tabEvents')}</h1>
+        <button className="btn sm" onClick={() => setCalendar(true)}><CalendarPlus size={15} /> {t('calendarAdd')}</button>
+      </div>
+      {calendar && <CalendarModal onClose={() => setCalendar(false)} />}
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.data.length === 0 ? (
         <p className="muted">{t('noUpcoming')}</p>
       ) : (
         <div className="tiles">{data.data.map((e) => <EventCard key={e.id} event={e} />)}</div>
       )}
     </>
+  );
+}
+
+function CalendarModal({ onClose }: { onClose: () => void }) {
+  const { t } = useT();
+  const { data, error, reload } = useApi(MemberApi.calendar.get);
+  const [copied, setCopied] = useState(false);
+  const copy = () => { if (!data) return; navigator.clipboard?.writeText(data.url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => undefined); };
+  return (
+    <Modal title={t('calendarAdd')} onClose={onClose}>
+      <div className="stack">
+        <p className="muted">{t('calendarBody')}</p>
+        {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
+          <div className="stack" style={{ gap: 8 }}>
+            <a className="btn primary" href={data.google} target="_blank" rel="noreferrer"><CalendarPlus size={16} /> {t('calendarGoogle')}</a>
+            <a className="btn" href={data.webcal}><CalendarPlus size={16} /> {t('calendarApple')}</a>
+            <button className="btn ghost" onClick={copy}><Copy size={16} /> {copied ? t('calendarCopied') : t('calendarCopy')}</button>
+            <input className="input small mono" readOnly value={data.url} onFocus={(e) => e.target.select()} aria-label={t('calendarCopy')} />
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }
 

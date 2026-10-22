@@ -339,4 +339,12 @@ export const ta: Strings = {
   carolsVisited: 'குழு உங்கள் வீட்டிற்கு வந்தது. வரவேற்றதற்கு நன்றி!',
   carolsNone: 'கரோல் சுற்று இன்னும் திறக்கப்படவில்லை. டிசம்பரில் பாருங்கள்.',
   carolsAnyNight: 'எந்த இரவும் சரி',
+
+  // Calendar subscribe
+  calendarAdd: 'என் காலெண்டரில் சேர்',
+  calendarBody: 'சபை ஆராதனைகள், நீங்கள் செல்லும் நிகழ்வுகள், நீங்கள் சேவை செய்யும் ஞாயிறுகள் உங்கள் காலெண்டர் ஆப்பில் தானாகப் புதுப்பிக்கப்படும்.',
+  calendarGoogle: 'Google காலெண்டர்',
+  calendarApple: 'Apple அல்லது Outlook காலெண்டர்',
+  calendarCopy: 'இணைப்பை நகலெடு',
+  calendarCopied: 'நகலெடுக்கப்பட்டது',
 };

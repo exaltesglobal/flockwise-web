@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols } from '@/core/types';
+import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
@@ -223,6 +223,10 @@ export const MemberApi = {
     campaigns: () => m.get<MemberCampaign[]>('/giving/campaigns'),
     removePledge: (id: string) => m.del<void>(`/giving/pledges/${id}`),
   },
+  calendar: {
+    get: () => m.get<CalendarFeedLink>('/me/calendar'),
+    reset: () => m.post<CalendarFeedLink>('/me/calendar/reset'),
+  },
   carols: {
     get: () => m.get<MyCarols>('/me/carols'),
     request: (input: { preferredDates: string[]; note?: string }) => m.post<NonNullable<MyCarols['request']>>('/me/carols/request', input),
@@ -421,6 +425,10 @@ export const AdminApi = {
     create: (input: Omit<Campus, 'id'>) => a.post<Campus>('/admin/campuses', input),
     update: (id: string, input: Partial<Omit<Campus, 'id'>>) => a.patch<Campus>(`/admin/campuses/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/campuses/${id}`),
+  },
+  calendarLinks: {
+    feeds: () => a.get<{ church: CalendarFeedLink; teams: CalendarFeedLink[] }>('/admin/calendar/feeds'),
+    reset: (id: string) => a.post<CalendarFeedLink>(`/admin/calendar/feeds/${id}/reset`),
   },
   carols: {
     get: () => a.get<CarolsHub>('/admin/carols'),

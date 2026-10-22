@@ -336,6 +336,14 @@ export const en = {
   carolsVisited: 'The team visited your home. Thank you for welcoming them!',
   carolsNone: 'Carol rounds are not open yet. Check back in December.',
   carolsAnyNight: 'Any night is fine',
+
+  // Calendar subscribe
+  calendarAdd: 'Add to my calendar',
+  calendarBody: 'Your church services, events you are going to and the Sundays you serve, kept up to date in your own calendar app.',
+  calendarGoogle: 'Google Calendar',
+  calendarApple: 'Apple or Outlook calendar',
+  calendarCopy: 'Copy the link',
+  calendarCopied: 'Copied',
 };
 
 export type Strings = typeof en;

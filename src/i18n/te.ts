@@ -339,4 +339,12 @@ export const te: Strings = {
   carolsVisited: 'బృందం మీ ఇంటికి వచ్చింది. స్వాగతించినందుకు ధన్యవాదాలు!',
   carolsNone: 'కేరల్ రౌండ్స్ ఇంకా తెరవలేదు. డిసెంబర్\u200cలో చూడండి.',
   carolsAnyNight: 'ఏ రాత్రి అయినా సరే',
+
+  // Calendar subscribe
+  calendarAdd: 'నా క్యాలెండర్\u200cకు జోడించు',
+  calendarBody: 'సంఘ ఆరాధనలు, మీరు వెళ్లే కార్యక్రమాలు, మీరు సేవ చేసే ఆదివారాలు మీ క్యాలెండర్ యాప్\u200cలో వాటంతట అవే అప్\u200cడేట్ అవుతాయి.',
+  calendarGoogle: 'Google క్యాలెండర్',
+  calendarApple: 'Apple లేదా Outlook క్యాలెండర్',
+  calendarCopy: 'లింక్ కాపీ చేయి',
+  calendarCopied: 'కాపీ అయింది',
 };

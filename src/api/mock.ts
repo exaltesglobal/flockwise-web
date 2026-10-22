@@ -4,6 +4,7 @@
 // a reload. Nothing leaves the browser: gifts succeed instantly and messages are logged.
 // Like the server, it hosts many churches: churches made on the sign-up page, a few sample
 // churches for the Flockwise team panel, and the directory itself.
+import { getApiUrl } from '@/lib/config';
 import { bootstrapChurch, createChurchEngine, createPlatform, Db, saveSubscription, startTrial, type Dump } from '@/core';
 import { createDemoEnv, readDemoToken } from '@/core/demo';
 import { seedDemo } from '@/core/seed';
@@ -22,7 +23,7 @@ const RESEED_AFTER_DAYS = 7; // event dates are relative to the seed day
 const DAY = 86_400_000;
 
 const webUrl = typeof location !== 'undefined' ? `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}` : '';
-const env = createDemoEnv({ webUrl });
+const env = createDemoEnv({ webUrl, apiUrl: getApiUrl() });
 
 type Engine = ReturnType<typeof createChurchEngine>;
 const engines = new Map<string, Engine>();

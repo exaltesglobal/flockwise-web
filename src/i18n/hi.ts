@@ -339,4 +339,12 @@ export const hi: Strings = {
   carolsVisited: 'टीम आपके घर आई। स्वागत के लिए धन्यवाद!',
   carolsNone: 'कैरोल राउंड अभी खुले नहीं हैं। दिसंबर में फिर देखें।',
   carolsAnyNight: 'कोई भी रात ठीक है',
+
+  // Calendar subscribe
+  calendarAdd: 'मेरे कैलेंडर में जोड़ें',
+  calendarBody: 'चर्च की सेवाएँ, जिन कार्यक्रमों में आप जा रहे हैं और जिन रविवारों को आप सेवा करते हैं, आपके कैलेंडर ऐप में अपने आप अपडेट रहेंगे।',
+  calendarGoogle: 'Google कैलेंडर',
+  calendarApple: 'Apple या Outlook कैलेंडर',
+  calendarCopy: 'लिंक कॉपी करें',
+  calendarCopied: 'कॉपी हो गया',
 };

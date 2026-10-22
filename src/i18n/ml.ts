@@ -339,4 +339,12 @@ export const ml: Strings = {
   carolsVisited: 'ടീം നിങ്ങളുടെ വീട്ടിലെത്തി. സ്വാഗതം ചെയ്തതിന് നന്ദി!',
   carolsNone: 'കരോൾ റൗണ്ടുകൾ ഇതുവരെ തുറന്നിട്ടില്ല. ഡിസംബറിൽ നോക്കുക.',
   carolsAnyNight: 'ഏത് രാത്രിയും മതി',
+
+  // Calendar subscribe
+  calendarAdd: 'എന്റെ കലണ്ടറിൽ ചേർക്കുക',
+  calendarBody: 'സഭാ ആരാധനകൾ, നിങ്ങൾ പോകുന്ന പരിപാടികൾ, നിങ്ങൾ സേവിക്കുന്ന ഞായറാഴ്ചകൾ എന്നിവ നിങ്ങളുടെ കലണ്ടർ ആപ്പിൽ തനിയെ പുതുക്കപ്പെടും.',
+  calendarGoogle: 'Google കലണ്ടർ',
+  calendarApple: 'Apple അല്ലെങ്കിൽ Outlook കലണ്ടർ',
+  calendarCopy: 'ലിങ്ക് പകർത്തുക',
+  calendarCopied: 'പകർത്തി',
 };

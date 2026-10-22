@@ -1,5 +1,5 @@
 // Settings › Integrations: WhatsApp through Chitthi, the WhatsApp assistant, API keys, and connecting AI assistants (MCP).
-import { Bot, Check, Copy, KeyRound, MessageCircle, MessagesSquare, Plus, Power, Send, Trash2, Unplug, Mail } from 'lucide-react';
+import { Bot, CalendarPlus, Check, Copy, KeyRound, Mail, MessageCircle, MessagesSquare, Plus, Power, RefreshCw, Send, Trash2, Unplug } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { ApiKeyView, BotIntent, ChitthiStatus, ChitthiTemplate, EmailAccountStatus, WaBotStatus } from '@/api/admin-types';
@@ -36,7 +36,47 @@ export function IntegrationsSettings() {
         <WhatsAppBotCard key={String(chitthiOn)} />
         <ConnectionCards />
       </div>
+      <CalendarLinksCard />
       <ApiKeysCard />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- calendar subscribe links
+
+function CalendarLinksCard() {
+  const { data, error, reload, setData } = useApi(AdminApi.calendarLinks.feeds);
+  const toast = useToast();
+  const reset = useAction((id: string) => AdminApi.calendarLinks.reset(id));
+  const [open, setOpen] = useState<string | null>(null);
+  const rows = data ? [data.church, ...data.teams] : [];
+  return (
+    <div className="card">
+      <div className="card-head"><h2><CalendarPlus size={18} /> Calendar subscribe links</h2><span className="small muted">Google, Apple and Outlook calendars refresh these on their own: every service and event for the church, and each team's rota and rehearsals. Members get their own link under Events in the app.</span></div>
+      {error ? <div className="card-body"><FormError error={error} /></div> : !data ? <div className="card-body"><Loading /></div> : (
+        <div className="table-wrap">
+          <table className="table">
+            <thead><tr><th>Calendar</th><th>Add to</th><th /></tr></thead>
+            <tbody>
+              {rows.map((f) => (
+                <tr key={f.id}>
+                  <td><b>{f.name}</b><div className="small muted">{f.kind === 'church' ? 'Every published service and event' : 'Services this team serves at, with who is on, and rehearsals'}</div>{open === f.id && <div style={{ marginTop: 6, maxWidth: 520 }}><CopyField value={f.url} label={`${f.name} calendar link`} /></div>}</td>
+                  <td className="nowrap">
+                    <div className="row wrap" style={{ gap: 6 }}>
+                      <a className="btn sm" href={f.google} target="_blank" rel="noreferrer">Google</a>
+                      <a className="btn sm" href={f.webcal}>Apple / Outlook</a>
+                      <button className="btn sm ghost" onClick={() => setOpen(open === f.id ? null : f.id)}><Copy size={14} /> Link</button>
+                    </div>
+                  </td>
+                  <td className="nowrap"><button className="btn ghost sm" disabled={reset.busy} onClick={async () => { if (window.confirm('Make a new link? Anyone using the old one stops getting updates.')) { const r = await reset.run(f.id); if (r) { setData({ church: r.kind === 'church' ? r : data.church, teams: data.teams.map((t) => (t.id === r.id ? r : t)) }); toast('New link made'); } } }}><RefreshCw size={14} /> New link</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <FormError error={reset.error} />
+          {rows.length === 1 && <div className="card-body small muted">Add teams under Volunteers to get a calendar for each rota.{' '}<button className="linkish" onClick={reload}>Refresh</button></div>}
+        </div>
+      )}
     </div>
   );
 }

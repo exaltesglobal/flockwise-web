@@ -339,4 +339,12 @@ export const kn: Strings = {
   carolsVisited: 'ತಂಡ ನಿಮ್ಮ ಮನೆಗೆ ಬಂದಿತು. ಸ್ವಾಗತಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು!',
   carolsNone: 'ಕ್ಯಾರಲ್ ಸುತ್ತುಗಳು ಇನ್ನೂ ತೆರೆದಿಲ್ಲ. ಡಿಸೆಂಬರ್\u200cನಲ್ಲಿ ನೋಡಿ.',
   carolsAnyNight: 'ಯಾವ ರಾತ್ರಿಯಾದರೂ ಸರಿ',
+
+  // Calendar subscribe
+  calendarAdd: 'ನನ್ನ ಕ್ಯಾಲೆಂಡರ್\u200cಗೆ ಸೇರಿಸಿ',
+  calendarBody: 'ಚರ್ಚ್ ಆರಾಧನೆಗಳು, ನೀವು ಹೋಗುವ ಕಾರ್ಯಕ್ರಮಗಳು ಮತ್ತು ನೀವು ಸೇವೆ ಮಾಡುವ ಭಾನುವಾರಗಳು ನಿಮ್ಮ ಕ್ಯಾಲೆಂಡರ್ ಆ್ಯಪ್\u200cನಲ್ಲಿ ತಾವಾಗಿಯೇ ನವೀಕರಣಗೊಳ್ಳುತ್ತವೆ.',
+  calendarGoogle: 'Google ಕ್ಯಾಲೆಂಡರ್',
+  calendarApple: 'Apple ಅಥವಾ Outlook ಕ್ಯಾಲೆಂಡರ್',
+  calendarCopy: 'ಲಿಂಕ್ ನಕಲಿಸಿ',
+  calendarCopied: 'ನಕಲಿಸಲಾಗಿದೆ',
 };
