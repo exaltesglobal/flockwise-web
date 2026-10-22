@@ -37,7 +37,7 @@ export function MemberPrayerPage() {
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.data.length === 0 ? (
         <p className="muted">{t('noPrayer')}</p>
       ) : (
-        <div className="stack">
+        <div className="tiles">
           {data.data.map((p) => (
             <div key={p.id} className="card card-pad stack" style={{ gap: 8 }}>
               <div className="row wrap" style={{ gap: 8 }}>

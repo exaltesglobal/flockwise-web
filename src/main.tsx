@@ -5,6 +5,9 @@ import { RouterProvider } from 'react-router';
 import { ToastProvider } from '@/components/ui';
 import { router } from '@/router';
 import '@/styles/global.css';
+import { initAppearance } from '@/lib/theme';
+
+initAppearance();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

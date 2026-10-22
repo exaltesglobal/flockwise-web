@@ -65,6 +65,7 @@ export const te: Strings = {
   resetToDefault: 'డిఫాల్ట్‌కు మార్చండి',
   usingDemoData: 'డెమో డేటా వాడుతున్నాం',
   signOut: 'సైన్ అవుట్',
+  appearance: 'రూపం',
   version: 'వెర్షన్ {version}',
 
   retry: 'మళ్ళీ ప్రయత్నించండి',

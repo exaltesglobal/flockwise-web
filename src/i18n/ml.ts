@@ -65,6 +65,7 @@ export const ml: Strings = {
   resetToDefault: 'ഡിഫോൾട്ടിലേക്ക് മാറ്റുക',
   usingDemoData: 'ഡെമോ ഡാറ്റ ഉപയോഗിക്കുന്നു',
   signOut: 'സൈൻ ഔട്ട്',
+  appearance: 'രൂപം',
   version: 'പതിപ്പ് {version}',
 
   retry: 'വീണ്ടും ശ്രമിക്കുക',

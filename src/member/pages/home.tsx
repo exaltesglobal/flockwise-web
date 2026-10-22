@@ -35,7 +35,8 @@ export function MemberHomePage() {
         <Link to="/app/me#qr" className="card"><QrCode size={22} />{t('myQr').split(' ').slice(0, 2).join(' ')}</Link>
       </nav>
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
-        <>
+        <div className="home-grid">
+          <div>
           {data.nextService && (
             <div className="hero-card">
               <span className="eyebrow">{t('nextService')}</span>
@@ -57,8 +58,6 @@ export function MemberHomePage() {
 
           <SundaySchool />
 
-          <Celebrations />
-
           {data.announcements.length > 0 && (
             <section className="stack">
               <h2>{t('announcements')}</h2>
@@ -72,6 +71,8 @@ export function MemberHomePage() {
             </section>
           )}
 
+          </div>
+          <div>
           <section className="stack">
             <div className="section-head">
               <h2>{t('upcoming')}</h2>
@@ -79,7 +80,10 @@ export function MemberHomePage() {
             </div>
             {data.upcomingEvents.length === 0 ? <p className="muted">{t('noUpcoming')}</p> : data.upcomingEvents.map((e) => <EventCard key={e.id} event={e} />)}
           </section>
-        </>
+
+          <Celebrations />
+          </div>
+        </div>
       )}
     </>
   );

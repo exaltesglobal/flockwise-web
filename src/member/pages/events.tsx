@@ -24,7 +24,7 @@ export function MemberEventsPage() {
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.data.length === 0 ? (
         <p className="muted">{t('noUpcoming')}</p>
       ) : (
-        <div className="stack">{data.data.map((e) => <EventCard key={e.id} event={e} />)}</div>
+        <div className="tiles">{data.data.map((e) => <EventCard key={e.id} event={e} />)}</div>
       )}
     </>
   );

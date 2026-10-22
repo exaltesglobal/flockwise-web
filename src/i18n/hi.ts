@@ -65,6 +65,7 @@ export const hi: Strings = {
   resetToDefault: 'डिफ़ॉल्ट पर लौटें',
   usingDemoData: 'डेमो डेटा इस्तेमाल हो रहा है',
   signOut: 'साइन आउट',
+  appearance: 'रूप-रंग',
   version: 'संस्करण {version}',
 
   retry: 'फिर से कोशिश करें',

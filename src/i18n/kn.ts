@@ -65,6 +65,7 @@ export const kn: Strings = {
   resetToDefault: 'ಡೀಫಾಲ್ಟ್‌ಗೆ ಮರುಹೊಂದಿಸಿ',
   usingDemoData: 'ಡೆಮೊ ಡೇಟಾ ಬಳಸಲಾಗುತ್ತಿದೆ',
   signOut: 'ಸೈನ್ ಔಟ್',
+  appearance: 'ನೋಟ',
   version: 'ಆವೃತ್ತಿ {version}',
 
   retry: 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',

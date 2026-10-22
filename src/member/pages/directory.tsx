@@ -36,7 +36,7 @@ export function MemberDirectoryPage() {
             <input className="input" placeholder={t('searchByName')} value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
-            <div className="stack">
+            <div className="tiles">
               {data.data.map((h) => (
                 <div key={h.householdName} className="card card-pad stack" style={{ gap: 8 }}>
                   <div className="row" style={{ gap: 8 }}>

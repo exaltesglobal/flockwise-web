@@ -62,6 +62,7 @@ export const en = {
   resetToDefault: 'Reset to default',
   usingDemoData: 'Using demo data',
   signOut: 'Sign out',
+  appearance: 'Appearance',
   version: 'Version {version}',
 
   retry: 'Try again',

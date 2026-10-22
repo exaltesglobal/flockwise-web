@@ -86,7 +86,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      <div className="grid cols-2">
+      <div className={`grid ${can('giving.view') ? 'cols-2' : ''}`}>
         <div className="card">
           <div className="card-head">
             <h2>Sunday attendance</h2>
@@ -113,7 +113,7 @@ export function DashboardPage() {
         </div>}
       </div>
 
-      <div className="grid cols-3">
+      <div className={`grid ${can('giving.view') ? 'cols-3' : 'cols-2'}`}>
         <div className="card">
           <div className="card-head">
             <h2>Coming up</h2>

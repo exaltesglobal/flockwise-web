@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AiPurpose, AiSermonKind, AiSetlist, AiStatus, Sermon } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
-import { FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { FormError, Loading, Mark, Modal, Segmented, useToast } from '@/components/ui';
 import { useAction } from '@/lib/use-api';
 
 import { PageHeader } from './layout';
@@ -133,9 +133,11 @@ export function AssistantPage() {
         <div className="card ai-chat">
           <div className="ai-turns">
             {turns.length === 0 && (
-              <div className="stack" style={{ gap: 8 }}>
-                <p className="muted" style={{ margin: 0 }}>Try one of these:</p>
-                <div className="row wrap" style={{ gap: 6 }}>{SUGGESTIONS.map((s) => <button key={s} className="chip" onClick={() => void send(s)}>{s}</button>)}</div>
+              <div className="ai-welcome">
+                <Mark size={44} />
+                <h2>What would you like to know?</h2>
+                <p className="muted">Pick a question to start, or type your own below.</p>
+                <div className="ai-suggest">{SUGGESTIONS.map((s) => <button key={s} className="card" onClick={() => void send(s)}><Sparkles size={15} /> <span>{s}</span></button>)}</div>
               </div>
             )}
             {turns.map((t, i) => (

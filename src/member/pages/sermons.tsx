@@ -37,6 +37,7 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
           {all.map((s) => <button key={s} type="button" className={`opt-chip ${series === s ? 'on' : ''}`} onClick={() => setSeries(s)}>{s}</button>)}
         </div>
       )}
+      <div className="tiles wide">
       {shown.map((s) => (
         <article key={s.id} className="card sermon-card">
           {s.imageUrl ? <img src={s.imageUrl} alt="" /> : <div className="sermon-art"><BookOpen size={26} /></div>}
@@ -53,6 +54,7 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
           </div>
         </article>
       ))}
+      </div>
     </div>
   );
 }
