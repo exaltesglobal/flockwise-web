@@ -1,9 +1,9 @@
-import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, Newspaper, QrCode, Sparkles } from 'lucide-react';
+import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, Newspaper, QrCode, Radio, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { memberSession } from '@/api/client';
-import { MemberApi } from '@/api/endpoints';
+import { MemberApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Loading } from '@/components/ui';
 import { useT } from '@/i18n';
 import { formatDay, formatRelative, formatTime, greetingKey } from '@/lib/format';
@@ -49,6 +49,8 @@ export function MemberHomePage() {
             </div>
           )}
 
+          <LiveCard />
+
           <BulletinCard />
 
           <SundaySchool />
@@ -78,6 +80,24 @@ export function MemberHomePage() {
         </>
       )}
     </>
+  );
+}
+
+/** The live service: "Live now" while streaming, the start time when it is within a day. */
+function LiveCard() {
+  const { t, locale } = useT();
+  const { data } = useApi(PublicApi.live);
+  const s = data?.stream;
+  if (!s || (s.status !== 'live' && new Date(s.startsAt).getTime() - Date.now() > 86_400_000)) return null;
+  return (
+    <Link to="/app/live" className={`card card-pad row live-card ${s.status === 'live' ? 'on' : ''}`} style={{ gap: 12 }}>
+      {s.status === 'live' ? <span className="live-pill"><i /> {t('liveBadge')}</span> : <Radio size={22} className="muted" />}
+      <div className="grow" style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600 }}>{s.title}</div>
+        <div className="small muted">{s.status === 'live' ? t('liveWatching', { n: Math.max(1, s.watching) }) : t('liveStarts', { when: `${formatDay(s.startsAt, locale)} · ${formatTime(s.startsAt, locale)}` })}</div>
+      </div>
+      <span className="small">{s.status === 'live' ? t('liveNowWatch') : t('liveTitle')}</span>
+    </Link>
   );
 }
 

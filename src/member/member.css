@@ -54,3 +54,4 @@
 .search-box .input { padding-left: 38px; }
 .member-nav a { padding: 8px 10px; font-size: 14px; }
 @media (max-width: 1100px) { .member-nav a svg { display: none; } }
+.live-card.on { border-color: var(--danger); }

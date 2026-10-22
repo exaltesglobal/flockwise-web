@@ -1,10 +1,11 @@
-import { CalendarDays, CheckCircle2, ClipboardList, Clock, Gift, Mail, MapPin, Phone, Globe, UserRound, UsersRound, XCircle } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Radio, ClipboardList, Clock, Gift, Mail, MapPin, Phone, Globe, UserRound, UsersRound, XCircle } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 
 import type { PublicGroup } from '@/api/admin-types';
 import { PublicApi } from '@/api/endpoints';
 import { BulletinDoc } from '@/components/bulletin';
+import { LiveWatch } from '@/components/live-player';
 import { RegistrationForm } from '@/components/registration';
 import { ErrorState, Field, FormError, Loading, Logo, Modal } from '@/components/ui';
 import { useT } from '@/i18n';
@@ -41,6 +42,7 @@ function Shell({ churchName, logoUrl, children }: { churchName?: string; logoUrl
 export function PublicChurchPage() {
   const { locale } = useT();
   const { data, error, reload } = useApi(PublicApi.church);
+  const { data: live } = useApi(() => PublicApi.live().catch(() => null));
   const [joining, setJoining] = useState<PublicGroup | null>(null);
   const [zone, setZone] = useState('');
   useEffect(() => { if (data) document.title = data.church.name; }, [data]);
@@ -65,6 +67,7 @@ export function PublicChurchPage() {
         <div className="row wrap" style={{ gap: 10 }}>
           {events.length > 0 && <a href="#events" className="btn accent">Upcoming events</a>}
           {page.showGiving && <Link to="/app/give" className="btn ghost-light"><Gift size={16} /> Give online</Link>}
+          {live?.stream && <Link to="/live" className="btn ghost-light">{live.stream.status === 'live' ? <span className="live-pill"><i /> LIVE</span> : <Radio size={16} />} Watch online</Link>}
         </div>
       </section>
 
@@ -247,6 +250,21 @@ export function PublicBulletinPage() {
   return (
     <Shell churchName={data.church.name} logoUrl={data.church.logoUrl}>
       <div className="card bulletin-card"><BulletinDoc b={data} /></div>
+    </Shell>
+  );
+}
+
+/** The live service for anyone with the link. Viewers here count in the online attendance as guests. */
+export function PublicLivePage() {
+  const church = useApi(() => PublicApi.church().catch(() => null));
+  useEffect(() => { document.title = church.data ? `Watch live · ${church.data.church.name}` : 'Watch live'; }, [church.data]);
+  return (
+    <Shell churchName={church.data?.church.name} logoUrl={church.data?.church.logoUrl}>
+      <div className="stack pub-live">
+        <h1>Watch live</h1>
+        <LiveWatch labels={{ live: 'LIVE', watching: (n) => `${n} watching`, starts: (when) => `Starts ${when}`, openYoutube: 'Open in YouTube', none: 'No live stream right now', noneBody: 'Our Sunday services stream here. Check back at service time.', ended: 'The stream has ended. Thank you for joining us!' }} />
+        {church.data?.page.serviceTimes && <p className="small muted" style={{ whiteSpace: 'pre-wrap' }}>{church.data.page.serviceTimes}</p>}
+      </div>
     </Shell>
   );
 }

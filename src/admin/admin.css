@@ -294,3 +294,15 @@ button.chip.on { background: var(--primary); color: #fff; }
 .offline-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .offline-ready { display: flex; align-items: center; gap: 6px; margin: 0; }
 .spin { animation: spin 1s linear infinite; }
+
+/* Livestream */
+.live-badge { display: inline-flex; align-items: center; gap: 6px; }
+.live-badge i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: live-pulse 1.4s ease-in-out infinite; }
+@keyframes live-pulse { 50% { opacity: 0.3; } }
+.live-now { border-color: var(--danger); margin-bottom: 16px; }
+.live-count { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.live-count b { font-size: 26px; }
+.live-divider { border-top: 1px solid var(--border); }
+.live-link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; padding: 6px 8px; background: var(--tint); border-radius: var(--radius-sm); }
+.live-row { width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--border); background: none; font: inherit; color: inherit; cursor: pointer; }
+.live-row:hover { background: var(--tint); }

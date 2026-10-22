@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -34,6 +34,7 @@ const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?
   { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
   { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
   { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },
+  { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'] },
   { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
   { to: '/admin/giving', label: 'Giving', icon: Gift, perm: ['giving.view'] },
   { to: '/admin/offerings', label: 'Special offerings', icon: Wheat, perm: ['giving.view'] },

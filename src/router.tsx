@@ -6,6 +6,7 @@ import { AnnouncementsPage } from '@/admin/pages/announcements';
 import { BulletinPage } from '@/admin/pages/bulletin';
 import { SundaySchoolPage } from '@/admin/pages/sunday-school';
 import { MissionsPage } from '@/admin/pages/missions';
+import { LivestreamPage } from '@/admin/pages/livestream';
 import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CelebrationsPage } from '@/admin/pages/celebrations';
@@ -35,12 +36,13 @@ import { Landing } from '@/landing';
 import { ChurchRoute } from '@/platform/church';
 import { SignupPage } from '@/platform/signup';
 import { TeamPanel } from '@/platform/team';
-import { FormReturnPage, PublicBulletinPage, PublicChurchPage, PublicFormPage } from '@/public/public';
+import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberBulletinPage } from '@/member/pages/bulletin';
 import { MemberMissionsPage } from '@/member/pages/missions';
+import { MemberLivePage } from '@/member/pages/live';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
 import { MemberGroupPage } from '@/member/pages/group';
@@ -87,6 +89,8 @@ const routes = [
       { path: 'sunday-school/exam/:examId', element: <SundaySchoolPage /> },
       { path: 'missions', element: <MissionsPage /> },
       { path: 'missions/:id', element: <MissionsPage /> },
+      { path: 'livestream', element: <LivestreamPage /> },
+      { path: 'livestream/:id', element: <LivestreamPage /> },
       { path: 'offerings', element: <OfferingsPage /> },
       { path: 'offerings/:id', element: <OfferingsPage /> },
       { path: 'razorpay-setup', element: <RazorpaySetupPage /> },
@@ -111,6 +115,7 @@ const routes = [
   { path: '/legal/:slug', element: <LegalPage /> },
   { path: '/church', element: <PublicChurchPage /> },
   { path: '/bulletin/:id', element: <PublicBulletinPage /> },
+  { path: '/live', element: <PublicLivePage /> },
   { path: '/forms/return', element: <FormReturnPage /> },
   { path: '/forms/:id', element: <PublicFormPage /> },
   {
@@ -127,6 +132,7 @@ const routes = [
       { path: 'sermons', element: <MemberSermonsPage /> },
       { path: 'bulletin', element: <MemberBulletinPage /> },
       { path: 'missions', element: <MemberMissionsPage /> },
+      { path: 'live', element: <MemberLivePage /> },
       { path: 'bulletin/:id', element: <MemberBulletinPage /> },
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },

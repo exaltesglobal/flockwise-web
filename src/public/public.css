@@ -24,3 +24,4 @@
 .pub-form { max-width: 680px; width: 100%; margin: 0 auto; }
 .pub-foot { border-top: 1px solid var(--border); padding-block: 16px; background: var(--card); }
 .pub-foot a:hover { text-decoration: none; }
+.pub-live { max-width: 960px; margin: 0 auto; padding-block: 24px; }

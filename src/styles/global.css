@@ -375,3 +375,11 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .ms-avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: var(--tint); color: var(--primary); font-family: var(--font-heading); font-weight: 600; font-size: 18px; }
 .ms-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .ms-name, .ms-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* YouTube live player (member app and church page) */
+.live-frame { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; background: #000; }
+.live-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.live-demo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #fff; background: linear-gradient(135deg, #12372f, #1f6b5c); text-align: center; padding: 16px; }
+.live-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+.live-pill i { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: live-pulse 1.4s ease-in-out infinite; }
+@keyframes live-pulse { 50% { opacity: 0.3; } }

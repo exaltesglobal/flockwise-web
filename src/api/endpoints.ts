@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
@@ -246,6 +246,9 @@ export const PublicApi = {
   screen: (eventId: string, key: string) => m.get<PresentationView>(`/screens/${eventId}${qs({ key })}`),
   bulletin: (id: string, k: string) => m.get<BulletinView>(`/public/bulletins/${id}${qs({ k })}`),
   submitForm: (id: string, input: FormSubmission) => m.post<FormSubmitResult>(`/public/forms/${id}/responses`, input),
+  /** Signed-in members are counted by name; everyone else by a random id kept in their browser. */
+  live: () => m.get<LiveNow>('/public/live'),
+  livePing: (streamId: string, viewer: string) => m.post<{ ok: boolean; status: LiveStatus; watching: number }>(`/public/live/${streamId}/ping`, { viewer }),
 };
 
 // ---------- Many churches: lookup, sign-up and the Flockwise team panel ----------
@@ -421,6 +424,16 @@ export const AdminApi = {
     saveMarks: (id: string, classId: string, marks: Record<string, number | null | ''>) => a.put<SsExamResults>(`/admin/sunday-school/exams/${id}/marks`, { classId, marks }),
     sendResults: (id: string) => a.post<{ channel: string; sent: number; failed: number; noParent: string[] }>(`/admin/sunday-school/exams/${id}/send`),
     prizes: (from?: string, to?: string) => a.get<SsPrizes>(`/admin/sunday-school/prizes${qs({ from, to })}`),
+  },
+  livestream: {
+    overview: () => a.get<LiveOverview>('/admin/livestream'),
+    settings: (input: Partial<LiveSettings>) => a.put<LiveSettings>('/admin/livestream/settings', input),
+    create: (input: { url: string; title?: string; eventId?: string | null; startsAt?: string }) => a.post<LiveStreamView>('/admin/livestream/streams', input),
+    get: (id: string) => a.get<LiveStreamDetail>(`/admin/livestream/streams/${id}`),
+    update: (id: string, input: { url?: string; title?: string; eventId?: string | null; startsAt?: string }) => a.patch<LiveStreamDetail>(`/admin/livestream/streams/${id}`, input),
+    remove: (id: string) => a.del<void>(`/admin/livestream/streams/${id}`),
+    start: (id: string) => a.post<LiveStreamDetail>(`/admin/livestream/streams/${id}/start`),
+    end: (id: string) => a.post<LiveStreamDetail>(`/admin/livestream/streams/${id}/end`),
   },
   bulletins: {
     list: () => a.get<Bulletin[]>('/admin/bulletins'),
