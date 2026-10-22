@@ -1,7 +1,7 @@
 // Presentation: the operator console (also the phone remote), the projector output and the
 // stage display and the OBS overlay. Every screen polls the same presentation state, so they all
 // follow the operator. Screens opened with ?key= (the church's screen key) need no sign-in.
-import { ArrowLeft, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Monitor, Music2, Palette, Plus, Radio, Send, Tv, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Monitor, Music2, Palette, Plus, Radio, Send, Tv, Video, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
@@ -16,11 +16,11 @@ import { useAction, useApi } from '@/lib/use-api';
 import { useObs } from './obs';
 import './present.css';
 
-type Action = Parameters<typeof AdminApi.presentation.act>[1];
-type ActExtra = Parameters<typeof AdminApi.presentation.act>[2];
+export type Action = Parameters<typeof AdminApi.presentation.act>[1];
+export type ActExtra = Parameters<typeof AdminApi.presentation.act>[2];
 
 /** Loads the presentation and keeps it fresh. Screens poll every second; the operator a little slower. */
-function usePresentation(eventId: string, everyMs: number, key?: string | null) {
+export function usePresentation(eventId: string, everyMs: number, key?: string | null) {
   const api = useApi(() => (key ? PublicApi.screen(eventId, key) : AdminApi.presentation.get(eventId)), [eventId, key]);
   const { reload } = api;
   useEffect(() => {
@@ -60,7 +60,7 @@ const countdown = (ms: number) => {
   return `${neg ? '+' : ''}${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 
-function RequireStaff({ children }: { children: React.ReactNode }) {
+export function RequireStaff({ children }: { children: React.ReactNode }) {
   const session = useSession(adminSession);
   const location = useLocation();
   if (!session?.staff) return <Navigate to="/admin/sign-in" replace state={{ from: location.pathname }} />;
@@ -171,6 +171,7 @@ function Presenter() {
         </div>
         <button className="btn sm" onClick={() => open('screen')}><Tv size={15} /> <span className="hide-sm">Projector</span></button>
         <button className="btn sm" onClick={() => open('stage')}><Monitor size={15} /> <span className="hide-sm">Stage display</span></button>
+        {control && <Link className="btn sm hide-sm" to={`/present/${eventId}/studio`}><Video size={15} /> Studio</Link>}
         <button className="btn sm ghost icon" onClick={() => setLinksOpen(true)} aria-label="Screen links and OBS" title="Screen links and OBS"><Link2 size={16} /></button>
         {can('services') && <button className="btn sm ghost icon" onClick={() => setThemeOpen(true)} aria-label="Slide style" title="Slide style"><Palette size={16} /></button>}
       </header>
@@ -229,7 +230,7 @@ const screenUrl = (eventId: string, path: string, key?: string) =>
   `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}/present/${eventId}/${path}${key ? `?key=${key}` : ''}`;
 
 /** Livestream graphics: lyrics bar on the stream, and name straps fired with one tap. */
-function MediaPanel({ view, act }: { view: PresentationView; act: (a: Action, extra?: ActExtra) => Promise<void> }) {
+export function MediaPanel({ view, act, lyricsToggle = true }: { view: PresentationView; act: (a: Action, extra?: ActExtra) => Promise<void>; lyricsToggle?: boolean }) {
   const { state } = view;
   const queue = state.lowerThirds ?? [];
   const extra = view.suggestedLowerThirds.filter((l) => !queue.some((q) => q.title === l.title && q.subtitle === l.subtitle));
@@ -249,7 +250,7 @@ function MediaPanel({ view, act }: { view: PresentationView; act: (a: Action, ex
   return (
     <div className="card media-card">
       <div className="row between"><b>Livestream graphics</b>{live && <button className="btn sm ghost" onClick={() => void act('lowerClear')}>Clear strap</button>}</div>
-      <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={!!state.overlayLyrics} onChange={(e) => void act('overlay', { on: e.target.checked })} /> Lyrics bar on the stream</label>
+      {lyricsToggle && <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={!!state.overlayLyrics} onChange={(e) => void act('overlay', { on: e.target.checked })} /> Lyrics bar on the stream</label>}
       <div className="small muted">Name straps</div>
       {queue.map((l) => row(l, false))}
       {extra.map((l) => row(l, true))}
