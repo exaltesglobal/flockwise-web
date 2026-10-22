@@ -1,8 +1,8 @@
-import { Baby, Camera, CheckCircle2, LogOut, Maximize2, Minimize2, Printer, QrCode, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users } from 'lucide-react';
+import { Baby, BellRing, Camera, CheckCircle2, LogOut, Maximize2, Minimize2, Printer, QrCode, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-import type { AdminEvent, Checkin, CheckinFamily, CheckinLabel, CheckinResult } from '@/api/admin-types';
+import type { AdminEvent, Checkin, CheckinFamily, CheckinLabel, CheckinResult, PageReason } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { formatDay, formatTime } from '@/lib/format';
@@ -140,8 +140,11 @@ function Desk({ event }: { event: AdminEvent }) {
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [filter, setFilter] = useState<'all' | 'kids' | 'in'>('all');
   const [checkingOut, setCheckingOut] = useState<Checkin | null>(null);
+  const [paging, setPaging] = useState<Checkin | null>(null);
   const [reprint, setReprint] = useState(false);
+  const pages = useApi(() => AdminApi.checkin.pages(event.id), [event.id]);
   const toast = useToast();
+  const activePages = (pages.data ?? []).filter((p) => !p.resolvedAt);
 
   const rows = (summary.data?.checkins ?? []).filter((c) => filter === 'all' || (filter === 'kids' ? c.isChild : c.isChild && !c.checkedOutAt));
 
@@ -156,6 +159,21 @@ function Desk({ event }: { event: AdminEvent }) {
             <div key={r.room.id} className="card mini-stat">
               <b>{r.count}{r.room.capacity ? <span className="muted" style={{ fontSize: 15 }}> / {r.room.capacity}</span> : null}</b>
               <span>{r.room.name}{r.room.capacity && r.count >= r.room.capacity ? <span className="badge danger" style={{ marginLeft: 6 }}>Full</span> : null}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {activePages.length > 0 && (
+        <div className="card card-pad stack page-list">
+          <h3 className="row" style={{ gap: 8 }}><BellRing size={17} /> Parents paged</h3>
+          {activePages.map((p) => (
+            <div key={p.id} className="row wrap" style={{ gap: 8 }}>
+              <span className="kbd">{p.securityCode}</span>
+              <div className="grow" style={{ minWidth: 0 }}>
+                <b>{p.childName}</b>{p.roomName ? ` · ${p.roomName}` : ''}
+                <div className="small muted">{formatTime(p.at)} · {p.sentTo.map((x) => `${x.name}${x.ok ? '' : ' (not sent)'}`).join(', ')}</div>
+              </div>
+              <button className="btn sm" onClick={async () => { await AdminApi.checkin.resolvePage(p.id); pages.reload(); }}><CheckCircle2 size={14} /> Parent came</button>
             </div>
           ))}
         </div>
@@ -188,6 +206,7 @@ function Desk({ event }: { event: AdminEvent }) {
                       <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method}</span>}</td>
                       <td className="small muted">{formatTime(c.at)}{c.checkedOutAt ? ` → ${formatTime(c.checkedOutAt)}` : ''}</td>
                       <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        {c.isChild && !c.checkedOutAt && <button className="btn sm ghost" title="Page parent" onClick={() => setPaging(c)}><BellRing size={14} /> Page</button>}
                         {c.isChild && !c.checkedOutAt && <button className="btn sm" onClick={() => setCheckingOut(c)}><LogOut size={14} /> Pick up</button>}
                         <button className="btn ghost icon sm" title="Undo check-in" onClick={async () => {
                           if (!confirm(`Undo check-in for ${c.personName}?`)) return;
@@ -206,7 +225,36 @@ function Desk({ event }: { event: AdminEvent }) {
       {result && <ResultModal result={result} onClose={() => setResult(null)} />}
       {checkingOut && <CheckoutModal checkin={checkingOut} onClose={() => setCheckingOut(null)} onDone={() => { setCheckingOut(null); summary.reload(); toast('Picked up safely'); }} />}
       {reprint && <ReprintModal eventId={event.id} onClose={() => setReprint(false)} />}
+      {paging && <PageModal checkin={paging} onClose={() => setPaging(null)} onDone={(sent) => { setPaging(null); pages.reload(); toast(sent ? 'Parents paged' : 'The message could not be sent. Try calling.'); }} />}
     </>
+  );
+}
+
+const PAGE_REASONS: { value: PageReason; label: string }[] = [
+  { value: 'come', label: 'Come to the room' },
+  { value: 'pickup', label: 'Pick up now' },
+  { value: 'feeding', label: 'Feed or change' },
+  { value: 'custom', label: 'Other' },
+];
+
+function PageModal({ checkin, onClose, onDone }: { checkin: Checkin; onClose: () => void; onDone: (sent: boolean) => void }) {
+  const parents = useApi(() => AdminApi.checkin.parents(checkin.id), [checkin.id]);
+  const [reason, setReason] = useState<PageReason>('come');
+  const [note, setNote] = useState('');
+  const send = useAction(() => AdminApi.checkin.page(checkin.id, reason, note));
+  return (
+    <Modal title={`Page ${checkin.personName.split(' ')[0]}'s parents`} onClose={onClose}
+      footer={<><button className="btn ghost" onClick={onClose}>Cancel</button><button className="btn primary" disabled={send.busy || !parents.data?.length || (reason === 'custom' && !note.trim())} onClick={async () => { const p = await send.run(); if (p) onDone(p.sentTo.some((x) => x.ok)); }}><BellRing size={15} /> {send.busy ? 'Sending…' : 'Send'}</button></>}>
+      <div className="stack">
+        {!parents.data ? <Loading /> : parents.data.length === 0 ? <div className="alert warn">No parent with a phone number is in this child’s household. Add the family in People.</div> : (
+          <div className="small">Goes to {parents.data.map((p) => `${p.name} (${p.phone})`).join(' and ')} on WhatsApp, or SMS when WhatsApp is not set up.</div>
+        )}
+        <Segmented value={reason} onChange={setReason} options={PAGE_REASONS} />
+        <Field label={reason === 'custom' ? 'Message' : 'Add a note (optional)'}><input className="input" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder={reason === 'custom' ? 'e.g. Please bring her water bottle' : ''} /></Field>
+        <p className="small muted" style={{ margin: 0 }}>The message says the child is fine, names the room and asks them to show code {checkin.securityCode} at the door.</p>
+        <FormError error={send.error} />
+      </div>
+    </Modal>
   );
 }
 

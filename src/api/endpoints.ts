@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage } from '@/core/types';
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
@@ -398,6 +398,10 @@ export const AdminApi = {
     createRoom: (input: Omit<Room, 'id'>) => a.post<Room>('/admin/checkin/rooms', input),
     updateRoom: (id: string, input: Partial<Omit<Room, 'id'>>) => a.patch<Room>(`/admin/checkin/rooms/${id}`, input),
     removeRoom: (id: string) => a.del<void>(`/admin/checkin/rooms/${id}`),
+    parents: (checkinId: string) => a.get<{ id: string; name: string; phone: string | null }[]>(`/admin/checkin/checkins/${checkinId}/parents`),
+    page: (checkinId: string, reason: PageReason, note = '') => a.post<ParentPage>(`/admin/checkin/checkins/${checkinId}/page`, { reason, note }),
+    pages: (eventId: string) => a.get<ParentPage[]>(`/admin/checkin/${eventId}/pages`),
+    resolvePage: (id: string) => a.post<ParentPage>(`/admin/checkin/pages/${id}/resolve`),
   },
   volunteers: {
     teams: () => a.get<TeamView[]>('/admin/volunteers/teams'),
