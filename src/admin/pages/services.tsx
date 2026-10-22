@@ -1,18 +1,22 @@
-import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, FileDown, FileText, FileUp, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, Wand2, X } from 'lucide-react';
 import { Link } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongAttachment, SongView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import { ChordEditor } from '@/components/chord-editor';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format';
 import { type ChartMode, ChordChart, transposeKey } from '@/lib/chords';
+import { fileSafe, readSongFile, saveBlob, songsToPdf } from '@/lib/pdf-songs';
 import { useCan } from '@/lib/perms';
+import { chartToLyrics, stepsBetween, toChordPro, toChordsOverLyrics } from '@/lib/songfile';
 import { printHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { SetlistModal, useAi } from '../ai';
 import { PageHeader } from '../layout';
+import { ImportSongsModal } from './song-import';
 import { RehearsalPlayer, SongStatsView } from './worship';
 
 const KINDS: { value: PlanItemKind; label: string }[] = [
@@ -96,6 +100,15 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
   const toast = useToast();
   const can = useCan();
   const editable = can('services');
+  const sheets = useAction(async () => {
+    const list = items.filter((i) => i.songId).map((i, n) => {
+      const sg = songs.data?.find((x) => x.id === i.songId);
+      return sg ? { song: sg, label: `${n + 1}. ${detail.data!.event.title}`, options: { steps: i.key && sg.defaultKey ? stepsBetween(sg.defaultKey, i.key) : 0 } } : null;
+    }).filter((x): x is NonNullable<typeof x> => !!x);
+    const name = `${detail.data!.event.title} ${detail.data!.event.startsAt.slice(0, 10)}`;
+    saveBlob(await songsToPdf(list, name), `${fileSafe(name)} chord sheets.pdf`);
+    return true;
+  });
 
   useEffect(() => {
     if (!detail.data) return;
@@ -149,6 +162,7 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
             </select>
           )}
           <button className="btn" onClick={() => printPlan(detail.data!, theme, notes, items)}><Printer size={15} /> Print</button>
+          {items.some((i) => i.songId) && <button className="btn" disabled={sheets.busy} title="Chord sheets for every song, in the keys set in this plan" onClick={() => void sheets.run()}><FileDown size={15} /> {sheets.busy ? 'Making PDF…' : 'Chord sheets PDF'}</button>}
           {items.length > 0 && <Link className="btn accent" to={`/admin/services/${eventId}/live`}><Radio size={15} /> Live</Link>}
           {items.length > 0 && <Link className="btn" to={`/present/${eventId}`} title={dirty ? 'Save the plan first so the screens show your changes' : 'Lyrics and slides on the projector'}><MonitorPlay size={15} /> Present</Link>}
           {editable && <button className="btn primary" disabled={!dirty || save.busy} onClick={async () => { if (await save.run()) { toast('Plan saved'); setDirty(false); onSaved(); } }}>{save.busy ? 'Saving…' : 'Save plan'}</button>}
@@ -255,6 +269,7 @@ function Songs() {
   const list = useApi(() => AdminApi.services.songs(debounced), [debounced]);
   const [editing, setEditing] = useState<SongView | 'new' | null>(null);
   const [viewing, setViewing] = useState<SongView | null>(null);
+  const [importing, setImporting] = useState(false);
   const toast = useToast();
   const can = useCan();
   return (
@@ -262,8 +277,10 @@ function Songs() {
       <div className="toolbar">
         <div className="search"><Search size={16} /><input className="input" placeholder="Search title, author or tag" value={q} onChange={(e) => setQ(e.target.value)} /></div>
         <div className="grow" />
+        {can('services') && <button className="btn" onClick={() => setImporting(true)}><FileUp size={16} /> Import PDF or file</button>}
         {can('services') && <button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> Add song</button>}
       </div>
+      {importing && <ImportSongsModal existing={list.data ?? []} onClose={() => setImporting(false)} onDone={() => { setImporting(false); list.reload(); }} />}
       {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : list.data.length === 0 ? <Empty icon={<Music size={28} />} title="No songs" /> : (
         <div className="table-wrap">
           <table className="table">
@@ -301,9 +318,18 @@ function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
   const [mode, setMode] = useState<ChartMode>('chords');
   const toast = useToast();
   const hasChart = !!song.chordChart?.trim();
+  const pdf = useAction(async () => {
+    const key = transposeKey(song.defaultKey || '', steps);
+    saveBlob(await songsToPdf([{ song, options: { steps, capo, mode } }], song.title), `${fileSafe(song.title)}${key ? ` (${key})` : ''}.pdf`);
+    return true;
+  });
   const audio = (song.attachments ?? []).filter((a) => a.kind === 'audio' && a.url);
   return (
-    <Modal wide title={song.title} onClose={onClose} footer={<button className="btn" onClick={() => { navigator.clipboard?.writeText(song.lyrics); toast('Lyrics copied'); }}><Copy size={15} /> Copy lyrics</button>}>
+    <Modal wide title={song.title} onClose={onClose} footer={<>
+      <button className="btn" onClick={() => { navigator.clipboard?.writeText(hasChart ? toChordsOverLyrics(song.chordChart!, steps, song.defaultKey) : song.lyrics); toast(hasChart ? 'Chords and lyrics copied, ready for WhatsApp' : 'Lyrics copied'); }}><Copy size={15} /> Copy{hasChart ? ' with chords' : ' lyrics'}</button>
+      <button className="btn" onClick={() => saveBlob(new Blob([toChordPro(song, steps)], { type: 'text/plain' }), `${fileSafe(song.title)}.cho`)}><FileText size={15} /> ChordPro</button>
+      <button className="btn primary" disabled={pdf.busy} onClick={() => void pdf.run()}><FileDown size={15} /> {pdf.busy ? 'Making PDF…' : 'Download PDF'}</button>
+    </>}>
       <div className="stack">
         <div className="row wrap" style={{ gap: 8 }}>
           <span className="small muted grow">{song.author}{song.ccli ? ` · CCLI ${song.ccli}` : ''}{song.bpm ? ` · ${song.bpm} bpm` : ''}</span>
@@ -372,13 +398,31 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
     return song ? AdminApi.services.updateSong(song.id, input) : AdminApi.services.createSong(input);
   });
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const fileIn = useRef<HTMLInputElement>(null);
+  const [fileNote, setFileNote] = useState('');
+  async function fillFromFile(f: File) {
+    try {
+      const r = await readSongFile(f);
+      const p = r.songs[0];
+      if (!p) return setFileNote(r.scanned ? 'That PDF is a scanned picture with no text to read.' : 'No song found in that file.');
+      setForm((x) => ({ ...x, title: x.title || p.title, author: x.author || p.author, defaultKey: p.key || x.defaultKey, bpm: x.bpm ?? p.bpm, ccli: x.ccli || p.ccli, chordChart: p.chordChart || x.chordChart, lyrics: p.lyrics || x.lyrics }));
+      setFileNote([`Read ${f.name}.`, ...p.warnings].join(' '));
+    } catch {
+      setFileNote('That file could not be read.');
+    }
+  }
   return (
-    <Modal title={song ? 'Edit song' : 'Add a song'} onClose={onClose}
+    <Modal xl title={song ? 'Edit song' : 'Add a song'} onClose={onClose}
       footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy || !form.title.trim()} onClick={async () => { if (await save.run()) onSaved(); }}>Save</button></>}
     >
       <div className="stack">
         <FormError error={save.error} />
-        <div className="grid cols-2">
+        <div className="row wrap" style={{ gap: 8 }}>
+          <button className="btn sm" onClick={() => fileIn.current?.click()}><FileUp size={14} /> Fill from a PDF or ChordPro file</button>
+          <input ref={fileIn} type="file" hidden accept=".pdf,.cho,.chopro,.chordpro,.crd,.pro,.onsong,.txt,application/pdf,text/plain" onChange={(e) => { const f = e.target.files?.[0]; if (f) void fillFromFile(f); e.target.value = ''; }} />
+          {fileNote && <span className="small muted">{fileNote}</span>}
+        </div>
+        <div className="grid cols-3">
           <Field label="Title"><input className="input" autoFocus value={form.title} onChange={(e) => set('title', e.target.value)} /></Field>
           <Field label="Author"><input className="input" value={form.author} onChange={(e) => set('author', e.target.value)} /></Field>
           <Field label="Default key"><input className="input" value={form.defaultKey} onChange={(e) => set('defaultKey', e.target.value)} placeholder="G" /></Field>
@@ -386,10 +430,16 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
           <Field label="CCLI number"><input className="input" value={form.ccli} onChange={(e) => set('ccli', e.target.value)} /></Field>
           <Field label="Tags" hint="e.g. Telugu, Opening, Communion"><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} /></Field>
         </div>
-        <Field label="Lyrics" hint="Put each section under a heading such as Verse 1, Chorus or Bridge. The projector makes slides from these."><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} placeholder={'Verse 1\nAmazing grace! How sweet the sound\n\nChorus\n…'} /></Field>
+        <div className="stack" style={{ gap: 6 }}>
+          <span className="section-title" style={{ margin: 0 }}>Chords and lyrics</span>
+          <ChordEditor value={form.chordChart ?? ''} onChange={(v) => set('chordChart', v)} songKey={form.defaultKey} onKeyChange={(k) => set('defaultKey', k)} />
+          {!!form.chordChart?.trim() && (
+            <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => { if (form.lyrics.trim() && !confirm('Replace the projector lyrics below with the words from the chord chart?')) return; set('lyrics', chartToLyrics(form.chordChart ?? '')); }}><Wand2 size={14} /> Make projector lyrics from the chart</button>
+          )}
+        </div>
+        <Field label="Lyrics for the projector" hint="Put each section under a heading such as Verse 1, Chorus or Bridge. The projector makes slides from these."><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} placeholder={'Verse 1\nAmazing grace! How sweet the sound\n\nChorus\n…'} /></Field>
         <Field label="Lyrics in a second language" hint="Optional. Use the same headings and the projector shows both languages, e.g. English with Telugu or Hindi below."><textarea className="textarea" style={{ minHeight: 100 }} value={form.lyricsAlt ?? ''} onChange={(e) => set('lyricsAlt', e.target.value)} /></Field>
         <Field label="Arrangement" hint="The usual section order, separated by commas. Each service can change it."><input className="input" value={arrangement} onChange={(e) => setArrangement(e.target.value)} placeholder="Verse 1, Chorus, Verse 2, Chorus, Bridge, Chorus" /></Field>
-        <Field label="Chord chart" hint="ChordPro style: put chords in brackets before the syllable, e.g. [G]Amazing [C]grace. Musicians can transpose it to any key."><textarea className="textarea mono" style={{ minHeight: 160 }} value={form.chordChart ?? ''} onChange={(e) => set('chordChart', e.target.value)} placeholder={'[Verse 1]\n[G]Amazing [G7]grace, how [C]sweet the [G]sound'} /></Field>
         <span className="section-title">Attachments</span>
         <p className="small muted" style={{ marginTop: -8 }}>Links to lead sheets, MP3s or videos (Google Drive, Dropbox, YouTube).</p>
         {atts.map((a, i) => (
