@@ -5,11 +5,11 @@ import type { ApiError } from '@/api/errors';
 import { initials } from '@/lib/format';
 
 export function Logo({ reverse = false, height = 28 }: { reverse?: boolean; height?: number }) {
-  return <img src={reverse ? '/brand/logo-reverse.svg' : '/brand/logo-color.svg'} alt="Flockwise" style={{ height, width: 'auto', display: 'block' }} />;
+  return <img src={`${import.meta.env.BASE_URL}brand/logo-${reverse ? 'reverse' : 'color'}.svg`} alt="Flockwise" style={{ height, width: 'auto', display: 'block' }} />;
 }
 
 export function Mark({ size = 32, reverse = false }: { size?: number; reverse?: boolean }) {
-  return <img src={reverse ? '/brand/mark-reverse.svg' : '/brand/mark-color.svg'} alt="" width={size} height={size} style={{ display: 'block' }} />;
+  return <img src={`${import.meta.env.BASE_URL}brand/mark-${reverse ? 'reverse' : 'color'}.svg`} alt="" width={size} height={size} style={{ display: 'block' }} />;
 }
 
 export function Spinner() {

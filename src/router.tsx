@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter, createMemoryRouter, Navigate } from 'react-router';
 
 import { AdminLayout, AdminSignIn } from '@/admin/layout';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
@@ -17,7 +17,7 @@ import { MemberGroupsPage } from '@/member/pages/groups';
 import { MemberHomePage } from '@/member/pages/home';
 import { MemberMePage } from '@/member/pages/me';
 
-export const router = createBrowserRouter([
+const routes = [
   { path: '/', element: <Landing /> },
   { path: '/admin/sign-in', element: <AdminSignIn /> },
   {
@@ -49,4 +49,7 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
-]);
+];
+
+// The shareable preview build runs inside a frame where the URL can't change, so it routes in memory.
+export const router = import.meta.env.VITE_PREVIEW === 'true' ? createMemoryRouter(routes) : createBrowserRouter(routes);

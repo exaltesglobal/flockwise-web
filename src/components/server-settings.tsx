@@ -1,4 +1,5 @@
 import { Server } from 'lucide-react';
+import { Link } from 'react-router';
 import { useState } from 'react';
 
 import { resetDemoData } from '@/api/mock';
@@ -54,5 +55,5 @@ export function ServerSettings({ labels }: { labels?: { title: string; body: str
 
 export function DemoBanner({ text, href }: { text: string; href?: string }) {
   if (!isUsingMocks()) return null;
-  return <div className="demo-banner">{href ? <a href={href}>{text}</a> : text}</div>;
+  return <div className="demo-banner">{href ? <Link to={href}>{text}</Link> : text}</div>;
 }

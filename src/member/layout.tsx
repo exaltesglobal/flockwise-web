@@ -1,5 +1,5 @@
 import { CalendarDays, Gift, Home, UserRound, UsersRound } from 'lucide-react';
-import { Navigate, NavLink, Outlet, useLocation } from 'react-router';
+import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
@@ -91,7 +91,7 @@ export function MemberSignIn() {
           />
           <p className="small muted">{t('signInHelp')}</p>
         </div>
-        <a href="/admin" className="small">{t('officeAdmin')}</a>
+        <Link to="/admin" className="small">{t('officeAdmin')}</Link>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { CalendarDays, Gift, LayoutDashboard, LogOut, Megaphone, Menu, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Navigate, NavLink, Outlet, useLocation } from 'react-router';
+import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
@@ -41,7 +41,7 @@ export function AdminLayout() {
 
   return (
     <div className="admin">
-      <DemoBanner text="Demo mode: sample data for Grace Community Church. Connect a real API in Settings → Server." href="/admin/settings#server" />
+      <DemoBanner text="Demo mode: sample data for Grace Community Church. Connect a real API in Settings → Server." href="/admin/settings" />
       <div className="admin-shell">
         <aside className={`admin-side ${open ? 'open' : ''}`}>
           <div className="admin-brand">
@@ -128,9 +128,9 @@ export function AdminSignIn() {
             }}
           />
         </div>
-        <a href="/app" className="small">
+        <Link to="/app" className="small">
           Looking for the member portal?
-        </a>
+        </Link>
       </div>
     </div>
   );
