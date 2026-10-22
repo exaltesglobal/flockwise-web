@@ -289,6 +289,15 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .int-logo { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; }
 .int-logo.chitthi { background: #1f9d55; }
 .int-logo.api { background: var(--primary); }
+.int-logo.email { background: #c2410c; }
+/* On/off switch */
+.switch { position: relative; display: inline-block; width: 38px; height: 22px; vertical-align: middle; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch span { position: absolute; inset: 0; background: var(--border, #cbd5d1); border-radius: 22px; transition: background .15s; cursor: pointer; }
+.switch span::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.switch input:checked + span { background: var(--primary); }
+.switch input:checked + span::before { transform: translateX(16px); }
+.switch input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
 .bot-chat { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: color-mix(in srgb, #1f9d55 8%, var(--bg)); }
 .bot-bubble { max-width: min(420px, 90%); padding: 8px 12px; border-radius: 12px 12px 12px 4px; background: var(--card); border: 1px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
 .bot-bubble.me { align-self: flex-end; border-radius: 12px 12px 4px 12px; background: color-mix(in srgb, #1f9d55 18%, var(--bg)); }

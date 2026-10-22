@@ -15,6 +15,7 @@ import { useAction, useApi } from '@/lib/use-api';
 import { PageHeader } from '../layout';
 import { PlanBilling, RazorpayCard } from './billing';
 import { IntegrationsSettings } from './integrations';
+import { NotificationsSettings } from './notifications';
 import { NetworkSettings } from './networks';
 import { PrivacySettings } from './privacy';
 import { CustomFieldsSettings, PublicPageSettings } from './publishing';
@@ -30,7 +31,7 @@ const ROLE_HELP: Record<StaffRole, string> = {
 };
 const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
-type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'networks' | 'privacy' | 'team' | 'audit' | 'server';
+type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
@@ -43,6 +44,7 @@ export function SettingsPage() {
     { value: 'fields', label: 'Custom fields', show: can('settings') },
     { value: 'page', label: 'Public page', show: can('settings') },
     { value: 'integrations', label: 'Integrations', show: can('settings') },
+    { value: 'notifications', label: 'Notifications', show: can('settings') },
     { value: 'networks', label: 'Networks', show: can('settings') },
     { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit') },
     { value: 'team', label: 'Team & roles', show: can('staff') },
@@ -74,6 +76,7 @@ export function SettingsPage() {
       {tab === 'fields' && <CustomFieldsSettings />}
       {tab === 'page' && <PublicPageSettings />}
       {tab === 'integrations' && <IntegrationsSettings />}
+      {tab === 'notifications' && <NotificationsSettings />}
       {tab === 'networks' && <NetworkSettings />}
       {tab === 'privacy' && <PrivacySettings />}
       {tab === 'team' && <Team />}

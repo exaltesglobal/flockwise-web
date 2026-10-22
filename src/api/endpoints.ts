@@ -88,6 +88,10 @@ import type {
   StaffMember,
   TeamLoginView,
   DoorQr,
+  EmailAccountStatus,
+  NotificationKind,
+  NotificationRule,
+  NotificationsView,
   TeamView,
   Template,
   Batch,
@@ -495,6 +499,10 @@ export const AdminApi = {
     payLot: (id: string, lotId: string, method: PaymentMethod) => a.post<AuctionLot>(`/admin/offerings/${id}/lots/${lotId}/pay`, { method }),
     removeLot: (id: string, lotId: string) => a.del<{ ok: true }>(`/admin/offerings/${id}/lots/${lotId}`),
   },
+  notifications: {
+    get: () => a.get<NotificationsView>('/admin/notifications'),
+    update: (kind: NotificationKind, rule: NotificationRule) => a.put<NotificationsView>(`/admin/notifications/${kind}`, rule),
+  },
   checkin: {
     events: () => a.get<AdminEvent[]>('/admin/checkin/events'),
     door: (eventId: string) => a.get<DoorQr>(`/admin/checkin/${eventId}/door`),
@@ -611,7 +619,10 @@ export const AdminApi = {
     setlist: (theme: string, count: number) => a.post<AiSetlist>('/admin/ai/setlist', { theme, count }),
   },
   integrations: {
-    get: () => a.get<{ chitthi: ChitthiStatus }>('/admin/integrations'),
+    get: () => a.get<{ chitthi: ChitthiStatus; email: EmailAccountStatus }>('/admin/integrations'),
+    connectEmail: (input: { host: string; port: number; user: string; password: string; from: string; fromName: string }) => a.post<EmailAccountStatus>('/admin/integrations/email', input),
+    testEmail: (to?: string) => a.post<{ ok: true }>('/admin/integrations/email/test', { to }),
+    disconnectEmail: () => a.del<EmailAccountStatus>('/admin/integrations/email'),
     connectChitthi: (input: { apiKey: string; template?: string; language?: string; params?: number }) => a.post<ChitthiStatus>('/admin/integrations/chitthi', input),
     updateChitthi: (input: { template: string; language: string; params: number }) => a.patch<ChitthiStatus>('/admin/integrations/chitthi', input),
     disconnectChitthi: () => a.del<ChitthiStatus>('/admin/integrations/chitthi'),

@@ -1,4 +1,4 @@
-import { Clock, Copy, FileText, Inbox, Mail, MessageCircle, Pencil, Plus, Send, Smartphone, Trash2, Zap } from 'lucide-react';
+import { Bell, Clock, Copy, FileText, Inbox, Mail, MessageCircle, Pencil, Plus, Send, Smartphone, Trash2, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -23,7 +23,7 @@ const CHANNELS: { value: Channel; label: string }[] = [
   { value: 'sms', label: 'SMS' },
   { value: 'whatsapp', label: 'WhatsApp' },
 ];
-const CHANNEL_ICON: Record<Channel, typeof Mail> = { email: Mail, sms: Smartphone, whatsapp: MessageCircle };
+const CHANNEL_ICON: Record<Channel | 'push', typeof Mail> = { email: Mail, sms: Smartphone, whatsapp: MessageCircle, push: Bell };
 const MERGE_FIELDS = ['{{firstName}}', '{{lastName}}', '{{fullName}}', '{{church}}', '{{appLink}}'];
 const AUDIENCE_TYPES: { value: AudienceType; label: string }[] = [
   { value: 'everyone', label: 'Everyone' },
