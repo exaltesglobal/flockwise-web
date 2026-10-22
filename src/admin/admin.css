@@ -144,8 +144,10 @@ button.chip.on { background: var(--primary); color: #fff; }
 
 /* chord chart */
 .chart { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-x: auto; }
-.chart .chord { color: var(--accent); font-weight: 700; }
-.chart .section { font-weight: 700; margin-top: 10px; display: block; }
+.chart { background: var(--sc-bg, transparent); color: var(--sc-lyrics, inherit); }
+.chart.coloured { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); }
+.chart .chord { color: var(--sc-chords, var(--accent)); font-weight: 700; }
+.chart .section { font-weight: 700; margin-top: 10px; display: block; color: var(--sc-head, inherit); }
 
 /* ---------- sermons ---------- */
 .sermon-thumb { width: 56px; height: 40px; border-radius: 6px; background: var(--tint); color: var(--primary); display: grid; place-items: center; overflow: hidden; flex-shrink: 0; }
@@ -344,14 +346,14 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .ce-pane { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .ce-pane-head { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 6px 10px; background: var(--tint); border-bottom: 1px solid var(--border); }
 .ce-text { border: 0 !important; border-radius: 0 !important; min-height: 360px; flex: 1; resize: vertical; font-size: 14px; line-height: 1.6; }
-.ce-preview { padding: 10px 12px; min-height: 360px; max-height: 560px; overflow: auto; font-size: 16px; }
-.ce-sec { font-weight: 700; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin: 12px 0 2px; }
+.ce-preview { background: var(--sc-bg, transparent); color: var(--sc-lyrics, inherit); padding: 10px 12px; min-height: 360px; max-height: 560px; overflow: auto; font-size: 16px; }
+.ce-sec { font-weight: 700; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sc-head, var(--accent)); margin: 12px 0 2px; }
 .ce-gap { height: 10px; }
 .ce-line { display: flex; flex-wrap: wrap; align-items: flex-end; margin: 2px 0; }
 .ce-seg { display: inline-flex; flex-direction: column; white-space: pre; }
 .ce-chord { font-weight: 700; font-size: 14px; min-height: 1.2em; padding-right: 6px; }
 .ce-line:not(.has) .ce-chord { display: none; }
-.ce-chord button { all: unset; cursor: pointer; color: var(--accent); }
+.ce-chord button { all: unset; cursor: pointer; color: var(--sc-chords, var(--accent)); }
 .ce-chord button:hover { text-decoration: line-through; color: var(--danger); }
 .ce-ch { cursor: text; border-radius: 3px; }
 .ce-ch:hover { background: var(--tint); box-shadow: inset 2px 0 0 var(--accent); }
@@ -427,3 +429,12 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .ai-suggest button { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; text-align: left; font: inherit; font-size: 14px; color: inherit; cursor: pointer; }
 .ai-suggest button svg { color: var(--accent-strong, var(--primary)); flex: none; margin-top: 2px; }
 .ai-suggest button:hover { border-color: var(--primary); }
+
+/* Song colours in the editor */
+.song-colours { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+.song-colours label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.song-colours input[type=color] { width: 34px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; }
+.colour-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.colour-preset { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border: 1px solid var(--border); border-radius: 99px; background: var(--card); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; }
+.colour-preset:hover { border-color: var(--primary); }
+.colour-preset i { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-style: normal; font-weight: 700; font-size: 11px; border: 1px solid rgba(0,0,0,.12); }

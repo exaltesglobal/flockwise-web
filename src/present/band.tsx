@@ -1,6 +1,7 @@
 // Musician view: the whole chart of the current item on a phone or tablet, in today's key,
 // with the page turning as the leader moves the slides. Each player sets their own transpose,
 // capo, numbers and text size; those stay on the device.
+import { colourVars, hasColours } from '@/lib/song-colours';
 import { ChevronLeft, ChevronRight, ListMusic, Minus, Music2, Plus, Radio, Type, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
@@ -107,7 +108,7 @@ function Band({ screenKey }: { screenKey?: string }) {
       </header>
       {item && <Controls item={item} prefs={prefs} setPrefs={setPrefs} extra={extra} setExtra={(n) => setSteps({ ...steps, [item.id]: n })} />}
       {data.state.message && <div className="band-msg">{data.state.message}</div>}
-      <div className="band-body" ref={body}>
+      <div className={`band-body ${hasColours(item?.colours) ? 'coloured' : ''}`} style={colourVars(item?.colours)} ref={body}>
         {!item ? <p className="muted" style={{ padding: 20 }}>Nothing is planned for this service yet.</p> : <Chart item={item} prefs={prefs} extra={extra} liveSection={liveSection} />}
         {item?.notes && <div className="band-notes"><b>Notes:</b> {item.notes}</div>}
         <div className="band-end">
