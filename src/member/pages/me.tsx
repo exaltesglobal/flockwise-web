@@ -1,15 +1,17 @@
-import { LogOut, QrCode as QrIcon } from 'lucide-react';
+import { Download, LogOut, QrCode as QrIcon } from 'lucide-react';
+import { useState } from 'react';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
-import type { Consent } from '@/api/admin-types';
+import type { Consent, DataRequestKind, DataRequestStatus } from '@/api/admin-types';
 import type { LanguageCode } from '@/api/types';
 import { QrCode } from '@/components/qr';
 import { ServerSettings } from '@/components/server-settings';
-import { Avatar, Loading, useToast } from '@/components/ui';
-import { languages, useT } from '@/i18n';
+import { Avatar, FormError, Loading, useToast } from '@/components/ui';
+import { languages, useT, type StringKey } from '@/i18n';
+import { downloadJson, formatDate } from '@/lib/format';
 import { useSession } from '@/lib/session';
-import { useApi } from '@/lib/use-api';
+import { useAction, useApi } from '@/lib/use-api';
 
 export function MemberMePage() {
   const { t } = useT();
@@ -75,6 +77,8 @@ export function MemberMePage() {
         ))}
       </div>
 
+      <MyData tick={prefs.data} />
+
       {campuses.data && campuses.data.length > 1 && prefs.data && (
         <div className="card card-pad stack">
           <h3>{t('campus')}</h3>
@@ -103,5 +107,66 @@ export function MemberMePage() {
       <button className="btn danger lg" onClick={signOut}><LogOut size={17} /> {t('signOut')}</button>
       <p className="small muted" style={{ textAlign: 'center' }}>{t('version', { version: '1.0.0 (web)' })}</p>
     </>
+  );
+}
+
+const REQ: Record<DataRequestKind, StringKey> = { access: 'reqAccess', correction: 'reqCorrection', erasure: 'reqErasure', grievance: 'reqGrievance' };
+const REQ_STATUS: Record<DataRequestStatus, [StringKey, string]> = { open: ['reqOpen', 'warn'], done: ['reqDone', 'ok'], declined: ['reqDeclined', 'gray'] };
+
+/** India's DPDP Act: download your data, ask for a correction or erasure, and see your consent history. */
+function MyData({ tick }: { tick: unknown }) {
+  const { t, locale } = useT();
+  const toast = useToast();
+  const q = useApi(MemberApi.me.privacy, [tick]);
+  const [asking, setAsking] = useState<DataRequestKind | null>(null);
+  const [details, setDetails] = useState('');
+  const send = useAction(() => MemberApi.me.privacyRequest(asking!, details));
+  const dl = useAction(MemberApi.me.exportData);
+  if (!q.data) return null;
+  const d = q.data;
+  const officer = [d.officer.name, d.officer.email, d.officer.phone].filter(Boolean).join(' · ');
+  async function submit() {
+    if (await send.run()) { setAsking(null); setDetails(''); q.reload(); toast(t('requestSent')); }
+  }
+  return (
+    <div className="card card-pad stack">
+      <h3>{t('myData')}</h3>
+      <p className="small muted" style={{ margin: 0 }}>{d.notice}</p>
+      <div className="row wrap" style={{ gap: 8 }}>
+        <button className="btn sm" disabled={dl.busy} onClick={async () => { const data = await dl.run(); if (data) downloadJson(`my-data-${new Date().toISOString().slice(0, 10)}.json`, data); }}><Download size={14} /> {t('downloadMyData')}</button>
+        <button className="btn sm ghost" onClick={() => setAsking('correction')}>{t('askCorrection')}</button>
+        <button className="btn sm ghost" onClick={() => setAsking('erasure')}>{t('askErasure')}</button>
+      </div>
+      {asking && (
+        <div className="stack" style={{ gap: 8 }}>
+          {asking === 'erasure' ? <p className="small" style={{ margin: 0 }}>{t('erasureConfirm')}</p> : <textarea className="textarea" rows={3} value={details} onChange={(e) => setDetails(e.target.value)} placeholder={t('correctionPlaceholder')} />}
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn sm primary" disabled={send.busy || (asking !== 'erasure' && !details.trim())} onClick={submit}>{t('sendRequest')}</button>
+            <button className="btn sm ghost" onClick={() => setAsking(null)}>{t('cancel')}</button>
+          </div>
+          <FormError error={send.error} />
+        </div>
+      )}
+      {d.requests.length > 0 && (
+        <div className="stack" style={{ gap: 4 }}>
+          {d.requests.map((r) => (
+            <div key={r.id} className="small row wrap" style={{ gap: 6 }}>
+              <span className={`badge ${REQ_STATUS[r.status][1]}`}>{t(REQ_STATUS[r.status][0])}</span>
+              <span>{t(REQ[r.kind])} · {formatDate(r.createdAt, locale)}</span>
+              {r.response && <span className="muted">· {r.response}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      {d.log.length > 0 && (
+        <details className="small">
+          <summary>{t('consentHistory')}</summary>
+          <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+            {d.log.slice(0, 12).map((l) => <li key={l.id}>{formatDate(l.at, locale)} · {l.purpose} {l.granted ? t('consentOn') : t('consentOff')}</li>)}
+          </ul>
+        </details>
+      )}
+      {officer && <p className="small muted" style={{ margin: 0 }}>{t('privacyContact', { name: officer })}</p>}
+    </div>
   );
 }

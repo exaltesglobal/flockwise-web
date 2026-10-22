@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings } from '@/core/types';
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
@@ -159,6 +159,9 @@ export const MemberApi = {
     update: (patch: Partial<Pick<Member, 'firstName' | 'lastName' | 'email' | 'phone' | 'language'>>) => m.patch<Member>('/me', patch),
     preferences: () => m.get<MemberPreferences>('/me/preferences'),
     updatePreferences: (patch: { consent?: Partial<MemberPreferences['consent']>; campusId?: string | null }) => m.patch<MemberPreferences>('/me/preferences', patch),
+    privacy: () => m.get<MemberPrivacy>('/me/privacy'),
+    exportData: () => m.get<Record<string, unknown>>('/me/privacy/export'),
+    privacyRequest: (kind: DataRequestKind, details: string) => m.post<DataRequest>('/me/privacy/requests', { kind, details }),
     checkinCode: () => m.get<{ code: string; qr: string; name: string }>('/me/checkin-code'),
   },
   home: () => m.get<HomeFeed>('/home'),
@@ -356,6 +359,15 @@ export const AdminApi = {
     removePledge: (id: string) => a.del<void>(`/admin/giving/pledges/${id}`),
     recurring: (status?: string) => a.get<{ summary: RecurringSummary; rows: RecurringGift[] }>(`/admin/giving/recurring${qs({ status })}`),
     cancelRecurring: (id: string) => a.post<RecurringGift>(`/admin/giving/recurring/${id}/cancel`),
+  },
+  privacy: {
+    get: () => a.get<PrivacyOverview>('/admin/privacy'),
+    saveSettings: (input: Partial<PrivacySettings>) => a.put<PrivacyOverview>('/admin/privacy/settings', input),
+    create: (input: { personId?: string | null; personName?: string; contact?: string; kind: DataRequestKind; details?: string }) => a.post<DataRequest>('/admin/privacy/requests', input),
+    update: (id: string, input: { status?: DataRequestStatus; response?: string }) => a.patch<DataRequest>(`/admin/privacy/requests/${id}`, input),
+    erase: (id: string) => a.post<DataRequest>(`/admin/privacy/requests/${id}/erase`),
+    exportPerson: (personId: string) => a.get<Record<string, unknown>>(`/admin/people/${personId}/export`),
+    consentLog: (personId: string) => a.get<ConsentEvent[]>(`/admin/people/${personId}/consent`),
   },
   offerings: {
     list: () => a.get<CampaignView[]>('/admin/offerings'),

@@ -120,7 +120,7 @@ function CampaignForm({ campaign, onClose, onSaved }: { campaign?: CampaignDetai
       <div className="stack">
         <Field label="Name"><input className="input" value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="Harvest Festival 2026" autoFocus /></Field>
         <Field label="Kind">
-          <select className="input" value={f.kind} onChange={(e) => set({ kind: e.target.value as CampaignKind })}>
+          <select className="select" value={f.kind} onChange={(e) => set({ kind: e.target.value as CampaignKind })}>
             {Object.entries(KIND).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </Field>
@@ -131,13 +131,13 @@ function CampaignForm({ campaign, onClose, onSaved }: { campaign?: CampaignDetai
         <Field label="Goal (₹)" hint="Optional. Shows a progress bar to members."><input className="input" inputMode="decimal" value={f.goal} onChange={(e) => set({ goal: e.target.value.replace(/[^\d.]/g, '') })} placeholder="500000" /></Field>
         {!campaign && (
           <Field label="Fund" hint="Gifts to this fund during the dates count. A new fund keeps this offering separate in your accounts.">
-            <select className="input" value={f.fundId} onChange={(e) => set({ fundId: e.target.value })}>
+            <select className="select" value={f.fundId} onChange={(e) => set({ fundId: e.target.value })}>
               <option value="">A new fund named after this offering</option>
               {(funds ?? []).filter((x) => x.active).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
             </select>
           </Field>
         )}
-        <Field label="Note for members" hint="Optional"><textarea className="input" rows={3} value={f.description} onChange={(e) => set({ description: e.target.value })} /></Field>
+        <Field label="Note for members" hint="Optional"><textarea className="textarea" rows={3} value={f.description} onChange={(e) => set({ description: e.target.value })} /></Field>
         <label className="check"><input type="checkbox" checked={f.showPublic} onChange={(e) => set({ showPublic: e.target.checked })} /> Show the progress bar in the member app and on the church page</label>
         <FormError error={save.error} />
       </div>

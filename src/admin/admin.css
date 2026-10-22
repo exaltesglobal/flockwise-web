@@ -287,3 +287,4 @@ button.chip.on { background: var(--primary); color: #fff; }
 .offer-bar .g3, .offer-dot.g3 { background: #e0a030; }
 .offer-bar .g4, .offer-dot.g4 { background: #b5651d; }
 .offer-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
