@@ -5,7 +5,16 @@ import type { ApiError } from '@/api/errors';
 import { initials } from '@/lib/format';
 
 export function Logo({ reverse = false, height = 28 }: { reverse?: boolean; height?: number }) {
-  return <img src={`${import.meta.env.BASE_URL}brand/logo-${reverse ? 'reverse' : 'color'}.svg`} alt="Flockwise" style={{ height, width: 'auto', display: 'block' }} />;
+  const src = (v: 'color' | 'reverse') => `${import.meta.env.BASE_URL}brand/logo-${v}.svg`;
+  const style = { height, width: 'auto' };
+  // On dark surfaces use the reverse logo. Without `reverse`, follow the page theme.
+  if (reverse) return <img src={src('reverse')} alt="Flockwise" style={{ ...style, display: 'block' }} />;
+  return (
+    <span className="logo-adaptive">
+      <img className="logo-on-light" src={src('color')} alt="Flockwise" style={style} />
+      <img className="logo-on-dark" src={src('reverse')} alt="Flockwise" style={style} />
+    </span>
+  );
 }
 
 export function Mark({ size = 32, reverse = false }: { size?: number; reverse?: boolean }) {

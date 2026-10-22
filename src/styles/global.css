@@ -253,3 +253,14 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .date-chip { width: 48px; flex-shrink: 0; text-align: center; border-radius: 10px; background: var(--tint); padding: 6px 0; line-height: 1.1; }
 .date-chip b { display: block; font-family: var(--font-heading); font-size: 18px; color: var(--primary); }
 .date-chip small { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: 0.05em; }
+
+/* Theme-aware logo */
+.logo-adaptive { display: inline-flex; }
+.logo-adaptive img { display: block; }
+.logo-adaptive .logo-on-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .logo-adaptive .logo-on-light { display: none; }
+  :root:not([data-theme='light']) .logo-adaptive .logo-on-dark { display: block; }
+}
+:root[data-theme='dark'] .logo-adaptive .logo-on-light { display: none; }
+:root[data-theme='dark'] .logo-adaptive .logo-on-dark { display: block; }
