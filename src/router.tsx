@@ -4,6 +4,7 @@ import { AdminLayout, AdminSignIn } from '@/admin/layout';
 import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
 import { BulletinPage } from '@/admin/pages/bulletin';
+import { SundaySchoolPage } from '@/admin/pages/sunday-school';
 import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CelebrationsPage } from '@/admin/pages/celebrations';
@@ -79,6 +80,9 @@ const routes = [
       { path: 'registers', element: <RegistersPage /> },
       { path: 'zones', element: <ZonesPage /> },
       { path: 'accounts', element: <AccountsPage /> },
+      { path: 'sunday-school', element: <SundaySchoolPage /> },
+      { path: 'sunday-school/class/:classId', element: <SundaySchoolPage /> },
+      { path: 'sunday-school/exam/:examId', element: <SundaySchoolPage /> },
       { path: 'offerings', element: <OfferingsPage /> },
       { path: 'offerings/:id', element: <OfferingsPage /> },
       { path: 'razorpay-setup', element: <RazorpaySetupPage /> },

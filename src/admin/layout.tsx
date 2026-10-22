@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -30,6 +30,7 @@ const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?
   { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
   { to: '/admin/forms', label: 'Forms & registrations', icon: FileText, perm: ['events', 'people.edit'] },
   { to: '/admin/checkin', label: 'Check-in', icon: ScanLine, perm: ['checkin'] },
+  { to: '/admin/sunday-school', label: 'Sunday school', icon: School, perm: ['checkin'] },
   { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
   { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
   { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },

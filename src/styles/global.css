@@ -339,3 +339,31 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
   .bulletin-card { box-shadow: none; border: 0; padding: 0; }
   .bulletin { max-width: none; color: #000; }
 }
+
+/* Sunday school */
+.ss-classes > a { color: inherit; text-decoration: none; }
+.ss-classes > a:hover { border-color: var(--primary); }
+.ss-layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1000px) { .ss-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); } }
+.ss-lesson { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--tint); display: grid; gap: 2px; }
+.ss-register { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.ss-kid { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); min-width: 0; }
+.ss-kid.on { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); background: color-mix(in srgb, var(--tint) 60%, transparent); }
+.ss-kid label { cursor: pointer; }
+.ss-star { color: var(--muted); }
+.ss-star.on { color: var(--accent); }
+.ss-star.on svg { fill: currentColor; }
+.ss-star:disabled { opacity: 0.3; }
+.ss-lesson-row { width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--border); cursor: pointer; font: inherit; color: inherit; flex-wrap: wrap; }
+.ss-lesson-row:hover { background: color-mix(in srgb, var(--tint) 55%, transparent); }
+.ss-lesson-row.past { opacity: 0.6; }
+.ss-date { width: 110px; flex: none; font-weight: 600; font-size: 14px; }
+.ss-verse { display: block; margin-top: 2px; }
+.ss-mark { width: 80px; height: 34px; }
+.ss-rank { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; background: var(--tint); }
+.ss-rank.r1 { background: var(--accent); color: var(--on-accent); }
+@media print {
+  .ss-prizes { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .ss-prizes .card { break-inside: avoid; box-shadow: none; }
+}
+.seg-scroll { overflow-x: auto; max-width: 100%; }

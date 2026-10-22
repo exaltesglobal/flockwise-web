@@ -51,6 +51,8 @@ export function MemberHomePage() {
 
           <BulletinCard />
 
+          <SundaySchool />
+
           <Celebrations />
 
           {data.announcements.length > 0 && (
@@ -93,6 +95,42 @@ function BulletinCard() {
       </div>
       <span className="small">{t('bulletinRead')}</span>
     </Link>
+  );
+}
+
+/** For parents: each child's class, attendance, this week's memory verse and recent results. */
+function SundaySchool() {
+  const { t } = useT();
+  const { data } = useApi(MemberApi.sundaySchool);
+  if (!data?.children.length) return null;
+  return (
+    <section className="stack">
+      <h2>{t('sundaySchool')}</h2>
+      {data.children.map((c) => (
+        <div key={c.id} className="card card-pad stack" style={{ gap: 8 }}>
+          <div className="row between wrap" style={{ gap: 6 }}>
+            <strong>{c.name}</strong>
+            <span className="badge gray">{c.className}</span>
+          </div>
+          <div className="small muted">
+            {c.teachers.length > 0 && <>{c.teachers.join(', ')} · </>}
+            {t('ssAttendance', { present: c.attendance.present, of: c.attendance.of })} · {t('ssVerses', { count: c.verses })}
+          </div>
+          {c.lesson && (
+            <div className="ss-lesson small">
+              <span><b>{t('ssLesson')}:</b> {c.lesson.title} · {c.lesson.scripture}</span>
+              {c.lesson.memoryVerse && <span className="muted">{t('ssMemoryVerse')}: {c.lesson.memoryVerse}</span>}
+            </div>
+          )}
+          {c.results.map((r) => (
+            <div key={r.exam} className="row between small">
+              <span>{r.exam}</span>
+              <span>{r.marks === null ? t('ssAbsent') : <><b>{r.marks}/{r.maxMarks}</b> · {r.grade}{r.rank && r.rank <= 3 ? ` · ${t('ssRank', { rank: r.rank })}` : ''}</>}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
   );
 }
 

@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister } from '@/core/types';
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
@@ -211,6 +211,7 @@ export const MemberApi = {
     removeResource: (id: string, resId: string) => m.del<void>(`/groups/${id}/resources/${resId}`),
   },
   sermons: () => m.get<Sermon[]>('/sermons'),
+  sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
   bulletins: {
     list: () => m.get<{ id: string; title: string; date: string }[]>('/bulletins'),
     latest: () => m.get<BulletinView | null>('/bulletins/latest'),
@@ -374,6 +375,30 @@ export const AdminApi = {
     erase: (id: string) => a.post<DataRequest>(`/admin/privacy/requests/${id}/erase`),
     exportPerson: (personId: string) => a.get<Record<string, unknown>>(`/admin/people/${personId}/export`),
     consentLog: (personId: string) => a.get<ConsentEvent[]>(`/admin/people/${personId}/consent`),
+  },
+  sundaySchool: {
+    overview: () => a.get<SsOverview>('/admin/sunday-school'),
+    setup: () => a.post<{ placed: number }>('/admin/sunday-school/setup'),
+    enroll: () => a.post<{ placed: number }>('/admin/sunday-school/enroll'),
+    promote: () => a.post<{ moved: number; graduated: SsPerson[] }>('/admin/sunday-school/promote'),
+    createClass: (input: Partial<Omit<SsClass, 'id' | 'createdAt'>> & { name: string }) => a.post<SsClassDetail>('/admin/sunday-school/classes', input),
+    getClass: (id: string) => a.get<SsClassDetail>(`/admin/sunday-school/classes/${id}`),
+    updateClass: (id: string, input: Partial<Omit<SsClass, 'id' | 'createdAt'>>) => a.patch<SsClassDetail>(`/admin/sunday-school/classes/${id}`, input),
+    removeClass: (id: string) => a.del<{ ok: true }>(`/admin/sunday-school/classes/${id}`),
+    register: (id: string, date?: string) => a.get<SsRegister>(`/admin/sunday-school/classes/${id}/register${qs({ date })}`),
+    saveRegister: (id: string, input: { date: string; present: string[]; verse: string[]; visitors: number; offering: number }) => a.put<SsRegister>(`/admin/sunday-school/classes/${id}/register`, input),
+    lessons: () => a.get<SsLesson[]>('/admin/sunday-school/lessons'),
+    createLesson: (input: Omit<SsLesson, 'id'>) => a.post<SsLesson>('/admin/sunday-school/lessons', input),
+    updateLesson: (id: string, input: Partial<Omit<SsLesson, 'id'>>) => a.patch<SsLesson>(`/admin/sunday-school/lessons/${id}`, input),
+    removeLesson: (id: string) => a.del<{ ok: true }>(`/admin/sunday-school/lessons/${id}`),
+    exams: () => a.get<SsExamView[]>('/admin/sunday-school/exams'),
+    createExam: (input: { name: string; date: string; maxMarks: number; classIds?: string[] }) => a.post<SsExamResults>('/admin/sunday-school/exams', input),
+    exam: (id: string) => a.get<SsExamResults>(`/admin/sunday-school/exams/${id}`),
+    updateExam: (id: string, input: { name?: string; date?: string; maxMarks?: number; status?: 'open' | 'published' }) => a.patch<SsExamResults>(`/admin/sunday-school/exams/${id}`, input),
+    removeExam: (id: string) => a.del<{ ok: true }>(`/admin/sunday-school/exams/${id}`),
+    saveMarks: (id: string, classId: string, marks: Record<string, number | null | ''>) => a.put<SsExamResults>(`/admin/sunday-school/exams/${id}/marks`, { classId, marks }),
+    sendResults: (id: string) => a.post<{ channel: string; sent: number; failed: number; noParent: string[] }>(`/admin/sunday-school/exams/${id}/send`),
+    prizes: (from?: string, to?: string) => a.get<SsPrizes>(`/admin/sunday-school/prizes${qs({ from, to })}`),
   },
   bulletins: {
     list: () => a.get<Bulletin[]>('/admin/bulletins'),
