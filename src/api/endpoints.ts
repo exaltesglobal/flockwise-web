@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
@@ -462,6 +462,8 @@ export const AdminApi = {
     page: (checkinId: string, reason: PageReason, note = '') => a.post<ParentPage>(`/admin/checkin/checkins/${checkinId}/page`, { reason, note }),
     pages: (eventId: string) => a.get<ParentPage[]>(`/admin/checkin/${eventId}/pages`),
     resolvePage: (id: string) => a.post<ParentPage>(`/admin/checkin/pages/${id}/resolve`),
+    offlinePack: (eventId: string) => a.get<OfflinePack>(`/admin/checkin/${eventId}/offline`),
+    sync: (eventId: string, items: OfflineItem[]) => a.post<{ results: OfflineSyncResult[] }>(`/admin/checkin/${eventId}/sync`, { items }),
   },
   volunteers: {
     teams: () => a.get<TeamView[]>('/admin/volunteers/teams'),

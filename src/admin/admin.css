@@ -289,3 +289,8 @@ button.chip.on { background: var(--primary); color: #fff; }
 .offer-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
 .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .page-list { border-color: var(--warn, #e0a030); }
+
+/* Offline check-in */
+.offline-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.offline-ready { display: flex; align-items: center; gap: 6px; margin: 0; }
+.spin { animation: spin 1s linear infinite; }

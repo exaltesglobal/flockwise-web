@@ -1,4 +1,4 @@
-import { Baby, BellRing, Camera, CheckCircle2, LogOut, Maximize2, Minimize2, Printer, QrCode, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users } from 'lucide-react';
+import { Baby, BellRing, Camera, CheckCircle2, CloudOff, LogOut, Maximize2, Minimize2, Printer, QrCode, RefreshCw, RotateCcw, ScanLine, Search, ShieldCheck, Undo2, Users, Wifi } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -6,6 +6,7 @@ import type { AdminEvent, Checkin, CheckinFamily, CheckinLabel, CheckinResult, P
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { formatDay, formatTime } from '@/lib/format';
+import { type OfflineDesk, useOfflineDesk } from '@/lib/offline-checkin';
 import { printHtml } from '@/lib/print';
 import { toApiError, useAction, useApi } from '@/lib/use-api';
 
@@ -89,16 +90,33 @@ function CameraScanner({ onCode, onClose }: { onCode: (code: string) => void; on
 export function CheckinPage() {
   const [params, setParams] = useSearchParams();
   const events = useApi(AdminApi.checkin.events);
-  const eventId = params.get('event') ?? events.data?.find((e) => new Date(e.endsAt) > new Date())?.id ?? events.data?.[0]?.id ?? '';
+  // Remember this week's events so a desk that loses the internet can still switch between them.
+  const cached = useMemo<AdminEvent[] | null>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(EVENTS_KEY) ?? 'null');
+    } catch {
+      return null;
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      if (events.data) localStorage.setItem(EVENTS_KEY, JSON.stringify(events.data));
+    } catch {
+      /* storage blocked */
+    }
+  }, [events.data]);
+  const list = events.data ?? (events.error?.status === 0 ? cached : null);
+  const eventId = params.get('event') ?? list?.find((e) => new Date(e.endsAt) > new Date())?.id ?? list?.[0]?.id ?? '';
+  const desk = useOfflineDesk(eventId);
   const [kiosk, setKiosk] = useState(false);
 
-  if (events.error) return <ErrorState error={events.error} onRetry={events.reload} />;
-  if (!events.data) return <Loading />;
-  const ev = events.data.find((e) => e.id === eventId);
+  if (events.error && !list) return <ErrorState error={events.error} onRetry={events.reload} />;
+  if (!list) return <Loading />;
+  const ev = list.find((e) => e.id === eventId);
 
   const picker = (
     <select className="select" style={{ maxWidth: 360 }} value={eventId} onChange={(e) => setParams({ event: e.target.value }, { replace: true })}>
-      {events.data.map((e) => <option key={e.id} value={e.id}>{formatDay(e.startsAt)} {formatTime(e.startsAt)} · {e.title}</option>)}
+      {list.map((e) => <option key={e.id} value={e.id}>{formatDay(e.startsAt)} {formatTime(e.startsAt)} · {e.title}</option>)}
     </select>
   );
 
@@ -110,7 +128,7 @@ export function CheckinPage() {
       </>
     );
 
-  if (kiosk) return <Kiosk event={ev} onExit={() => setKiosk(false)} />;
+  if (kiosk) return <Kiosk event={ev} desk={desk} onExit={() => setKiosk(false)} />;
 
   return (
     <>
@@ -119,7 +137,44 @@ export function CheckinPage() {
         subtitle="Search a family, scan a member's QR code, print labels. Children get a security code their parent must show at pickup."
         actions={<>{picker}<button className="btn" onClick={() => setKiosk(true)}><Maximize2 size={16} /> Kiosk mode</button></>}
       />
-      <Desk event={ev} />
+      <OfflineBanner desk={desk} />
+      <Desk event={ev} desk={desk} />
+    </>
+  );
+}
+
+const EVENTS_KEY = 'fw.checkin.events';
+
+/** Shows whether the desk can keep going without internet, and what it still has to send. */
+function OfflineBanner({ desk }: { desk: OfflineDesk }) {
+  const conflicts = desk.conflicts.length > 0 && (
+    <div className="alert warn stack" style={{ gap: 6 }}>
+      <b>Check these at the kids' rooms</b>
+      {desk.conflicts.map((c, i) => <span key={i} className="small">{c.name} {c.note}.</span>)}
+      <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={desk.dismissConflicts}>Done</button>
+    </div>
+  );
+  if (desk.online)
+    return (
+      <>
+        {conflicts}
+        {(desk.queued > 0 || desk.syncing) && <div className="alert info offline-bar"><RefreshCw size={15} className="spin" /> Sending {desk.queued} check-ins made offline…</div>}
+        {desk.ready && desk.queued === 0 && !desk.syncing && <p className="small muted offline-ready"><Wifi size={13} /> Ready for offline: {desk.people} people saved on this device{desk.packAt ? ` at ${formatTime(desk.packAt)}` : ''}. If the internet drops, keep this tab open and carry on.</p>}
+      </>
+    );
+  return (
+    <>
+      {conflicts}
+      <div className="alert warn offline-bar" role="status">
+        <CloudOff size={17} />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <b>No internet. Checking in from this device.</b>
+          <div className="small">
+            {desk.ready ? `${desk.queued} check-in${desk.queued === 1 ? '' : 's'} waiting to send. Labels still print. Pickups need the internet, so check the code on the tag by eye.` : 'This desk has no offline list. Connect once before the service to download it.'}
+          </div>
+        </div>
+        <button className="btn sm" disabled={desk.syncing} onClick={async () => { if (await desk.refresh()) void desk.syncNow(); }}><RefreshCw size={14} /> Try now</button>
+      </div>
     </>
   );
 }
@@ -135,7 +190,7 @@ function useSummary(eventId: string) {
   return summary;
 }
 
-function Desk({ event }: { event: AdminEvent }) {
+function Desk({ event, desk }: { event: AdminEvent; desk: OfflineDesk }) {
   const summary = useSummary(event.id);
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [filter, setFilter] = useState<'all' | 'kids' | 'in'>('all');
@@ -146,7 +201,15 @@ function Desk({ event }: { event: AdminEvent }) {
   const toast = useToast();
   const activePages = (pages.data ?? []).filter((p) => !p.resolvedAt);
 
-  const rows = (summary.data?.checkins ?? []).filter((c) => filter === 'all' || (filter === 'kids' ? c.isChild : c.isChild && !c.checkedOutAt));
+  // Check-ins made offline show first until the server has them.
+  const known = new Set((summary.data?.checkins ?? []).map((c) => c.clientId).filter(Boolean));
+  const rows = [...desk.local.filter((c) => !known.has(c.clientId)).reverse(), ...(summary.data?.checkins ?? [])].filter((c) => filter === 'all' || (filter === 'kids' ? c.isChild : c.isChild && !c.checkedOutAt));
+  const isLocal = (c: Checkin) => desk.local.some((l) => l.id === c.id);
+  // Back online, or the queue was sent: pick up what the server now has.
+  useEffect(() => {
+    if (desk.online) void summary.reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desk.online, desk.local.length]);
 
   return (
     <>
@@ -182,8 +245,8 @@ function Desk({ event }: { event: AdminEvent }) {
       <div className="split">
         <div className="card card-pad stack">
           <h3>Check someone in</h3>
-          <FamilySearch eventId={event.id} method="staff" onDone={(r) => { setResult(r); summary.reload(); }} />
-          <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={() => setReprint(true)}><Printer size={14} /> Reprint labels by code</button>
+          <FamilySearch eventId={event.id} desk={desk} method="staff" onDone={(r) => { setResult(r); if (desk.online) void summary.reload(); }} />
+          <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} disabled={!desk.online} onClick={() => setReprint(true)}><Printer size={14} /> Reprint labels by code</button>
         </div>
         <div className="card">
           <div className="toolbar">
@@ -191,7 +254,7 @@ function Desk({ event }: { event: AdminEvent }) {
             <div className="grow" />
             <span className="small muted">{rows.length} shown</span>
           </div>
-          {summary.error ? <ErrorState error={summary.error} onRetry={summary.reload} /> : !summary.data ? <Loading /> : rows.length === 0 ? <Empty icon={<ScanLine size={28} />} title="No one checked in yet" /> : (
+          {summary.error && !summary.data && !desk.local.length ? <ErrorState error={summary.error} onRetry={summary.reload} /> : !summary.data && !desk.local.length ? <Loading /> : rows.length === 0 ? <Empty icon={<ScanLine size={28} />} title="No one checked in yet" /> : (
             <div className="table-wrap">
               <table className="table">
                 <thead><tr><th>Name</th><th>Room</th><th>Code</th><th>Time</th><th /></tr></thead>
@@ -200,15 +263,15 @@ function Desk({ event }: { event: AdminEvent }) {
                     <tr key={c.id} style={{ opacity: c.checkedOutAt ? 0.55 : 1 }}>
                       <td>
                         <div style={{ fontWeight: 600 }}>{c.personName}</div>
-                        <div className="small muted">{c.householdName ?? ''}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}{c.volunteer && <span className="badge accent" style={{ marginLeft: 6 }}>Serving: {c.volunteer.teamName}</span>}</div>
+                        <div className="small muted">{c.householdName ?? ''}{isLocal(c) && <span className="badge warn" style={{ marginLeft: 6 }}>Not sent yet</span>}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}{c.volunteer && <span className="badge accent" style={{ marginLeft: 6 }}>Serving: {c.volunteer.teamName}</span>}</div>
                       </td>
                       <td className="small">{c.isChild ? c.roomName ?? 'No room' : <span className="muted">Adult</span>}</td>
                       <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method}</span>}</td>
                       <td className="small muted">{formatTime(c.at)}{c.checkedOutAt ? ` → ${formatTime(c.checkedOutAt)}` : ''}</td>
                       <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        {c.isChild && !c.checkedOutAt && <button className="btn sm ghost" title="Page parent" onClick={() => setPaging(c)}><BellRing size={14} /> Page</button>}
-                        {c.isChild && !c.checkedOutAt && <button className="btn sm" onClick={() => setCheckingOut(c)}><LogOut size={14} /> Pick up</button>}
-                        <button className="btn ghost icon sm" title="Undo check-in" onClick={async () => {
+                        {c.isChild && !c.checkedOutAt && <button className="btn sm ghost" title="Page parent" disabled={!desk.online || isLocal(c)} onClick={() => setPaging(c)}><BellRing size={14} /> Page</button>}
+                        {c.isChild && !c.checkedOutAt && <button className="btn sm" disabled={!desk.online || isLocal(c)} onClick={() => setCheckingOut(c)}><LogOut size={14} /> Pick up</button>}
+                        <button className="btn ghost icon sm" title="Undo check-in" disabled={!desk.online || isLocal(c)} onClick={async () => {
                           if (!confirm(`Undo check-in for ${c.personName}?`)) return;
                           await AdminApi.checkin.undo(c.id);
                           summary.reload();
@@ -258,13 +321,22 @@ function PageModal({ checkin, onClose, onDone }: { checkin: Checkin; onClose: ()
   );
 }
 
-function FamilySearch({ eventId, method, onDone, big = false }: { eventId: string; method: 'staff' | 'kiosk'; onDone: (r: CheckinResult) => void; big?: boolean }) {
+function FamilySearch({ eventId, desk, method, onDone, big = false }: { eventId: string; desk: OfflineDesk; method: 'staff' | 'kiosk'; onDone: (r: CheckinResult) => void; big?: boolean }) {
   const [q, setQ] = useState('');
   const [families, setFamilies] = useState<CheckinFamily[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const checkIn = useAction(AdminApi.checkin.checkIn);
+  // Live while the server answers; from this device's copy when it does not.
+  const checkIn = useAction(async (ids: string[]) => {
+    if (!desk.online && desk.ready) return desk.checkIn(ids, method);
+    try {
+      return await AdminApi.checkin.checkIn(eventId, ids, method);
+    } catch (e) {
+      if (desk.lost(e)) return desk.checkIn(ids, method);
+      throw e;
+    }
+  });
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -276,24 +348,41 @@ function FamilySearch({ eventId, method, onDone, big = false }: { eventId: strin
     // A USB/Bluetooth QR scanner types FW1:CODE then Enter; that is handled on submit.
     if (/^FW1:/i.test(q.trim())) return;
     let live = true;
+    const show = (f: CheckinFamily[]) => {
+      setFamilies(f);
+      // Pre-select everyone in a single matching family who is not yet in.
+      setSelected(new Set(f.length === 1 ? f[0].people.filter((p) => !p.checkedIn).map((p) => p.id) : []));
+    };
+    if (!desk.online && desk.ready) {
+      show(desk.search(q));
+      return;
+    }
     const t = setTimeout(() => {
-      AdminApi.checkin.search(eventId, q).then((f) => {
+      AdminApi.checkin.search(eventId, q).then((f) => live && show(f)).catch((e) => {
         if (!live) return;
-        setFamilies(f);
-        // Pre-select everyone in a single matching family who is not yet in.
-        setSelected(new Set(f.length === 1 ? f[0].people.filter((p) => !p.checkedIn).map((p) => p.id) : []));
-      }).catch((e) => live && setError(toApiError(e).message));
+        if (desk.lost(e)) show(desk.search(q));
+        else setError(toApiError(e).message);
+      });
     }, 200);
     return () => {
       live = false;
       clearTimeout(t);
     };
-  }, [q, eventId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, eventId, desk.online]);
 
   async function scan(code: string) {
     setScanning(false);
     try {
-      const r = await AdminApi.checkin.scan(eventId, code);
+      let r: CheckinResult & { alreadyCheckedIn?: boolean };
+      if (!desk.online && desk.ready) r = desk.scan(code);
+      else
+        try {
+          r = await AdminApi.checkin.scan(eventId, code);
+        } catch (e) {
+          if (!desk.lost(e)) throw e;
+          r = desk.scan(code);
+        }
       setQ('');
       if (r.alreadyCheckedIn) setError(`${r.checkins[0]?.personName} is already checked in.`);
       else onDone(r);
@@ -304,7 +393,7 @@ function FamilySearch({ eventId, method, onDone, big = false }: { eventId: strin
   }
 
   async function submit() {
-    const r = await checkIn.run(eventId, [...selected], method);
+    const r = await checkIn.run([...selected]);
     if (!r) return;
     setQ('');
     setFamilies(null);
@@ -416,7 +505,7 @@ function ReprintModal({ eventId, onClose }: { eventId: string; onClose: () => vo
 }
 
 /** Self-service screen for a tablet at the entrance: big type, auto-resets after each family. */
-function Kiosk({ event, onExit }: { event: AdminEvent; onExit: () => void }) {
+function Kiosk({ event, desk, onExit }: { event: AdminEvent; desk: OfflineDesk; onExit: () => void }) {
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [key, setKey] = useState(0);
   const now = useMemo(() => new Date(), []);
@@ -440,7 +529,10 @@ function Kiosk({ event, onExit }: { event: AdminEvent; onExit: () => void }) {
           <h1 style={{ fontSize: 30 }}>Welcome!</h1>
           <p className="muted" style={{ fontSize: 17 }}>{event.title} · {formatDay(event.startsAt)} {formatTime(event.startsAt)}</p>
         </div>
-        <button className="btn ghost" onClick={() => { if (confirm('Leave kiosk mode?')) onExit(); }}><Minimize2 size={16} /> Exit</button>
+        <div className="row" style={{ gap: 8 }}>
+          {!desk.online && <span className="badge warn" title={`${desk.queued} waiting to send`}><CloudOff size={13} /> Offline · {desk.queued}</span>}
+          <button className="btn ghost" onClick={() => { if (confirm('Leave kiosk mode?')) onExit(); }}><Minimize2 size={16} /> Exit</button>
+        </div>
       </div>
       {result ? (
         <div className="card card-pad stack" style={{ alignItems: 'center', textAlign: 'center', padding: 40 }}>
@@ -457,7 +549,7 @@ function Kiosk({ event, onExit }: { event: AdminEvent; onExit: () => void }) {
         </div>
       ) : (
         <div className="card card-pad" style={{ padding: 28 }}>
-          <FamilySearch key={key} eventId={event.id} method="kiosk" big onDone={setResult} />
+          <FamilySearch key={key} eventId={event.id} desk={desk} method="kiosk" big onDone={setResult} />
           <p className="muted" style={{ marginTop: 18, fontSize: 15 }}><QrCode size={16} /> Members can scan the QR code under Me in the Flockwise app.</p>
         </div>
       )}
