@@ -2,13 +2,18 @@ import { Baby, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, 
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import type { AuditEntry, Campus, ChurchSettings, LanguageCode, Room } from '@/api/admin-types';
+import type { AuditEntry, Campus, ChurchSettings, LanguageCode, Room, StaffView } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
-import { AdminApi } from '@/api/endpoints';
+import { AdminApi, type RoleChoice } from '@/api/endpoints';
 import type { StaffRole } from '@/api/types';
 import { ServerSettings } from '@/components/server-settings';
 import { AppearancePanel } from '@/components/theme-picker';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
+import { PERMISSION_INFO, ROLE_SCOPES } from '@/core/types';
+import type { Permission, RoleScope } from '@/api/admin-types';
+import type { RoleView } from '@/api/endpoints';
+
+import { asChoice, permLabel, RolePicker, toChoice, type Choice } from '../components/role-picker';
 import { canOverrideServer } from '@/lib/config';
 import { languages } from '@/i18n';
 import { formatRelative } from '@/lib/format';
@@ -32,8 +37,8 @@ const ROLE_HELP: Record<StaffRole, string> = {
   leader: 'Groups, care, check-in, volunteers and service plans',
   coordinator: 'Volunteer rotas, service plans, events and check-in',
   checkin: 'Only the check-in desk and kiosk',
+  custom: 'A role this church made: see the Roles card',
 };
-const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
 type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'appearance' | 'server';
 
@@ -338,7 +343,10 @@ export function RoomForm({ room, onClose, onSaved }: { room: Room | null; onClos
 
 function Team() {
   const staff = useApi(AdminApi.staff.list);
+  const roles = useApi(AdminApi.roles.list);
   const [inviting, setInviting] = useState(false);
+  const [changing, setChanging] = useState<StaffView | null>(null);
+  const [editingRole, setEditingRole] = useState<RoleView | 'new' | null>(null);
   const toast = useToast();
   return (
     <>
@@ -356,15 +364,8 @@ function Team() {
                   <tr key={s.id}>
                     <td><div style={{ fontWeight: 600 }}>{s.name}</div><div className="small muted">{s.email}</div></td>
                     <td>
-                      {s.role === 'owner' ? 'Owner' : (
-                        <select className="select" style={{ width: 200, height: 34 }} value={s.role} onChange={async (e) => {
-                          await AdminApi.staff.setRole(s.id, e.target.value as StaffRole);
-                          toast(`${s.name} is now ${ROLE_LABELS[e.target.value as StaffRole]}`);
-                          staff.reload();
-                        }}>
-                          {INVITABLE.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-                        </select>
-                      )}
+                      <div>{s.roleName}{s.scopeNames.length > 0 && <span className="small muted"> · {s.scopeNames.join(', ')}</span>}</div>
+                      {s.role !== 'owner' && <button className="btn ghost sm" style={{ marginLeft: -8 }} onClick={() => setChanging(s)}><Pencil size={13} /> Change</button>}
                     </td>
                     <td>{s.status === 'active' ? <span className="badge ok">Active</span> : <span className="badge warn">Invited</span>}</td>
                     <td className="small muted">{s.lastActiveAt ? formatRelative(s.lastActiveAt) : '—'}</td>
@@ -386,16 +387,91 @@ function Team() {
         )}
       </div>
       <div className="card">
-        <div className="card-head"><h2>What each role can do</h2></div>
-        {(Object.keys(ROLE_HELP) as StaffRole[]).map((r) => (
+        <div className="card-head">
+          <h2>Roles this church made</h2>
+          <button className="btn sm" onClick={() => setEditingRole('new')}><Plus size={15} /> New role</button>
+        </div>
+        <p className="small muted" style={{ padding: '0 16px 12px' }}>Make a role for zone leaders, ushers, Sunday school teachers or anyone else: pick what they can do and how far it reaches. Give it to someone from their record (People › Edit › Access) or from the list above.</p>
+        {roles.error ? <ErrorState error={roles.error} onRetry={roles.reload} /> : !roles.data ? <Loading /> : roles.data.length === 0 ? <Empty icon={<ShieldCheck size={28} />} title="No custom roles yet" body="The built-in roles below cover most churches. Make one when a leader needs a different mix, or should only see their own zone, group or team." /> : roles.data.map((r) => (
+          <div key={r.id} className="list-row" style={{ alignItems: 'flex-start' }}>
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div><b>{r.name}</b> <span className="badge gray">{ROLE_SCOPES.find((x) => x.id === r.scope)?.label}</span> <span className="small muted">· {r.holders === 0 ? 'nobody yet' : r.holders === 1 ? '1 person' : `${r.holders} people`}</span></div>
+              {r.description && <div className="small muted">{r.description}</div>}
+              <div className="small">{r.permissions.map(permLabel).join(' · ')}</div>
+            </div>
+            <button className="btn ghost icon sm" title="Edit" onClick={() => setEditingRole(r)}><Pencil size={14} /></button>
+            <button className="btn ghost icon sm danger" title="Remove" disabled={r.holders > 0} onClick={async () => {
+              if (!confirm(`Remove the ${r.name} role?`)) return;
+              await AdminApi.roles.remove(r.id);
+              roles.reload();
+              toast('Role removed');
+            }}><Trash2 size={14} /></button>
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <div className="card-head"><h2>What each built-in role can do</h2></div>
+        {(Object.keys(ROLE_HELP) as StaffRole[]).filter((r) => r !== 'custom').map((r) => (
           <div key={r} className="list-row"><b style={{ width: 180 }}>{ROLE_LABELS[r]}</b><span className="small muted grow">{ROLE_HELP[r]}</span></div>
         ))}
       </div>
-      {inviting && <InviteForm onClose={() => setInviting(false)} onSaved={() => { setInviting(false); staff.reload(); toast('Invite sent'); }} />}
+      {inviting && <InviteForm roles={roles.data ?? []} onClose={() => setInviting(false)} onSaved={() => { setInviting(false); staff.reload(); roles.reload(); toast('Invite sent'); }} />}
+      {changing && <ChangeRoleModal member={changing} roles={roles.data ?? []} onClose={() => setChanging(null)} onSaved={(v) => { setChanging(null); staff.reload(); roles.reload(); toast(`${v.name} is now ${v.roleName}`); }} />}
+      {editingRole && <RoleModal role={editingRole === 'new' ? null : editingRole} onClose={() => setEditingRole(null)} onSaved={() => { setEditingRole(null); roles.reload(); toast('Role saved'); }} />}
     </>
   );
 }
 
+function ChangeRoleModal({ member, roles, onClose, onSaved }: { member: StaffView; roles: RoleView[]; onClose: () => void; onSaved: (v: StaffView) => void }) {
+  const [choice, setChoice] = useState<Choice>(asChoice(member));
+  const save = useAction(() => AdminApi.staff.setRole(member.id, toChoice(choice) as RoleChoice));
+  return (
+    <Modal title={`${member.name}’s role`} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy} onClick={async () => { const v = await save.run(); if (v) onSaved(v); }}>Save</button></>}>
+      <div className="stack">
+        <FormError error={save.error} />
+        <RolePicker value={choice} onChange={setChoice} roles={roles} autoFocus />
+      </div>
+    </Modal>
+  );
+}
+
+/** Make or change a role: name, what it can do, how far it reaches. */
+function RoleModal({ role, onClose, onSaved }: { role: RoleView | null; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState(role?.name ?? '');
+  const [description, setDescription] = useState(role?.description ?? '');
+  const [scope, setScope] = useState<RoleScope>(role?.scope ?? 'church');
+  const [perms, setPerms] = useState<Permission[]>(role?.permissions ?? ['people.view']);
+  const save = useAction(() => (role ? AdminApi.roles.update(role.id, { name, description, scope, permissions: perms }) : AdminApi.roles.create({ name, description, scope, permissions: perms })));
+  const fe = save.error?.fields ?? {};
+  const toggle = (p: Permission) => setPerms((x) => (x.includes(p) ? x.filter((y) => y !== p) : [...x, p]));
+  return (
+    <Modal title={role ? `Edit the ${role.name} role` : 'New role'} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy || !name.trim() || perms.length === 0} onClick={async () => { if (await save.run()) onSaved(); }}>Save role</button></>}>
+      <div className="stack">
+        <FormError error={save.error?.fields ? null : save.error} />
+        <div className="grid cols-2">
+          <Field label="Name" error={fe.name}><input className="input" autoFocus value={name} maxLength={60} placeholder="e.g. Zone leader, Usher captain" onChange={(e) => setName(e.target.value)} /></Field>
+          <Field label="Reaches" hint={ROLE_SCOPES.find((x) => x.id === scope)?.hint} error={fe.scope}>
+            <select className="select" value={scope} onChange={(e) => setScope(e.target.value as RoleScope)}>{ROLE_SCOPES.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
+          </Field>
+        </div>
+        <Field label="What this role is for" hint="Shown when someone is given the role"><input className="input" value={description} maxLength={300} onChange={(e) => setDescription(e.target.value)} /></Field>
+        <Field label="Can do" error={fe.permissions}>
+          <div className="grid cols-2" style={{ gap: 6 }}>
+            {PERMISSION_INFO.map((p) => (
+              <label key={p.id} className="check" style={{ alignItems: 'flex-start' }}>
+                <input type="checkbox" checked={perms.includes(p.id)} onChange={() => toggle(p.id)} />
+                <span>{p.label}<span className="small muted" style={{ display: 'block' }}>{p.hint}</span></span>
+              </label>
+            ))}
+          </div>
+        </Field>
+        {scope !== 'church' && perms.some((p) => ['giving.view', 'settings', 'staff'].includes(p)) && <div className="alert warn">Giving, settings and team access are church-wide; the {scope} limit applies to people, care, groups and zones.</div>}
+      </div>
+    </Modal>
+  );
+}
 function Audit() {
   const [q, setQ] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -432,24 +508,20 @@ function Audit() {
   );
 }
 
-function InviteForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function InviteForm({ roles, onClose, onSaved }: { roles: RoleView[]; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<StaffRole>('admin');
+  const [choice, setChoice] = useState<Choice>({ role: 'admin' });
   const invite = useAction(AdminApi.staff.invite);
   return (
     <Modal title="Invite to the church office" onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={invite.busy || !name.trim() || !email.includes('@')} onClick={async () => { if (await invite.run({ name, email, role })) onSaved(); }}>Send invite</button></>}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={invite.busy || !name.trim() || !email.includes('@')} onClick={async () => { if (await invite.run({ name, email, ...(toChoice(choice) as RoleChoice) })) onSaved(); }}>Send invite</button></>}
     >
       <div className="stack">
         <FormError error={invite.error} />
         <Field label="Name"><input className="input" autoFocus value={name} onChange={(e) => setName(e.target.value)} /></Field>
         <Field label="Email" hint="They sign in with a one-time code emailed here"><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-        <Field label="Role" hint={ROLE_HELP[role]}>
-          <select className="select" value={role} onChange={(e) => setRole(e.target.value as StaffRole)}>
-            {INVITABLE.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-          </select>
-        </Field>
+        <RolePicker value={choice} onChange={setChoice} roles={roles} />
       </div>
     </Modal>
   );

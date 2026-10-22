@@ -96,6 +96,10 @@ import type {
   Song,
   SongView,
   StaffMember,
+  StaffView,
+  PersonAccess,
+  CustomRole,
+  RoleScope,
   TeamLoginView,
   DoorQr,
   EmailAccountStatus,
@@ -369,6 +373,10 @@ export type TeamSetups = { price: number; open: number; earned: number; rows: Te
 const a = createApi(adminSession);
 
 export type RoleInfo = { role: StaffRole; label: string; permissions: Permission[] };
+/** A built-in role, or a custom role with the zones/groups/teams it covers. */
+export type RoleChoice = { role: StaffRole; roleId?: string | null; scopeIds?: string[] };
+export type RoleView = CustomRole & { holders: number };
+export type RoleInput = { name: string; description?: string; permissions: Permission[]; scope: RoleScope };
 export type Duplicate = { reason: string; people: { id: string; name: string; phone: string | null; email: string | null }[] };
 export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
@@ -689,10 +697,19 @@ export const AdminApi = {
     revokeKey: (id: string) => a.del<void>(`/admin/api-keys/${id}`),
   },
   staff: {
-    list: () => a.get<StaffMember[]>('/admin/staff'),
-    invite: (input: { name: string; email: string; role: StaffRole }) => a.post<StaffMember>('/admin/staff', input),
-    setRole: (id: string, role: StaffRole) => a.patch<StaffMember>(`/admin/staff/${id}`, { role }),
+    list: () => a.get<StaffView[]>('/admin/staff'),
+    invite: (input: { name: string; email: string } & RoleChoice) => a.post<StaffView>('/admin/staff', input),
+    setRole: (id: string, choice: RoleChoice) => a.patch<StaffView>(`/admin/staff/${id}`, choice),
     remove: (id: string) => a.del<void>(`/admin/staff/${id}`),
+    /** Office access shown on a person's record. */
+    accessOf: (personId: string) => a.get<PersonAccess>(`/admin/people/${personId}/access`),
+    setAccess: (personId: string, choice: RoleChoice | { role: null }) => a.put<PersonAccess>(`/admin/people/${personId}/access`, choice),
+  },
+  roles: {
+    list: () => a.get<RoleView[]>('/admin/roles'),
+    create: (input: RoleInput) => a.post<RoleView>('/admin/roles', input),
+    update: (id: string, input: Partial<RoleInput>) => a.patch<RoleView>(`/admin/roles/${id}`, input),
+    remove: (id: string) => a.del<void>(`/admin/roles/${id}`),
   },
   forms: {
     list: () => a.get<FormView[]>('/admin/forms'),

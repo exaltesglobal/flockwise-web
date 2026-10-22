@@ -10,6 +10,7 @@ import { Avatar, Empty, ErrorState, Field, FormError, Loading, Modal, Segmented,
 import { downloadCsv, formatDate, formatDay, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { asChoice, RolePicker, toChoice, type Choice } from '../components/role-picker';
 import { PageHeader } from '../layout';
 import { StatementModal } from './giving';
 
@@ -421,7 +422,8 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     custom: person?.custom ?? {},
   }));
   const fields = useApi(AdminApi.fields.list);
-  const [section, setSection] = useState<'basics' | 'family' | 'privacy' | 'more'>('basics');
+  const [section, setSection] = useState<'basics' | 'family' | 'privacy' | 'access' | 'more'>('basics');
+  const can = useCan();
   const [tags, setTags] = useState((person?.tags ?? []).join(', '));
   const save = useAction(async (input: PersonInput) => (person ? AdminApi.people.update(person.id, input) : AdminApi.people.create(input)));
   const set = <K extends keyof PersonInput>(k: K, v: PersonInput[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -443,7 +445,8 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     >
       <form id="person-form" className="stack" onSubmit={onSubmit}>
         <FormError error={save.error?.fields ? null : save.error} />
-        <Segmented value={section} onChange={setSection} options={[{ value: 'basics', label: 'Basics' }, { value: 'family', label: 'Family & health' }, { value: 'privacy', label: 'Privacy & notes' }, ...((fields.data?.length ?? 0) > 0 ? [{ value: 'more' as const, label: 'More' }] : [])]} />
+        <Segmented value={section} onChange={setSection} options={[{ value: 'basics', label: 'Basics' }, { value: 'family', label: 'Family & health' }, { value: 'privacy', label: 'Privacy & notes' }, ...(can('staff') ? [{ value: 'access' as const, label: 'Access' }] : []), ...((fields.data?.length ?? 0) > 0 ? [{ value: 'more' as const, label: 'More' }] : [])]} />
+        {section === 'access' && (person ? <AccessPane person={person} /> : <p className="small muted">Save the person first, then come back here to give them office access.</p>)}
         {section === 'more' && (
           <div className="grid cols-2">
             {fields.data?.map((f) => {
@@ -554,6 +557,39 @@ function PersonWorkflows({ personId }: { personId: string }) {
           <option value="">Add to a workflow…</option>
           {workflows.data!.filter((w) => w.active).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
+      )}
+    </div>
+  );
+}
+
+/** Office access from the person's record: a role (built-in or the church's own) and, for scoped roles, the zones, groups or teams. */
+function AccessPane({ person }: { person: Person }) {
+  const access = useApi(() => AdminApi.staff.accessOf(person.id), [person.id]);
+  const roles = useApi(AdminApi.roles.list);
+  const [choice, setChoice] = useState<Choice | null>(null);
+  const toast = useToast();
+  const current = choice ?? asChoice(access.data ?? null);
+  const save = useAction(async () => {
+    const next = await AdminApi.staff.setAccess(person.id, toChoice(current));
+    access.setData(next);
+    setChoice(null);
+    toast(next.staffId ? `${person.firstName} can now sign in to the office as ${next.roleName}` : `${person.firstName} no longer has office access`);
+  });
+  if (access.error) return <ErrorState error={access.error} onRetry={access.reload} />;
+  if (!access.data || !roles.data) return <Loading />;
+  const a = access.data;
+  return (
+    <div className="stack">
+      {a.role === 'owner' ? <div className="alert">{person.firstName} is the church owner. Ownership is changed in Settings › Team.</div> : (
+        <>
+          <p className="small muted">{a.staffId ? <>Signs in to the office with <b>{a.email}</b>{a.status === 'invited' ? ' (invited, not signed in yet)' : ''}.</> : person.email ? <>Give {person.firstName} a role and they can sign in to the church office with {person.email}.</> : <>Add an email on the Basics tab first; the office sign-in code goes there.</>}</p>
+          <RolePicker value={current} onChange={setChoice} roles={roles.data} allowNone />
+          <div className="row" style={{ gap: 8 }}>
+            <FormError error={save.error} />
+            <span className="grow" />
+            <button type="button" className="btn primary" disabled={save.busy || !choice || (current.role !== 'none' && !person.email)} onClick={() => void save.run()}>{save.busy ? 'Saving…' : 'Save access'}</button>
+          </div>
+        </>
       )}
     </div>
   );
