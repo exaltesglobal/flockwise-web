@@ -5,6 +5,7 @@ import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
 import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
+import { CelebrationsPage } from '@/admin/pages/celebrations';
 import { CheckinPage } from '@/admin/pages/checkin';
 import { DashboardPage } from '@/admin/pages/dashboard';
 import { EventsPage } from '@/admin/pages/events';
@@ -57,6 +58,7 @@ const routes = [
       { path: 'calendar', element: <CalendarPage /> },
       { path: 'lists', element: <ListsPage /> },
       { path: 'workflows', element: <WorkflowsPage /> },
+      { path: 'celebrations', element: <CelebrationsPage /> },
       { path: 'groups', element: <GroupsPage /> },
       { path: 'giving', element: <GivingPage /> },
       { path: 'messages', element: <MessagesPage /> },

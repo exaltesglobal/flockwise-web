@@ -192,4 +192,17 @@ export const ml: Strings = {
   allSeries: 'എല്ലാ പരമ്പരകളും',
   yes: 'അതെ',
   choose: 'തിരഞ്ഞെടുക്കുക…',
+
+  celebrationsWeek: 'ഈ ആഴ്ചയിലെ ആഘോഷങ്ങൾ',
+  birthdayOf: '{name}യുടെ ജന്മദിനം',
+  anniversaryOf: '{name}യുടെ വിവാഹ വാർഷികം',
+  today: 'ഇന്ന്',
+  tomorrow: 'നാളെ',
+  sendWish: 'ആശംസകൾ അയയ്ക്കുക',
+  wished: 'ആശംസിച്ചു',
+  wishPlaceholder: 'ആശംസ എഴുതുക (ഐച്ഛികം)',
+  wishesForYou: 'നിങ്ങൾക്കുള്ള ആശംസകൾ',
+  happyBirthdayYou: 'നിങ്ങളുടെ സഭാ കുടുംബത്തിൽ നിന്ന് ജന്മദിനാശംസകൾ! 🎂',
+  happyAnniversaryYou: 'നിങ്ങളുടെ സഭാ കുടുംബത്തിൽ നിന്ന് വിവാഹ വാർഷികാശംസകൾ! 💐',
+  wishesCount: '{count} ആശംസകൾ',
 };

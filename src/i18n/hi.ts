@@ -192,4 +192,17 @@ export const hi: Strings = {
   allSeries: 'सभी श्रृंखलाएँ',
   yes: 'हाँ',
   choose: 'चुनें…',
+
+  celebrationsWeek: 'इस सप्ताह के उत्सव',
+  birthdayOf: '{name} का जन्मदिन',
+  anniversaryOf: '{name} की शादी की सालगिरह',
+  today: 'आज',
+  tomorrow: 'कल',
+  sendWish: 'शुभकामनाएँ भेजें',
+  wished: 'शुभकामना भेजी',
+  wishPlaceholder: 'शुभकामना लिखें (वैकल्पिक)',
+  wishesForYou: 'आपके लिए शुभकामनाएँ',
+  happyBirthdayYou: 'आपके चर्च परिवार की ओर से जन्मदिन मुबारक! 🎂',
+  happyAnniversaryYou: 'आपके चर्च परिवार की ओर से सालगिरह मुबारक! 💐',
+  wishesCount: '{count} शुभकामनाएँ',
 };

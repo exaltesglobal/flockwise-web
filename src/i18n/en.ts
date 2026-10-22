@@ -189,6 +189,19 @@ export const en = {
   allSeries: 'All series',
   yes: 'Yes',
   choose: 'Choose…',
+
+  celebrationsWeek: 'Celebrations this week',
+  birthdayOf: '{name}’s birthday',
+  anniversaryOf: '{name}’s wedding anniversary',
+  today: 'Today',
+  tomorrow: 'Tomorrow',
+  sendWish: 'Send wishes',
+  wished: 'Wished',
+  wishPlaceholder: 'Write a wish (optional)',
+  wishesForYou: 'Wishes for you',
+  happyBirthdayYou: 'Happy birthday from your church family! 🎂',
+  happyAnniversaryYou: 'Happy anniversary from your church family! 💐',
+  wishesCount: '{count} wishes',
 };
 
 export type Strings = typeof en;

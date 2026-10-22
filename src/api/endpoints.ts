@@ -90,6 +90,10 @@ import type {
   PublicPage,
   Resource,
   Sermon,
+  Celebration,
+  CelebrationKind,
+  Greeting,
+  MemberCelebrations,
   SmartListView,
   Workflow,
   WorkflowCardView,
@@ -178,6 +182,10 @@ export const MemberApi = {
     removeResource: (id: string, resId: string) => m.del<void>(`/groups/${id}/resources/${resId}`),
   },
   sermons: () => m.get<Sermon[]>('/sermons'),
+  celebrations: {
+    list: () => m.get<MemberCelebrations>('/celebrations'),
+    wish: (personId: string, kind: CelebrationKind, message?: string) => m.post<Greeting>(`/celebrations/${personId}/wish`, { kind, message }),
+  },
   prayer: {
     list: () => m.get<Paginated<PrayerView>>('/prayer'),
     create: (text: string, visibility: 'pastors' | 'church') => m.post<PrayerView>('/prayer', { text, visibility }),
@@ -419,6 +427,10 @@ export const AdminApi = {
     create: (input: Partial<Sermon>) => a.post<Sermon>('/admin/sermons', input),
     update: (id: string, input: Partial<Sermon>) => a.patch<Sermon>(`/admin/sermons/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/sermons/${id}`),
+  },
+  celebrations: {
+    list: (days: number, kind?: CelebrationKind) => a.get<Celebration[]>(`/admin/celebrations${qs({ days: String(days), kind })}`),
+    greet: (input: { personId: string; kind: CelebrationKind; channel: Channel; subject?: string; body: string }) => a.post<Greeting>('/admin/celebrations/greet', input),
   },
   publicPage: {
     get: () => a.get<PublicPage>('/admin/public-page'),

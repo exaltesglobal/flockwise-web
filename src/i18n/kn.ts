@@ -192,4 +192,17 @@ export const kn: Strings = {
   allSeries: 'ಎಲ್ಲಾ ಸರಣಿಗಳು',
   yes: 'ಹೌದು',
   choose: 'ಆಯ್ಕೆಮಾಡಿ…',
+
+  celebrationsWeek: 'ಈ ವಾರದ ಆಚರಣೆಗಳು',
+  birthdayOf: '{name} ಅವರ ಹುಟ್ಟುಹಬ್ಬ',
+  anniversaryOf: '{name} ಅವರ ವಿವಾಹ ವಾರ್ಷಿಕೋತ್ಸವ',
+  today: 'ಇಂದು',
+  tomorrow: 'ನಾಳೆ',
+  sendWish: 'ಶುಭಾಶಯ ಕಳುಹಿಸಿ',
+  wished: 'ಶುಭಾಶಯ ಕಳುಹಿಸಲಾಗಿದೆ',
+  wishPlaceholder: 'ಶುಭಾಶಯ ಬರೆಯಿರಿ (ಐಚ್ಛಿಕ)',
+  wishesForYou: 'ನಿಮಗೆ ಶುಭಾಶಯಗಳು',
+  happyBirthdayYou: 'ನಿಮ್ಮ ಸಭೆಯ ಕುಟುಂಬದಿಂದ ಹುಟ್ಟುಹಬ್ಬದ ಶುಭಾಶಯಗಳು! 🎂',
+  happyAnniversaryYou: 'ನಿಮ್ಮ ಸಭೆಯ ಕುಟುಂಬದಿಂದ ವಿವಾಹ ವಾರ್ಷಿಕೋತ್ಸವದ ಶುಭಾಶಯಗಳು! 💐',
+  wishesCount: '{count} ಶುಭಾಶಯಗಳು',
 };

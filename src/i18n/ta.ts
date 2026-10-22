@@ -192,4 +192,17 @@ export const ta: Strings = {
   allSeries: 'அனைத்துத் தொடர்கள்',
   yes: 'ஆம்',
   choose: 'தேர்ந்தெடு…',
+
+  celebrationsWeek: 'இந்த வாரக் கொண்டாட்டங்கள்',
+  birthdayOf: '{name} பிறந்தநாள்',
+  anniversaryOf: '{name} திருமண நாள்',
+  today: 'இன்று',
+  tomorrow: 'நாளை',
+  sendWish: 'வாழ்த்து அனுப்பு',
+  wished: 'வாழ்த்தினீர்கள்',
+  wishPlaceholder: 'வாழ்த்து எழுதுங்கள் (விருப்பம்)',
+  wishesForYou: 'உங்களுக்கான வாழ்த்துகள்',
+  happyBirthdayYou: 'உங்கள் சபைக் குடும்பத்திடமிருந்து பிறந்தநாள் வாழ்த்துகள்! 🎂',
+  happyAnniversaryYou: 'உங்கள் சபைக் குடும்பத்திடமிருந்து திருமண நாள் வாழ்த்துகள்! 💐',
+  wishesCount: '{count} வாழ்த்துகள்',
 };

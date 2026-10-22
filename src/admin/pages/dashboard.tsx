@@ -154,7 +154,7 @@ export function DashboardPage() {
         <div className="card">
           <div className="card-head">
             <h2>Birthdays this week</h2>
-            <Cake size={16} className="muted" />
+            <Link to="/admin/celebrations" className="small row" style={{ gap: 4 }}><Cake size={15} /> All celebrations</Link>
           </div>
           {data.birthdaysThisWeek.length === 0 && <p className="card-body muted small">No birthdays in the next 7 days.</p>}
           {data.birthdaysThisWeek.map((b) => (

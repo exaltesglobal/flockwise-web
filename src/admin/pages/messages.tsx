@@ -367,7 +367,8 @@ function TemplateForm({ item, onClose, onSaved }: { item: Template | null; onClo
 
 // ---------- automations ----------
 
-const AUTOMATION_INFO: Record<keyof Automations, { title: string; body: string }> = {
+type MessageAutomation = Exclude<keyof Automations, 'staffDigest'>;
+const AUTOMATION_INFO: Record<MessageAutomation, { title: string; body: string }> = {
   birthday: { title: 'Birthday wishes', body: 'Sent on the morning of each person’s birthday.' },
   anniversary: { title: 'Wedding anniversaries', body: 'Sent to both spouses on their anniversary.' },
   welcome: { title: 'Welcome new visitors', body: 'Sent the day after someone is added as a visitor.' },
@@ -391,7 +392,7 @@ function AutomationsPane() {
   return (
     <div className="stack">
       <FormError error={save.error} />
-      {(Object.keys(AUTOMATION_INFO) as (keyof Automations)[]).map((k) => {
+      {(Object.keys(AUTOMATION_INFO) as MessageAutomation[]).map((k) => {
         const a = draft[k] as Automation & { weeks?: number; daysBefore?: number; createFollowUp?: boolean };
         return (
           <div key={k} className="card stack" style={{ gap: 10 }}>
@@ -429,6 +430,23 @@ function AutomationsPane() {
           </div>
         );
       })}
+      <div className="card stack" style={{ gap: 10 }}>
+        <div className="row" style={{ gap: 10 }}>
+          <Zap size={18} className={draft.staffDigest.enabled ? '' : 'muted'} />
+          <div className="grow">
+            <h3>Celebrations digest for staff</h3>
+            <p className="small muted">Emails pastors and care staff each morning someone has a birthday or anniversary, and a full list every Monday.</p>
+          </div>
+          <label className="row small" style={{ gap: 6 }}>
+            <input type="checkbox" checked={draft.staffDigest.enabled} onChange={(e) => setDraft({ ...draft, staffDigest: { ...draft.staffDigest, enabled: e.target.checked } })} /> On
+          </label>
+        </div>
+        {draft.staffDigest.enabled && (
+          <label className="row small" style={{ gap: 6 }}>Monday list covers the next
+            <input className="input" type="number" min={1} max={31} style={{ width: 70 }} value={draft.staffDigest.daysAhead} onChange={(e) => setDraft({ ...draft, staffDigest: { ...draft.staffDigest, daysAhead: Number(e.target.value) } })} /> days
+          </label>
+        )}
+      </div>
       {can('comms') && (
         <div className="row" style={{ justifyContent: 'flex-end', gap: 8 }}>
           {dirty && <button className="btn" onClick={() => setDraft(structuredClone(data!))}>Discard changes</button>}

@@ -192,4 +192,17 @@ export const te: Strings = {
   allSeries: 'అన్ని సిరీస్\u200cలు',
   yes: 'అవును',
   choose: 'ఎంచుకోండి…',
+
+  celebrationsWeek: 'ఈ వారం వేడుకలు',
+  birthdayOf: '{name} పుట్టినరోజు',
+  anniversaryOf: '{name} వివాహ వార్షికోత్సవం',
+  today: 'ఈరోజు',
+  tomorrow: 'రేపు',
+  sendWish: 'శుభాకాంక్షలు పంపండి',
+  wished: 'శుభాకాంక్షలు పంపారు',
+  wishPlaceholder: 'శుభాకాంక్ష రాయండి (ఐచ్ఛికం)',
+  wishesForYou: 'మీకు శుభాకాంక్షలు',
+  happyBirthdayYou: 'మీ సంఘ కుటుంబం నుండి పుట్టినరోజు శుభాకాంక్షలు! 🎂',
+  happyAnniversaryYou: 'మీ సంఘ కుటుంబం నుండి వివాహ వార్షికోత్సవ శుభాకాంక్షలు! 💐',
+  wishesCount: '{count} శుభాకాంక్షలు',
 };
