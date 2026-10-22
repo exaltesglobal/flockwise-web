@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Text, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +11,7 @@ import { useCan } from '@/lib/perms';
 import { printHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { SetlistModal, useAi } from '../ai';
 import { PageHeader } from '../layout';
 import { RehearsalPlayer, SongStatsView } from './worship';
 
@@ -85,6 +86,8 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
   const past = useApi(() => AdminApi.services.list('past'));
   const [theme, setTheme] = useState('');
   const [notes, setNotes] = useState('');
+  const [suggesting, setSuggesting] = useState(false);
+  const ai = useAi();
   const [rehearsalAt, setRehearsalAt] = useState('');
   const [rehearsalNotes, setRehearsalNotes] = useState('');
   const [items, setItems] = useState<Draft[]>([]);
@@ -116,8 +119,16 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
   const move = (i: number, d: -1 | 1) => { const xs = [...items]; [xs[i], xs[i + d]] = [xs[i + d], xs[i]]; setItems(xs); setDirty(true); };
   const add = (kind: PlanItemKind) => { setItems([...items, { key_: draftKey(), kind, title: kind === 'song' ? '' : kindLabel(kind), minutes: kind === 'sermon' ? 35 : kind === 'song' ? 5 : 3, notes: '', person: '', songId: null, key: null }]); setDirty(true); };
 
+  const addSongs = (ids: string[]) => {
+    const picked = ids.map((id) => songs.data!.find((x) => x.id === id)).filter((x): x is NonNullable<typeof x> => !!x);
+    setItems((xs) => [...xs, ...picked.map((sg) => ({ key_: draftKey(), kind: 'song' as PlanItemKind, title: sg.title, minutes: 5, notes: '', person: '', songId: sg.id, key: sg.defaultKey || null }))]);
+    setDirty(true);
+    setSuggesting(false);
+  };
+
   return (
     <div className="stack">
+      {suggesting && <SetlistModal theme={theme} onAdd={addSongs} onClose={() => setSuggesting(false)} />}
       <div className="card card-pad row wrap between">
         <div>
           <h2>{ev.title}</h2>
@@ -205,6 +216,7 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
               <div className="list-row row wrap" style={{ gap: 6 }}>
                 <span className="small muted">Add:</span>
                 {KINDS.map((k) => <button key={k.value} className="btn sm" onClick={() => add(k.value)}><Plus size={13} /> {k.label}</button>)}
+                {ai && songs.data && <button className="btn sm ghost ai-btn" onClick={() => setSuggesting(true)}><Sparkles size={13} /> Suggest songs</button>}
               </div>
             )}
           </div>

@@ -11,6 +11,8 @@ import { formatDate, formatRelative, formatTime, toLocalInput } from '@/lib/form
 import { useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { AiWriter } from '../ai';
+
 import { PersonSearch, type PickedPerson } from '../components/person-picker';
 import { PageHeader } from '../layout';
 
@@ -237,6 +239,7 @@ function Composer({ initial, onClose, onDone }: { initial: Partial<Message>; onC
         <Field label="Message" hint={channel === 'sms' ? `${body.length} characters · ${segments} SMS ${segments === 1 ? 'part' : 'parts'} per person` : undefined}>
           <textarea className="textarea" rows={7} value={body} onChange={(e) => setBody(e.target.value)} />
         </Field>
+        <AiWriter purpose="message" channel={channel} body={body} onDraft={(d) => { if (d.subject && channel === 'email') setSubject(d.subject); setBody(d.text); }} />
         <div className="row wrap small" style={{ gap: 6 }}>
           <span className="muted">Personalise:</span>
           {MERGE_FIELDS.map((f) => <button key={f} type="button" className="chip" onClick={() => setBody((b) => `${b}${f}`)}>{f}</button>)}

@@ -21,6 +21,7 @@ import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
 import { ServicesPage } from '@/admin/pages/services';
 import { SettingsPage } from '@/admin/pages/settings';
+import { AssistantPage } from '@/admin/ai';
 import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
 import { FormReturnPage, PublicChurchPage, PublicFormPage } from '@/public/public';
@@ -68,6 +69,7 @@ const routes = [
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      { path: 'assistant', element: <AssistantPage /> },
     ],
   },
   { path: '/present/:eventId', element: <PresenterPage /> },

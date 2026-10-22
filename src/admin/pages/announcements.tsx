@@ -7,6 +7,7 @@ import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@
 import { formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { AiWriter } from '../ai';
 import { PageHeader } from '../layout';
 
 export function AnnouncementsPage() {
@@ -70,6 +71,7 @@ function AnnouncementForm({ item, onClose, onSaved }: { item: AdminAnnouncement 
         <FormError error={save.error} />
         <Field label="Title"><input className="input" autoFocus value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
         <Field label="Message" hint="Keep it short. Members see this on their phone."><textarea className="textarea" rows={6} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} /></Field>
+        <AiWriter purpose="announcement" body={form.body} onDraft={(d) => setForm((f) => ({ ...f, title: f.title || d.subject, body: d.text }))} />
       </div>
     </Modal>
   );

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, BookOpen, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookOpen, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { CustomField, CustomFieldType, PublicPage, Sermon } from '@/api/admin-types';
@@ -7,6 +7,7 @@ import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@
 import { formatDate } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { SermonAiModal, useAi } from '../ai';
 import { PageHeader } from '../layout';
 
 // ---------- sermon library ----------
@@ -20,6 +21,8 @@ const blankSermon = (): Partial<Sermon> => ({
 export function SermonsPage() {
   const list = useApi(AdminApi.sermons.list);
   const [editing, setEditing] = useState<Sermon | 'new' | null>(null);
+  const [followUp, setFollowUp] = useState<Sermon | null>(null);
+  const ai = useAi();
   const [q, setQ] = useState('');
   const [series, setSeries] = useState('');
   const toast = useToast();
@@ -61,6 +64,7 @@ export function SermonsPage() {
               {s.audioUrl && <a className="chip" href={s.audioUrl} target="_blank" rel="noreferrer">Audio</a>}
               {s.notesUrl && <a className="chip" href={s.notesUrl} target="_blank" rel="noreferrer">Notes</a>}
             </div>
+            {ai && <button className="btn ghost icon sm" onClick={() => setFollowUp(s)} aria-label="Follow-up material with AI" title="Small-group questions, summary, social posts"><Sparkles size={15} /></button>}
             <button className="btn ghost icon sm" onClick={() => setEditing(s)} aria-label="Edit"><Pencil size={15} /></button>
             <button className="btn ghost icon sm danger" aria-label="Delete" onClick={async () => {
               if (!confirm(`Delete “${s.title}”?`)) return;
@@ -71,6 +75,7 @@ export function SermonsPage() {
           </div>
         ))}
       </div>
+      {followUp && <SermonAiModal sermon={followUp} onClose={() => setFollowUp(null)} />}
       {editing && <SermonForm sermon={editing === 'new' ? null : editing} series={allSeries} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); list.reload(); toast('Saved'); }} />}
     </>
   );

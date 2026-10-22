@@ -2,6 +2,12 @@
 // Member endpoints match the mobile app exactly (docs/API.md); admin ones are in docs/API-ADMIN.md.
 import type {
   AdminAnnouncement,
+  AiAnswer,
+  AiDraft,
+  AiPurpose,
+  AiSermonKind,
+  AiSetlist,
+  AiStatus,
   ApiKeyView,
   ChitthiStatus,
   ChitthiTemplate,
@@ -355,6 +361,15 @@ export const AdminApi = {
     get: () => a.get<ChurchSettings>('/admin/settings'),
     update: (patch: Partial<ChurchSettings>) => a.patch<ChurchSettings>('/admin/settings', patch),
     connectPayments: () => a.post<{ onboardingUrl: string }>('/admin/settings/payments/connect'),
+  },
+  ai: {
+    status: () => a.get<AiStatus>('/admin/ai/status'),
+    write: (input: { purpose: AiPurpose; brief: string; channel?: string; language?: string; draft?: string }) => a.post<AiDraft>('/admin/ai/write', input),
+    translate: (text: string, to: string) => a.post<{ text: string }>('/admin/ai/translate', { text, to }),
+    ask: (question: string, history: { role: 'user' | 'assistant'; text: string }[]) => a.post<AiAnswer>('/admin/ai/ask', { question, history }),
+    briefing: () => a.post<AiAnswer>('/admin/ai/briefing', {}),
+    sermon: (input: { kind: AiSermonKind; title?: string; passage?: string; notes?: string; language?: string }) => a.post<{ text: string }>('/admin/ai/sermon', input),
+    setlist: (theme: string, count: number) => a.post<AiSetlist>('/admin/ai/setlist', { theme, count }),
   },
   integrations: {
     get: () => a.get<{ chitthi: ChitthiStatus }>('/admin/integrations'),

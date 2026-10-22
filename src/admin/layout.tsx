@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
+import { BarChart3, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -12,10 +12,12 @@ import { useSession } from '@/lib/session';
 import type { Permission } from '@/api/admin-types';
 import { LegalFooter } from '@/legal/legal';
 
+import { useAi } from './ai';
 import './admin.css';
 
-const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[] }[] = [
+const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[]; ai?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/assistant', label: 'Assistant', icon: Sparkles, ai: true },
   { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
   { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
   { to: '/admin/workflows', label: 'Follow-up workflows', icon: GitBranch, perm: ['people.view', 'care'] },
@@ -40,6 +42,7 @@ const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?
 export function AdminLayout() {
   const session = useSession(adminSession);
   const can = useCan();
+  const ai = useAi();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
@@ -69,7 +72,7 @@ export function AdminLayout() {
             <small>{session.church.city}</small>
           </div>
           <nav className="admin-nav">
-            {NAV.filter((n) => !n.perm || can(...n.perm)).map(({ to, label, icon: Icon, end }) => (
+            {NAV.filter((n) => (!n.perm || can(...n.perm)) && (!n.ai || ai)).map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}>
                 <Icon size={18} /> {label}
               </NavLink>

@@ -12,6 +12,7 @@ import { adminSession } from '@/api/client';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
+import { AiWriter } from '../ai';
 
 const KIND_INFO: Record<CelebrationKind, { label: string; icon: typeof Cake; badge: string }> = {
   birthday: { label: 'Birthday', icon: Cake, badge: '' },
@@ -131,6 +132,7 @@ function GreetModal({ c, text, onClose, onSent }: { c: Celebration; text: string
           <Segmented value={channel} options={CHANNELS} onChange={setChannel} />
         </Field>
         <Field label="Message"><textarea className="textarea" rows={6} value={body} onChange={(e) => setBody(e.target.value)} /></Field>
+        <AiWriter purpose="greeting" body={body} onDraft={(d) => setBody(d.text)} />
       </div>
     </Modal>
   );
