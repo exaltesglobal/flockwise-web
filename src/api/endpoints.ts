@@ -11,6 +11,7 @@ export type CampaignInput = { name: string; kind: CampaignKind; description?: st
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
+export type CountSheetInput = Pick<CountSheet, 'notes' | 'coins' | 'cheques' | 'upi'> & { photoUrl?: string | null };
 /** The carol rounds page: this year's season, the areas and teams to plan with, and the funds offerings can go to. */
 export type CarolsHub = { season: CarolSeasonView | null; seasons: { id: string; name: string; from: string; to: string }[]; zones: { id: string; name: string; homes: number }[]; teams: { id: string; name: string }[]; funds: { id: string; name: string }[]; currency: Currency };
 export type CarolSeasonInput = Partial<Pick<CarolSeason, 'name' | 'from' | 'to' | 'startTime' | 'minutesPerHouse' | 'travelMinutes' | 'housesPerNight' | 'offDays' | 'fundId' | 'message'>>;
@@ -116,6 +117,7 @@ import type {
   Template,
   Batch,
   BatchView,
+  CountSheet,
   BookingConflict,
   BookingView,
   CalendarItem,
@@ -813,7 +815,10 @@ export const AdminApi = {
     get: (id: string) => a.get<{ batch: BatchView; donations: AdminDonation[] }>(`/admin/giving/batches/${id}`),
     create: (input: { name?: string; date?: string; expectedTotal?: number | null; notes?: string }) => a.post<BatchView>('/admin/giving/batches', input),
     update: (id: string, input: Partial<Batch>) => a.patch<BatchView>(`/admin/giving/batches/${id}`, input),
-    commit: (id: string, force = false) => a.post<BatchView>(`/admin/giving/batches/${id}/commit`, { force }),
+    commit: (id: string, force = false, looseFundId?: string) => a.post<BatchView>(`/admin/giving/batches/${id}/commit`, { force, looseFundId }),
+    count: (id: string, input: { notes: Record<string, number>; coins: number; cheques: number; upi: number; photoUrl?: string | null }) => a.put<BatchView>(`/admin/giving/batches/${id}/count`, input),
+    sign: (id: string, name?: string) => a.post<BatchView>(`/admin/giving/batches/${id}/sign`, { name }),
+    unsign: (id: string) => a.del<BatchView>(`/admin/giving/batches/${id}/sign`),
     reopen: (id: string) => a.post<BatchView>(`/admin/giving/batches/${id}/reopen`),
     remove: (id: string) => a.del<void>(`/admin/giving/batches/${id}`),
   },

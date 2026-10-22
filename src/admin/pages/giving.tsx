@@ -1,13 +1,15 @@
-import { Download, FileText, Gift, Pencil, Plus, Printer, RotateCcw, Search, Trash2 } from 'lucide-react';
+import { Camera, Download, FileText, Gift, Pencil, PenLine, Plus, Printer, RotateCcw, Search, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import type { AdminDonation, AdminFund, DonationQuery, FundInput, OfflineDonationInput, PaymentMethod } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import type { Currency } from '@/api/types';
-import type { RecurringStatus } from '@/core/types';
+import type { BatchView, RecurringStatus } from '@/core/types';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { shrinkPhoto } from '@/lib/photo';
+import { useSession } from '@/lib/session';
 import { useCan } from '@/lib/perms';
 import { printHtml, statementHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
@@ -604,6 +606,7 @@ function NewBatch({ currency, onClose, onSaved }: { currency: Currency; onClose:
 function BatchDetail({ id, funds, currency, onBack }: { id: string; funds: AdminFund[]; currency: Currency; onBack: () => void }) {
   const { data, error, reload } = useApi(() => AdminApi.batches.get(id), [id]);
   const [adding, setAdding] = useState(false);
+  const [looseFund, setLooseFund] = useState('');
   const can = useCan();
   const toast = useToast();
   if (error) return <ErrorState error={error} onRetry={reload} />;
@@ -611,10 +614,11 @@ function BatchDetail({ id, funds, currency, onBack }: { id: string; funds: Admin
   const b = data.batch;
   const open = b.status === 'open';
   const commit = async () => {
-    try { await AdminApi.batches.commit(b.id); }
+    if (b.sheet && b.signed < 2 && !window.confirm('Only one person has signed the count. Commit anyway?')) return;
+    try { await AdminApi.batches.commit(b.id, !!(b.sheet && b.signed < 2), looseFund || undefined); }
     catch (e) {
-      if (!confirm(`${(e as Error).message}\n\nCommit anyway?`)) return;
-      await AdminApi.batches.commit(b.id, true);
+      if (!window.confirm(`${(e as Error).message}\n\nCommit anyway?`)) return;
+      await AdminApi.batches.commit(b.id, true, looseFund || undefined);
     }
     toast('Batch committed'); reload();
   };
@@ -630,19 +634,27 @@ function BatchDetail({ id, funds, currency, onBack }: { id: string; funds: Admin
           <div className="card mini-stat"><b>{b.count}</b><span>Gifts</span></div>
           <div className="card mini-stat"><b>{formatMoney(b.total, currency)}</b><span>Entered</span></div>
           {b.expectedTotal !== null && <div className="card mini-stat"><b>{formatMoney(b.expectedTotal, currency)}</b><span>Counted</span></div>}
-          {b.difference !== null && <div className="card mini-stat"><b style={{ color: b.difference ? 'var(--danger)' : 'var(--ok)' }}>{b.difference ? formatMoney(b.difference, currency) : 'Balanced'}</b><span>Difference</span></div>}
+          {b.sheet && b.loose > 0 && open ? <div className="card mini-stat"><b>{formatMoney(b.loose, currency)}</b><span>Loose offering, recorded on commit</span></div>
+            : b.difference !== null && <div className="card mini-stat"><b style={{ color: b.difference ? 'var(--danger)' : 'var(--ok)' }}>{b.difference ? formatMoney(b.difference, currency) : 'Balanced'}</b><span>Difference</span></div>}
           {b.byMethod.map((m) => <div key={m.method} className="card mini-stat"><b>{formatMoney(m.total, currency)}</b><span>{METHOD[m.method as PaymentMethod] ?? m.method} · {m.count}</span></div>)}
         </div>
         {can('giving.edit') && (
           <div className="row wrap" style={{ gap: 8 }}>
             {open && <button className="btn primary" onClick={() => setAdding(true)}><Plus size={15} /> Add gifts</button>}
-            {open && <button className="btn" disabled={!b.count} onClick={commit}>Commit batch</button>}
+            {open && <button className="btn" disabled={!b.count && !b.loose} onClick={commit}>Commit batch</button>}
+            {open && b.sheet && b.loose > 0 && (
+              <select className="select" style={{ width: 'auto' }} value={looseFund} onChange={(e) => setLooseFund(e.target.value)} aria-label="Loose offering goes to">
+                <option value="">Loose cash → general fund</option>
+                {funds.filter((f) => f.active).map((f) => <option key={f.id} value={f.id}>Loose cash → {f.name}</option>)}
+              </select>
+            )}
             {!open && <button className="btn" onClick={async () => { await AdminApi.batches.reopen(b.id); reload(); }}><RotateCcw size={15} /> Reopen</button>}
             {open && !b.count && <button className="btn ghost danger" onClick={async () => { await AdminApi.batches.remove(b.id); onBack(); }}><Trash2 size={15} /> Delete</button>}
             <button className="btn ghost" disabled={!data.donations.length} onClick={() => downloadCsv(`${b.name}.csv`, [['Donor', 'Fund', 'Method', 'Amount', 'Receipt'], ...data.donations.map((d) => [d.donorName, d.fundName, d.method, d.amount / 100, d.receiptNumber])])}><Download size={15} /> Export</button>
           </div>
         )}
       </div>
+      <CountingRoom batch={b} currency={currency} editable={can('giving.edit') && open} onChanged={reload} />
       <div className="card">
         {data.donations.length === 0 ? <Empty title="No gifts in this batch yet" /> : (
           <div className="table-wrap"><table className="table">
@@ -652,6 +664,95 @@ function BatchDetail({ id, funds, currency, onBack }: { id: string; funds: Admin
         )}
       </div>
       {adding && <OfflineGiftForm batch={{ id: b.id, name: b.name }} funds={funds.filter((f) => f.active)} currency={currency} onClose={() => setAdding(false)} onSaved={() => { reload(); toast('Added'); }} />}
+    </div>
+  );
+}
+
+// ---------- the counting room ----------
+
+const DENOMS: Record<string, number[]> = { INR: [500, 200, 100, 50, 20, 10], USD: [100, 50, 20, 10, 5, 1], GBP: [50, 20, 10, 5], EUR: [100, 50, 20, 10, 5] };
+const symbol = (currency: Currency) => formatMoney(0, currency).replace(/[\d.,\s]/g, '');
+
+/** What two counters found in the plate: notes by denomination, coins, cheques, UPI, a photo, two signatures. */
+function CountingRoom({ batch: b, currency, editable, onChanged }: { batch: BatchView; currency: Currency; editable: boolean; onChanged: () => void }) {
+  const session = useSession(adminSession);
+  const toast = useToast();
+  const denoms = DENOMS[currency] ?? DENOMS.USD;
+  const sheet = b.sheet ?? null;
+  const [notes, setNotes] = useState<Record<string, string>>(() => Object.fromEntries(denoms.map((d) => [String(d), sheet?.notes[String(d)] ? String(sheet.notes[String(d)]) : ''])));
+  const [coins, setCoins] = useState(sheet ? String(sheet.coins / 100 || '') : '');
+  const [cheques, setCheques] = useState(sheet ? String(sheet.cheques / 100 || '') : '');
+  const [upi, setUpi] = useState(sheet ? String(sheet.upi / 100 || '') : '');
+  const [photo, setPhoto] = useState<string | null | undefined>(undefined);
+  const [signer, setSigner] = useState(session ? `${session.member.firstName} ${session.member.lastName}`.trim() : '');
+  const [editing, setEditing] = useState(!sheet);
+  const save = useAction(() => AdminApi.batches.count(b.id, { notes: Object.fromEntries(Object.entries(notes).map(([d, n]) => [d, Math.round(Number(n) || 0)])), coins: Math.round(Number(coins) * 100 || 0), cheques: Math.round(Number(cheques) * 100 || 0), upi: Math.round(Number(upi) * 100 || 0), ...(photo !== undefined ? { photoUrl: photo } : {}) }));
+  const sign = useAction((name: string) => AdminApi.batches.sign(b.id, name));
+  const unsign = useAction(() => AdminApi.batches.unsign(b.id));
+  const major = (v: string) => Math.round(Number(v) * 100 || 0);
+  const liveTotal = denoms.reduce((s, d) => s + d * (Math.round(Number(notes[String(d)]) || 0) * 100), 0) + major(coins) + major(cheques) + major(upi);
+  const photoUrl = photo === undefined ? sheet?.photoUrl ?? null : photo;
+  const takePhoto = async (f: File) => { try { setPhoto((await shrinkPhoto(f, 1200, 0.7)).preview); } catch { toast('That photo could not be read'); } };
+  if (!editable && !sheet) return null;
+  return (
+    <div className="card">
+      <div className="card-head">
+        <h2>Counting room</h2>
+        <span className="small muted">{sheet ? `Counted ${formatMoney(sheet.total, currency)} by ${sheet.countedBy || 'the office'} · ${sheet.counters.length} of 2 signatures` : 'Count the plate by denomination, take a photo, and have two people sign before the batch is committed.'}</span>
+      </div>
+      <div className="card-body stack">
+        {editing && editable ? (
+          <>
+            <div className="count-grid">
+              {denoms.map((d) => (
+                <label key={d} className="count-row">
+                  <span className="count-denom">{symbol(currency)}{d}</span>
+                  <span className="muted">×</span>
+                  <input className="input" inputMode="numeric" value={notes[String(d)]} onChange={(e) => setNotes({ ...notes, [String(d)]: e.target.value.replace(/\D/g, '') })} aria-label={`${d} notes`} />
+                  <span className="count-amt">{formatMoney(d * (Math.round(Number(notes[String(d)]) || 0) * 100), currency)}</span>
+                </label>
+              ))}
+              <label className="count-row"><span className="count-denom">Coins</span><span className="muted">{symbol(currency)}</span><input className="input" inputMode="decimal" value={coins} onChange={(e) => setCoins(e.target.value)} aria-label="Coins" /><span className="count-amt">{formatMoney(major(coins), currency)}</span></label>
+              <label className="count-row"><span className="count-denom">Cheques</span><span className="muted">{symbol(currency)}</span><input className="input" inputMode="decimal" value={cheques} onChange={(e) => setCheques(e.target.value)} aria-label="Cheques" /><span className="count-amt">{formatMoney(major(cheques), currency)}</span></label>
+              <label className="count-row"><span className="count-denom">UPI / QR</span><span className="muted">{symbol(currency)}</span><input className="input" inputMode="decimal" value={upi} onChange={(e) => setUpi(e.target.value)} aria-label="UPI" /><span className="count-amt">{formatMoney(major(upi), currency)}</span></label>
+            </div>
+            <div className="row wrap" style={{ gap: 10, alignItems: 'center' }}>
+              <b style={{ fontSize: 18 }}>Total {formatMoney(liveTotal, currency)}</b>
+              <span className="grow" />
+              {photoUrl ? <span className="row" style={{ gap: 6 }}><img src={photoUrl} alt="Count sheet" className="count-photo" /><button type="button" className="btn ghost icon sm" aria-label="Remove photo" onClick={() => setPhoto(null)}><X size={14} /></button></span>
+                : <label className="btn sm"><Camera size={14} /> Photo of the count sheet<input type="file" accept="image/*" capture="environment" hidden onChange={(e) => { if (e.target.files?.[0]) void takePhoto(e.target.files[0]); e.target.value = ''; }} /></label>}
+              <button className="btn primary" disabled={save.busy || liveTotal === 0} onClick={async () => { if (await save.run()) { setEditing(false); toast(sheet ? 'Count updated; signatures cleared' : 'Count saved'); onChanged(); } }}>Save count</button>
+              {sheet && <button className="btn ghost" onClick={() => setEditing(false)}>Cancel</button>}
+            </div>
+            <FormError error={save.error} />
+          </>
+        ) : sheet && (
+          <>
+            <div className="row wrap" style={{ gap: 14 }}>
+              <div className="count-summary small">
+                {Object.entries(sheet.notes).sort((a, c) => Number(c[0]) - Number(a[0])).map(([d, n]) => <span key={d}>{symbol(currency)}{d} × {n}</span>)}
+                {sheet.coins > 0 && <span>Coins {formatMoney(sheet.coins, currency)}</span>}
+                {sheet.cheques > 0 && <span>Cheques {formatMoney(sheet.cheques, currency)}</span>}
+                {sheet.upi > 0 && <span>UPI {formatMoney(sheet.upi, currency)}</span>}
+              </div>
+              {sheet.photoUrl && <a href={sheet.photoUrl} target="_blank" rel="noreferrer"><img src={sheet.photoUrl} alt="Count sheet" className="count-photo" /></a>}
+              {editable && <button className="btn ghost sm" onClick={() => setEditing(true)}><Pencil size={14} /> Change count</button>}
+            </div>
+            <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
+              {sheet.counters.map((c) => <span key={c.name} className="badge ok"><PenLine size={12} /> {c.name}</span>)}
+              {sheet.counters.length < 2 && editable && (
+                <>
+                  <input className="input" style={{ width: 200 }} value={signer} onChange={(e) => setSigner(e.target.value)} placeholder="Counter's name" aria-label="Counter's name" />
+                  <button className="btn sm" disabled={sign.busy || !signer.trim()} onClick={async () => { if (await sign.run(signer.trim())) { toast(`${signer.trim()} signed`); setSigner(''); onChanged(); } }}><PenLine size={14} /> Sign as {sheet.counters.length === 0 ? 'first' : 'second'} counter</button>
+                </>
+              )}
+              {sheet.counters.length > 0 && editable && <button className="btn ghost sm" disabled={unsign.busy} onClick={async () => { if (await unsign.run()) onChanged(); }}>Clear signatures</button>}
+              {sheet.counters.length < 2 && <span className="small muted">Two signatures are needed before the batch is committed.</span>}
+            </div>
+            <FormError error={sign.error ?? unsign.error} />
+          </>
+        )}
+      </div>
     </div>
   );
 }

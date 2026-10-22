@@ -179,7 +179,8 @@ img { max-width: 100%; }
 .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 .search .input { padding-left: 36px; }
 
-.segmented { display: inline-flex; background: var(--tint); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+.segmented { display: inline-flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; background: var(--tint); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+.segmented button { white-space: nowrap; flex: none; }
 .segmented button { border: 0; background: transparent; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 13.5px; cursor: pointer; color: var(--muted); }
 .segmented button.on { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
 
