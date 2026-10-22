@@ -24,6 +24,9 @@ import { SettingsPage } from '@/admin/pages/settings';
 import { AssistantPage } from '@/admin/ai';
 import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
+import { ChurchRoute } from '@/platform/church';
+import { SignupPage } from '@/platform/signup';
+import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
@@ -43,6 +46,10 @@ import { MemberServingPage } from '@/member/pages/serving';
 const routes = [
   { path: '/', element: <Landing /> },
   { path: '/admin/sign-in', element: <AdminSignIn /> },
+  { path: '/start', element: <SignupPage /> },
+  { path: '/c/:slug/*', element: <ChurchRoute /> },
+  { path: '/c/:slug', element: <ChurchRoute /> },
+  { path: '/platform/*', element: <TeamPanel /> },
   {
     path: '/admin',
     element: <AdminLayout />,

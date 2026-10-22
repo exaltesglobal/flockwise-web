@@ -2,22 +2,111 @@
 // the same code as the API server) in the browser against a sample church saved to
 // localStorage, so edits in the church office show up in the member portal and survive
 // a reload. Nothing leaves the browser: gifts succeed instantly and messages are logged.
-import { createChurchEngine, Db, type Dump } from '@/core';
+// Like the server, it hosts many churches: churches made on the sign-up page, a few sample
+// churches for the Flockwise team panel, and the directory itself.
+import { bootstrapChurch, createChurchEngine, createPlatform, Db, saveSubscription, startTrial, type Dump } from '@/core';
 import { createDemoEnv, readDemoToken } from '@/core/demo';
 import { seedDemo } from '@/core/seed';
+import { newPerson } from '@/core/util';
 
 import type { Session } from './types';
 
 export { DEMO_CODE as DEMO_OTP } from '@/core';
 
 const DB_KEY = 'fw.demoDb.v2';
+const PLATFORM_KEY = 'fw.demoPlatform.v1';
+const churchKey = (id: string) => `fw.demoChurch.${id}`;
+const MAIN = 'ch_demo';
 const RESEED_AFTER_DAYS = 7; // event dates are relative to the seed day
 const DAY = 86_400_000;
 
-const env = createDemoEnv({ webUrl: typeof location !== 'undefined' ? `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}` : '' });
-const db = new Db();
-const engine = createChurchEngine(db, env);
-let loadedRaw: string | null = null;
+const webUrl = typeof location !== 'undefined' ? `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}` : '';
+const env = createDemoEnv({ webUrl });
+
+type Engine = ReturnType<typeof createChurchEngine>;
+const engines = new Map<string, Engine>();
+const loadedRaw = new Map<string, string | null>();
+
+/** Each church's tokens name the church, like the server's. */
+function churchEnv(id: string) {
+  const e = Object.create(env) as typeof env;
+  e.signAccess = (claims) => ({ token: `demo.${btoa(JSON.stringify({ ...claims, church: id }))}`, expiresAt: new Date(Date.now() + 30 * DAY).toISOString() });
+  return e;
+}
+
+function makeEngine(id: string, db = new Db()) {
+  const engine = createChurchEngine(db, id === MAIN ? env : churchEnv(id));
+  engines.set(id, engine);
+  return engine;
+}
+
+const main = makeEngine(MAIN);
+const db = main.db;
+const platformDb = new Db();
+
+const platform = createPlatform({
+  db: platformDb,
+  env,
+  admins: [],
+  host: {
+    defaultId: MAIN,
+    get: (id) => engines.get(id) ?? restore(id),
+    create: async (id) => makeEngine(id),
+  },
+});
+
+function readStore(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStore(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* storage full or blocked: keep working in memory */
+  }
+}
+
+/** Loads a church made on the sign-up page from storage. */
+function restore(id: string): Engine | undefined {
+  const raw = readStore(churchKey(id));
+  if (!raw) return undefined;
+  try {
+    const engine = makeEngine(id, new Db(JSON.parse(raw) as Dump));
+    loadedRaw.set(id, raw);
+    return engine;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A few small churches so the Flockwise team panel has something to show. */
+function sampleChurches() {
+  const samples = [
+    { id: 'ch_sample1', slug: 'bethel-pune', name: 'Bethel Assembly', city: 'Pune', people: 64, plan: 'trial' as const, days: 12 },
+    { id: 'ch_sample2', slug: 'living-word-chennai', name: 'Living Word Church', city: 'Chennai', people: 310, plan: 'grow' as const, days: 70 },
+    { id: 'ch_sample3', slug: 'mar-thoma-kochi', name: 'St Thomas Mar Thoma Parish', city: 'Kochi', people: 1420, plan: 'thrive' as const, days: 140 },
+    { id: 'ch_sample4', slug: 'new-life-delhi', name: 'New Life Fellowship', city: 'New Delhi', people: 38, plan: 'seed' as const, days: 25 },
+  ];
+  const first = ['Asha', 'Ravi', 'Priya', 'John', 'Mary', 'Samuel', 'Grace', 'David', 'Ruth', 'Joseph', 'Esther', 'Daniel'];
+  const last = ['Kumar', 'Thomas', 'George', 'Reddy', 'Das', 'Mathew', 'Paul', 'Singh', 'Varghese', 'Raj'];
+  for (const s of samples) {
+    const created = new Date(Date.now() - s.days * DAY);
+    const engine = makeEngine(s.id);
+    bootstrapChurch(engine.db, engine.env, { id: s.id, name: s.name, country: 'IN', currency: 'INR', city: s.city, ownerEmail: `pastor@${s.slug}.example`, ownerName: 'Pastor' });
+    const ctx = engine.systemCtx();
+    for (let i = 0; i < s.people; i++) engine.db.put('people', newPerson(ctx, { firstName: first[i % first.length], lastName: last[(i * 7) % last.length], status: i % 9 === 0 ? 'visitor' : 'member' }));
+    const owner = engine.db.all('staff')[0];
+    engine.db.put('staff', { ...owner, status: 'active', lastActiveAt: new Date(Date.now() - (s.days % 5) * DAY).toISOString() });
+    if (s.plan === 'trial') startTrial(engine.db, new Date(Date.now() - 18 * DAY));
+    else saveSubscription(engine.db, { plan: s.plan, status: 'active', interval: s.plan === 'thrive' ? 'yearly' : 'monthly', trialEndsAt: null, currentPeriodEnd: new Date(Date.now() + 20 * DAY).toISOString(), providerRef: s.plan === 'seed' ? null : `sub_demo_${s.id}`, updatedAt: created.toISOString() });
+    platform.ensureChurch({ id: s.id, slug: s.slug, name: s.name, city: s.city, country: 'IN', currency: 'INR', ownerEmail: `pastor@${s.slug}.example`, ownerName: 'Pastor', createdAt: created.toISOString(), source: 'signup' });
+  }
+}
 
 function freshSeed() {
   db.load({});
@@ -25,62 +114,105 @@ function freshSeed() {
   db.put('meta', { id: 'seededAt', value: String(Date.now()) });
 }
 
-function load() {
-  let raw: string | null = null;
-  try {
-    raw = localStorage.getItem(DB_KEY);
-  } catch {
-    /* storage blocked: keep the in-memory church */
+let platformRaw: string | null = null;
+function loadPlatform() {
+  const raw = readStore(PLATFORM_KEY);
+  if (raw && raw === platformRaw) return;
+  if (raw) {
+    try {
+      platformDb.load(JSON.parse(raw) as Dump);
+      platformRaw = raw;
+    } catch {
+      /* start a fresh directory */
+    }
   }
-  if (raw && raw === loadedRaw) return;
+  if (!platformDb.count('meta')) {
+    platform.ensureChurch({ id: MAIN, slug: 'grace', name: 'Grace Community Church', city: 'Hyderabad', country: 'IN', currency: 'INR', ownerEmail: 'pastor@gracecommunity.in', ownerName: 'Pastor' });
+  }
+  // Sample churches live in memory only; they are remade on each visit.
+  if (!engines.has('ch_sample1')) sampleChurches();
+}
+
+function load() {
+  loadPlatform();
+  let raw: string | null = readStore(DB_KEY);
+  if (raw && raw === loadedRaw.get(MAIN)) return;
   if (raw) {
     try {
       const dump = JSON.parse(raw) as Dump;
       const seededAt = Number(dump.meta?.find((m) => m.id === 'seededAt')?.value ?? 0);
       if (Date.now() - seededAt < RESEED_AFTER_DAYS * DAY) {
         db.load(dump);
-        loadedRaw = raw;
+        loadedRaw.set(MAIN, raw);
         return;
       }
     } catch {
       /* fall through to a fresh seed */
     }
   }
-  if (!loadedRaw && db.count('people')) return; // already seeded in memory and storage is blocked
+  raw = null;
+  if (!loadedRaw.get(MAIN) && db.count('people')) return; // already seeded in memory and storage is blocked
   freshSeed();
-  save();
+  save(MAIN);
 }
 
-function save() {
-  try {
-    loadedRaw = JSON.stringify(db.dump());
-    localStorage.setItem(DB_KEY, loadedRaw);
-  } catch {
-    /* storage full or blocked: keep working in memory */
-  }
+function save(id: string) {
+  const engine = engines.get(id);
+  if (!engine || id.startsWith('ch_sample')) return;
+  const raw = JSON.stringify(engine.db.dump());
+  loadedRaw.set(id, raw);
+  writeStore(id === MAIN ? DB_KEY : churchKey(id), raw);
+}
+
+function savePlatform() {
+  // The sample churches are rebuilt on load, so they are left out of storage.
+  const dump = platformDb.dump();
+  dump.meta = (dump.meta ?? []).filter((m) => !m.id.startsWith('church:ch_sample'));
+  platformRaw = JSON.stringify(dump);
+  writeStore(PLATFORM_KEY, platformRaw);
 }
 
 export function resetDemoData() {
   freshSeed();
-  save();
+  save(MAIN);
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const PLATFORM_RE = /^\/(platform|signup|churches)(\/|$)/;
 
-export async function mockRequest<T>(scope: 'admin' | 'member', method: string, path: string, body: unknown, current: Session | null): Promise<T> {
+export async function mockRequest<T>(scope: 'admin' | 'member' | 'platform', method: string, path: string, body: unknown, current: Session | { token: string } | null, churchRef?: string | null): Promise<T> {
   await wait(120 + Math.random() * 140);
   load(); // pick up changes made in another tab (e.g. admin and member side by side)
   const [pathname, search = ''] = path.split('?');
-  const claims = readDemoToken(current?.accessToken);
-  const auth = claims && claims.scope === scope ? claims : null;
+  const query = Object.fromEntries(new URLSearchParams(search));
+
+  if (PLATFORM_RE.test(pathname)) {
+    const token = current && 'token' in current ? current.token : null;
+    try {
+      const result = await platform.handle({ method, path: pathname, query, body: body ?? {}, auth: null, token });
+      return (result === undefined ? undefined : structuredClone(result)) as T;
+    } finally {
+      if (method !== 'GET') {
+        savePlatform();
+        for (const id of engines.keys()) save(id);
+      }
+    }
+  }
+
+  const access = current && 'accessToken' in current ? current.accessToken : null;
+  const claims = readDemoToken(access) as (Record<string, unknown> & { scope?: string; church?: string }) | null;
+  const auth = claims && claims.scope === scope ? (claims as never) : null;
+  const ref = (auth && claims?.church) || churchRef || null;
+  const { engine } = platform.resolve(ref);
+  const id = [...engines].find(([, e]) => e === engine)?.[0] ?? MAIN;
   try {
-    const result = await engine.handle({ method, path: pathname, query: Object.fromEntries(new URLSearchParams(search)), body: body ?? {}, auth });
+    const result = await engine.handle({ method, path: pathname, query, body: body ?? {}, auth });
     // Hand back a copy so screens can't mutate the demo database by accident.
     return (result === undefined ? undefined : structuredClone(result)) as T;
   } finally {
     if (method !== 'GET') {
       await engine.tick().catch(() => undefined);
-      save();
+      save(id);
     }
   }
 }

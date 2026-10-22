@@ -1,4 +1,5 @@
 import { BookOpen, BookUser, ClipboardList, CalendarDays, Gift, HandHeart, Home, Sparkles, UserRound, UsersRound } from 'lucide-react';
+import { ChurchLine } from '@/platform/church';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { memberSession } from '@/api/client';
@@ -89,6 +90,7 @@ export function MemberSignIn() {
             <h1>{t('signInTitle')}</h1>
             <p className="muted">{t('signInBody')}</p>
           </div>
+          <ChurchLine />
           <OtpSignIn
             auth={MemberApi.auth}
             store={memberSession}

@@ -1,4 +1,11 @@
 // One function per backend endpoint. Screens call these, never fetch() directly.
+import type { billingView } from '@/core/modules/billing';
+import type { ChurchEntry } from '@/core/platform';
+import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
+import type { PaymentsStatus } from '@/core/types';
+
+export type BillingView = ReturnType<typeof billingView>;
+export type RazorpayKeysInput = { keyId: string; keySecret: string; webhookSecret: string; fcra?: { keyId: string; keySecret: string; webhookSecret: string } | null };
 // Member endpoints match the mobile app exactly (docs/API.md); admin ones are in docs/API-ADMIN.md.
 import type {
   AdminAnnouncement,
@@ -112,7 +119,7 @@ import type {
   WorkflowCardView,
   WorkflowView,
 } from './admin-types';
-import { adminSession, createApi, memberSession, qs, type SessionStore } from './client';
+import { adminSession, createApi, memberSession, platformApi, qs, type PlatformSession, type SessionStore } from './client';
 import type {
   ChurchEvent,
   Donation,
@@ -216,6 +223,57 @@ export const PublicApi = {
   form: (id: string) => m.get<PublicForm>(`/public/forms/${id}`),
   screen: (eventId: string, key: string) => m.get<PresentationView>(`/screens/${eventId}${qs({ key })}`),
   submitForm: (id: string, input: FormSubmission) => m.post<FormSubmitResult>(`/public/forms/${id}/responses`, input),
+};
+
+// ---------- Many churches: lookup, sign-up and the Flockwise team panel ----------
+export type ChurchPublic = { id: string; slug: string; name: string; city: string; logoUrl: string | null; isDefault: boolean };
+export type SignupInput = { requestId: string; code: string; churchName: string; ownerName: string; city: string; country: string; slug: string; phone?: string };
+export type TeamChurch = ChurchEntry & { plan: PlanId; subscription: Subscription; people: number; staff: number; lastActiveAt: string | null; mrr: number; priceCurrency: 'INR' | 'USD' };
+export type TeamChurchDetail = TeamChurch & {
+  team: { id: string; name: string; email: string; role: StaffRole; status: string; lastActiveAt: string | null }[];
+  activity: AuditEntry[];
+  teamLog: AuditEntry[];
+};
+export type TeamOverview = {
+  churches: number;
+  activeLast30: number;
+  newLast30: number;
+  trials: number;
+  paying: number;
+  pastDue: { id: string; name: string; plan: PlanId }[];
+  trialsEnding: { id: string; name: string; trialEndsAt: string }[];
+  mrr: { INR: number; USD: number };
+  arr: { INR: number; USD: number };
+  byPlan: { plan: PlanId; name: string; churches: number }[];
+  people: number;
+  aiCredits: number;
+  messages: number;
+  signups: { weekStart: string; signups: number }[];
+};
+export type SubscriptionChange = { plan?: PlanId; status?: Subscription['status']; trialDays?: number; peopleLimit?: number | null; founding?: boolean };
+
+export const ChurchesApi = {
+  get: (slug: string) => platformApi.get<ChurchPublic>(`/churches/${encodeURIComponent(slug)}`),
+  find: (email: string) => platformApi.post<{ sent: boolean; churches?: { slug: string; name: string; city: string }[] }>('/churches/find', { email }),
+};
+
+export const SignupApi = {
+  slug: (slug: string, name = '', city = '') => platformApi.get<{ slug: string; available: boolean; problem: string | null; suggestion: string }>(`/signup/slug${qs({ slug, name, city })}`),
+  start: (email: string) => platformApi.post<OtpRequest>('/signup/start', { email }),
+  complete: (input: SignupInput) => platformApi.post<{ church: { id: string; slug: string; name: string }; session: Session }>('/signup/complete', input),
+};
+
+export const TeamApi = {
+  request: (email: string) => platformApi.post<OtpRequest>('/platform/auth/request', { email }),
+  verify: (requestId: string, code: string) => platformApi.post<PlatformSession>('/platform/auth/verify', { requestId, code }),
+  signOut: () => platformApi.post<void>('/platform/auth/sign-out'),
+  overview: () => platformApi.get<TeamOverview>('/platform/overview'),
+  churches: (q: { q?: string; plan?: string; status?: string } = {}) => platformApi.get<TeamChurch[]>(`/platform/churches${qs(q)}`),
+  church: (id: string) => platformApi.get<TeamChurchDetail>(`/platform/churches/${id}`),
+  update: (id: string, patch: { status?: 'active' | 'suspended'; notes?: string; name?: string; slug?: string }) => platformApi.patch<TeamChurch>(`/platform/churches/${id}`, patch),
+  subscription: (id: string, change: SubscriptionChange) => platformApi.post<TeamChurch>(`/platform/churches/${id}/subscription`, change),
+  open: (id: string, reason: string) => platformApi.post<{ church: { id: string; slug: string; name: string }; session: Session }>(`/platform/churches/${id}/open`, { reason }),
+  audit: () => platformApi.get<AuditEntry[]>('/platform/audit'),
 };
 
 // ---------- Church admin dashboard ----------
@@ -360,7 +418,16 @@ export const AdminApi = {
   settings: {
     get: () => a.get<ChurchSettings>('/admin/settings'),
     update: (patch: Partial<ChurchSettings>) => a.patch<ChurchSettings>('/admin/settings', patch),
-    connectPayments: () => a.post<{ onboardingUrl: string }>('/admin/settings/payments/connect'),
+  },
+  payments: {
+    status: () => a.get<PaymentsStatus>('/admin/settings/payments'),
+    connect: (input: RazorpayKeysInput) => a.post<PaymentsStatus>('/admin/settings/payments/razorpay', input),
+    disconnect: () => a.del<PaymentsStatus>('/admin/settings/payments/razorpay'),
+  },
+  billing: {
+    get: () => a.get<BillingView>('/admin/billing'),
+    checkout: (plan: PlanId, interval: BillingInterval) => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/checkout', { plan, interval }),
+    cancel: () => a.post<BillingView>('/admin/billing/cancel'),
   },
   ai: {
     status: () => a.get<AiStatus>('/admin/ai/status'),

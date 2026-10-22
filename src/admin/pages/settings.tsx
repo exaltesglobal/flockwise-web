@@ -1,5 +1,6 @@
-import { Building2, CreditCard, History, Landmark, Pencil, Plus, ReceiptText, Search, Trash2, UserPlus } from 'lucide-react';
+import { Building2, History, Landmark, Pencil, Plus, ReceiptText, Search, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import type { AuditEntry, Campus, ChurchSettings, LanguageCode, Room } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
@@ -12,6 +13,7 @@ import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
+import { PlanBilling, RazorpayCard } from './billing';
 import { IntegrationsSettings } from './integrations';
 import { CustomFieldsSettings, PublicPageSettings } from './publishing';
 
@@ -26,12 +28,13 @@ const ROLE_HELP: Record<StaffRole, string> = {
 };
 const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
-type Tab = 'church' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'team' | 'audit' | 'server';
+type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'team' | 'audit' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
   const tabs: { value: Tab; label: string; show: boolean }[] = [
     { value: 'church', label: 'Church', show: can('settings') },
+    { value: 'billing', label: 'Plan & billing', show: can('settings') },
     { value: 'giving', label: 'Giving & compliance', show: can('settings') },
     { value: 'campuses', label: 'Campuses', show: can('settings') },
     { value: 'kids', label: 'Kids check-in', show: can('settings') },
@@ -47,6 +50,12 @@ export function SettingsPage() {
     const h = window.location.hash.slice(1) as Tab;
     return visible.some((t) => t.value === h) ? h : visible[0].value;
   });
+  const { hash } = useLocation();
+  useEffect(() => {
+    const h = hash.slice(1) as Tab;
+    if (visible.some((t) => t.value === h)) setTab(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hash]);
 
   return (
     <>
@@ -54,6 +63,7 @@ export function SettingsPage() {
       <div className="tabs">
         {visible.map((t) => <button key={t.value} className={tab === t.value ? 'on' : ''} onClick={() => setTab(t.value)}>{t.label}</button>)}
       </div>
+      {tab === 'billing' && <PlanBilling />}
       {(tab === 'church' || tab === 'giving' || tab === 'kids') && <ChurchSettingsForm section={tab} />}
       {tab === 'campuses' && <Campuses />}
       {tab === 'kids' && <Rooms />}
@@ -71,7 +81,6 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
   const settings = useApi(AdminApi.settings.get);
   const [form, setForm] = useState<ChurchSettings | null>(null);
   const save = useAction(AdminApi.settings.update);
-  const connect = useAction(AdminApi.settings.connectPayments);
   const toast = useToast();
 
   useEffect(() => {
@@ -148,26 +157,7 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
 
   return (
     <>
-      <div className="card">
-        <div className="card-head"><h2>Online giving</h2><CreditCard size={18} className="muted" /></div>
-        <div className="card-body stack">
-          <div className="row wrap">
-            <div className="grow">
-              <h3>{form.payments.provider === 'razorpay' ? 'Razorpay' : 'Stripe'} {form.payments.connected ? <span className="badge ok">Connected</span> : <span className="badge warn">Not connected</span>}</h3>
-              <p className="small muted">
-                Gifts are paid straight into the church’s own {form.payments.provider === 'razorpay' ? 'Razorpay' : 'Stripe'} account{form.payments.accountId ? <> (<span className="mono">{form.payments.accountId}</span>)</> : ''}. Flockwise never holds the money.
-                {form.payments.provider === 'razorpay' ? ' UPI, UPI AutoPay, cards and netbanking are supported. Your Razorpay keys are set on the server, never here.' : ''}
-              </p>
-            </div>
-            <button className="btn" disabled={connect.busy} onClick={async () => {
-              const r = await connect.run();
-              if (r?.onboardingUrl) window.location.href = r.onboardingUrl;
-              else if (r) { settings.reload(); toast('Payment account connected'); }
-            }}>{form.payments.connected ? 'Reconnect' : 'Connect account'}</button>
-          </div>
-          <FormError error={connect.error} />
-        </div>
-      </div>
+      <RazorpayCard india={india} />
 
       {india && (
         <div className="grid cols-2">

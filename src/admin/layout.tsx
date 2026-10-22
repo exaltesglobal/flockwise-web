@@ -13,6 +13,8 @@ import type { Permission } from '@/api/admin-types';
 import { LegalFooter } from '@/legal/legal';
 
 import { useAi } from './ai';
+import { missingPlan, PlanBanner, PlanGate, PlanLock, usePlan } from './plan';
+import { ChurchLine } from '@/platform/church';
 import './admin.css';
 
 const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[]; ai?: boolean }[] = [
@@ -43,6 +45,7 @@ export function AdminLayout() {
   const session = useSession(adminSession);
   const can = useCan();
   const ai = useAi();
+  const plan = usePlan();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
@@ -58,7 +61,7 @@ export function AdminLayout() {
 
   return (
     <div className="admin">
-      <DemoBanner text="Demo mode: sample data for Grace Community Church. Connect a real API in Settings → Server." href="/admin/settings" />
+      <DemoBanner text="Demo mode: sample data kept in this browser. Connect a real API in Settings → Server." href="/admin/settings#server" />
       <div className="admin-shell">
         <aside className={`admin-side ${open ? 'open' : ''}`}>
           <div className="admin-brand">
@@ -75,6 +78,7 @@ export function AdminLayout() {
             {NAV.filter((n) => (!n.perm || can(...n.perm)) && (!n.ai || ai)).map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}>
                 <Icon size={18} /> {label}
+                {missingPlan(plan, to) && <PlanLock />}
               </NavLink>
             ))}
           </nav>
@@ -97,7 +101,11 @@ export function AdminLayout() {
             </button>
             <Logo height={22} />
           </div>
-          <Outlet />
+          <PlanBanner />
+          {(() => {
+            const need = missingPlan(plan, location.pathname);
+            return need ? <PlanGate need={need} /> : <Outlet />;
+          })()}
         </main>
       </div>
     </div>
@@ -130,6 +138,7 @@ export function AdminSignIn() {
             <h1>Church office sign in</h1>
             <p className="muted">Use the email address your church admin invited you with. We will email you a one-time code.</p>
           </div>
+          <ChurchLine />
           <OtpSignIn
             auth={AdminApi.auth}
             store={adminSession}
@@ -147,6 +156,9 @@ export function AdminSignIn() {
         </div>
         <Link to="/app" className="small">
           Looking for the member portal?
+        </Link>
+        <Link to="/start" className="small">
+          New to Flockwise? Start your church free
         </Link>
       </div>
       <LegalFooter />
