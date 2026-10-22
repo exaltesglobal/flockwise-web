@@ -194,6 +194,8 @@ export const platformApi = {
   get: <T>(path: string) => platformSend<T>('GET', path),
   post: <T>(path: string, body?: unknown) => platformSend<T>('POST', path, body ?? {}),
   patch: <T>(path: string, body?: unknown) => platformSend<T>('PATCH', path, body ?? {}),
+  put: <T>(path: string, body?: unknown) => platformSend<T>('PUT', path, body ?? {}),
+  del: <T>(path: string) => platformSend<T>('DELETE', path),
 };
 
 export const networkApi = {

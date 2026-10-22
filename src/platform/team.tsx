@@ -1,6 +1,6 @@
 // The Flockwise team panel (/platform): every church, revenue, plans, trials and support access.
 // Separate from any church office; team members sign in with their Flockwise email.
-import { Activity, ArrowLeft, BadgeCheck, Building2, Download, IndianRupee, LayoutDashboard, LogOut, Search, ShieldCheck, Users } from 'lucide-react';
+import { Activity, ArrowLeft, BookOpen, BadgeCheck, Building2, Download, IndianRupee, LayoutDashboard, LogOut, Search, ShieldCheck, Users } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 
@@ -16,6 +16,7 @@ import { setChurch } from '@/lib/church';
 import { isUsingMocks } from '@/lib/config';
 import { formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
+import { TeamSongs } from './team-songs';
 
 const usePlatform = () => useSyncExternalStore((cb) => platformSession.subscribe(cb), () => platformSession.get());
 const inr = (paise: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(paise / 100);
@@ -90,7 +91,7 @@ function TeamSignIn() {
 
 function TeamShell({ session }: { session: PlatformSession }) {
   const { pathname } = useLocation();
-  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : pathname.startsWith('/platform/razorpay') ? 'razorpay' : 'overview';
+  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : pathname.startsWith('/platform/razorpay') ? 'razorpay' : pathname.startsWith('/platform/songs') ? 'songs' : 'overview';
   async function signOut() {
     await TeamApi.signOut().catch(() => undefined);
     platformSession.set(null);
@@ -106,6 +107,7 @@ function TeamShell({ session }: { session: PlatformSession }) {
             <NavLink to="/platform" end><LayoutDashboard size={18} /> Overview</NavLink>
             <NavLink to="/platform/churches"><Building2 size={18} /> Churches</NavLink>
             <NavLink to="/platform/razorpay"><BadgeCheck size={18} /> Razorpay setups</NavLink>
+            <NavLink to="/platform/songs"><BookOpen size={18} /> Song database</NavLink>
             <NavLink to="/platform/activity"><Activity size={18} /> Team activity</NavLink>
           </nav>
           <div className="admin-user">
@@ -126,6 +128,7 @@ function TeamShell({ session }: { session: PlatformSession }) {
           {view === 'churches' && <Churches />}
           {view === 'activity' && <TeamActivity />}
           {view === 'razorpay' && <RazorpaySetups />}
+          {view === 'songs' && <TeamSongs />}
         </main>
       </div>
     </div>

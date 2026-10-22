@@ -16,6 +16,7 @@ import { useAction, useApi } from '@/lib/use-api';
 
 import { SetlistModal, useAi } from '../ai';
 import { PageHeader } from '../layout';
+import { SongDatabase } from './song-catalog';
 import { ImportSongsModal } from './song-import';
 import { RehearsalPlayer, SongStatsView } from './worship';
 
@@ -44,17 +45,18 @@ let seq = 0;
 const draftKey = () => `d${++seq}`;
 
 export function ServicesPage() {
-  const [tab, setTab] = useState<'plans' | 'songs' | 'stats' | 'ccli'>('plans');
+  const [tab, setTab] = useState<'plans' | 'songs' | 'database' | 'stats' | 'ccli'>('plans');
   return (
     <>
       <PageHeader title="Service planning" subtitle="Order of service, songs and keys, timings and who is serving. Volunteers see the plan in the app once they accept." />
       <div className="tabs">
         <button className={tab === 'plans' ? 'on' : ''} onClick={() => setTab('plans')}>Plans</button>
         <button className={tab === 'songs' ? 'on' : ''} onClick={() => setTab('songs')}>Song library</button>
+        <button className={tab === 'database' ? 'on' : ''} onClick={() => setTab('database')}>Song database</button>
         <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Song stats</button>
         <button className={tab === 'ccli' ? 'on' : ''} onClick={() => setTab('ccli')}>CCLI report</button>
       </div>
-      {tab === 'plans' ? <Plans /> : tab === 'songs' ? <Songs /> : tab === 'stats' ? <SongStatsView /> : <CcliReport />}
+      {tab === 'plans' ? <Plans /> : tab === 'songs' ? <Songs /> : tab === 'database' ? <SongDatabase /> : tab === 'stats' ? <SongStatsView /> : <CcliReport />}
     </>
   );
 }
@@ -332,7 +334,7 @@ function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
     </>}>
       <div className="stack">
         <div className="row wrap" style={{ gap: 8 }}>
-          <span className="small muted grow">{song.author}{song.ccli ? ` · CCLI ${song.ccli}` : ''}{song.bpm ? ` · ${song.bpm} bpm` : ''}</span>
+          <span className="small muted grow">{song.author}{song.ccli ? ` · CCLI ${song.ccli}` : ''}{song.bpm ? ` · ${song.bpm} bpm` : ''}{song.copyright ? ` · ${song.copyright}` : ''}</span>
           {hasChart && <>
             <span className="small">Key</span>
             <button className="btn sm icon" onClick={() => setSteps(steps - 1)} aria-label="Transpose down">−</button>
