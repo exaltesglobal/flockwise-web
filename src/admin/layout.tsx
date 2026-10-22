@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -24,6 +24,7 @@ const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?
   { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
   { to: '/admin/workflows', label: 'Follow-up workflows', icon: GitBranch, perm: ['people.view', 'care'] },
   { to: '/admin/celebrations', label: 'Celebrations', icon: Cake, perm: ['people.view'] },
+  { to: '/admin/registers', label: 'Registers', icon: BookMarked, perm: ['people.view'] },
   { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
   { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
   { to: '/admin/forms', label: 'Forms & registrations', icon: FileText, perm: ['events', 'people.edit'] },

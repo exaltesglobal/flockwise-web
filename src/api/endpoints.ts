@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { PaymentsStatus } from '@/core/types';
+import type { Certificate, PaymentsStatus, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
 export type RazorpayKeysInput = { keyId: string; keySecret: string; webhookSecret: string; fcra?: { keyId: string; keySecret: string; webhookSecret: string } | null };
@@ -532,6 +532,16 @@ export const AdminApi = {
   groupPosts: {
     list: (groupId: string) => a.get<{ posts: GroupPost[]; resources: GroupResource[] }>(`/admin/groups/${groupId}/posts`),
     remove: (postId: string) => a.del<void>(`/admin/groups/posts/${postId}`),
+  },
+  registers: {
+    summary: () => a.get<{ kinds: RegisterSummary[]; fields: Record<RegisterKind, RegisterField[]>; labels: Record<RegisterKind, { name: string; certificate: string; prefix: string; person: string; date: string }> }>('/admin/registers/summary'),
+    list: (f: { kind?: RegisterKind; q?: string; year?: string; status?: 'void' | 'all'; cursor?: string }) => a.get<{ data: RegisterEntry[]; nextCursor: string | null; total: number }>(`/admin/registers${qs(f)}`),
+    forPerson: (personId: string) => a.get<RegisterEntry[]>(`/admin/people/${personId}/registers`),
+    create: (input: RegisterEntryInput & { markInactive?: boolean }) => a.post<RegisterEntry>('/admin/registers', input),
+    update: (id: string, input: Partial<RegisterEntryInput> & { reason?: string }) => a.patch<RegisterEntry>(`/admin/registers/${id}`, input),
+    note: (id: string, text: string) => a.post<RegisterEntry>(`/admin/registers/${id}/notes`, { text }),
+    void: (id: string, reason: string) => a.post<RegisterEntry>(`/admin/registers/${id}/void`, { reason }),
+    certificate: (id: string) => a.post<Certificate>(`/admin/registers/${id}/certificate`),
   },
   sermons: {
     list: () => a.get<Sermon[]>('/admin/sermons'),

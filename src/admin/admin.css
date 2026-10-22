@@ -215,3 +215,42 @@ button.chip.on { background: var(--primary); color: #fff; }
 .admin-main .team-mobilebar { display: none; }
 .team-drawer h3 { font-size: 16px; }
 @media (max-width: 900px) { .admin-main .team-mobilebar { display: flex; align-items: center; gap: 6px; } }
+
+/* registers */
+.seg-scroll { max-width: 100%; overflow-x: auto; }
+.nowrap { white-space: nowrap; }
+.register-tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.register-tile { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; text-align: left; cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--border); }
+.register-tile strong { font-size: 24px; font-family: var(--font-display, inherit); }
+.register-tile.on, .register-tile:hover { border-color: var(--primary); }
+@media (max-width: 720px) { .hide-sm { display: none; } }
+.register-dl { display: grid; gap: 10px; margin: 0; }
+.register-dl > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.register-dl dt { color: var(--muted); font-size: 13px; }
+.register-dl dd { margin: 0; overflow-wrap: anywhere; }
+.cert-overlay { position: fixed; inset: 0; z-index: 60; background: #e9ece8; overflow-y: auto; padding: 0 16px 40px; }
+.cert-bar { position: sticky; top: 0; display: flex; align-items: center; gap: 8px; max-width: 794px; margin: 0 auto 16px; padding: 12px 0; background: #e9ece8; color: #1b2a26; }
+.cert-page { max-width: 794px; min-height: 1060px; margin: 0 auto; background: #fff; color: #1b2a26; padding: 56px 64px; box-shadow: 0 4px 24px rgba(0,0,0,.12); border: 10px double #c9a14a; display: flex; flex-direction: column; gap: 18px; font-family: Georgia, 'Times New Roman', serif; }
+.cert-page.letter { border: none; }
+.cert-head { text-align: center; border-bottom: 1px solid #d8d2c2; padding-bottom: 14px; }
+.cert-head h1 { margin: 6px 0 4px; font-size: 26px; letter-spacing: .02em; }
+.cert-head p { margin: 0; font-size: 13px; color: #5b6560; }
+.cert-logo { max-height: 64px; }
+.cert-title { text-align: center; font-size: 30px; font-weight: normal; font-style: italic; margin: 8px 0; color: #7a5b16; }
+.cert-page.letter .cert-title { font-size: 22px; font-style: normal; text-transform: uppercase; letter-spacing: .08em; color: #1b2a26; }
+.cert-lead, .cert-para { font-size: 16px; line-height: 1.6; margin: 0; }
+.cert-ref { text-align: right; font-size: 14px; margin: 0; color: #5b6560; }
+.cert-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.cert-table th { text-align: left; font-weight: normal; color: #5b6560; width: 42%; padding: 7px 10px 7px 0; vertical-align: top; border-bottom: 1px dotted #c8c2b2; }
+.cert-table td { padding: 7px 0; border-bottom: 1px dotted #c8c2b2; }
+.cert-foot { margin-top: auto; display: flex; justify-content: space-between; gap: 40px; font-size: 14px; color: #5b6560; text-align: center; }
+.cert-foot > div { flex: 1; }
+.cert-sign { border-bottom: 1px solid #1b2a26; height: 56px; margin-bottom: 6px; }
+.cert-meta { font-size: 11px; color: #8a918d; text-align: center; margin: 0; }
+@media (max-width: 640px) { .cert-page { padding: 28px 20px; min-height: 0; } .cert-table th { width: 46%; } }
+@media print {
+  body.cert-open > *:not(.cert-overlay) { display: none !important; }
+  body.cert-open .cert-overlay { position: static; padding: 0; background: #fff; overflow: visible; }
+  body.cert-open .cert-page { box-shadow: none; margin: 0; max-width: none; min-height: 96vh; }
+  @page { size: A4; margin: 12mm; }
+}
