@@ -110,7 +110,7 @@ function ConnectChitthi({ onClose, onDone }: { onClose: () => void; onDone: (s: 
 
 function TemplatePicker({ status, onSaved }: { status: ChitthiStatus; onSaved: (s: ChitthiStatus) => void }) {
   const [list, setList] = useState<{ available: boolean; data: ChitthiTemplate[] } | null>(null);
-  const [mode, setMode] = useState<'template' | 'text'>(status.template ? 'template' : 'text');
+  const [mode, setMode] = useState<'template' | 'text'>(status.template || !status.lastSentAt ? 'template' : 'text');
   const [t, setT] = useState({ template: status.template, language: status.language, params: status.params });
   const save = useAction(() => AdminApi.integrations.updateChitthi(mode === 'text' ? { template: '', language: t.language, params: t.params } : t));
   useEffect(() => { void AdminApi.integrations.chitthiTemplates().then(setList, () => setList({ available: false, data: [] })); }, []);
