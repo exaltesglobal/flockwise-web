@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, MapPin, ScanLine, Ticket, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Ticket, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
@@ -46,7 +46,7 @@ export function MemberEventPage() {
   if (error) return <ErrorState error={error} onRetry={reload} />;
   if (!ev) return <Loading />;
   const full = !!ev.capacity && ev.goingCount >= ev.capacity && ev.myRsvp !== 'going';
-  const priced = !!ev.price && ev.price > 0;
+  const priced = !ev.registrationFormId && !!ev.price && ev.price > 0;
   const hasTicket = priced && (paid || ev.myRsvp === 'going');
   const now = Date.now();
   const checkInOpen = now >= new Date(ev.startsAt).getTime() - 3600_000 && now <= new Date(ev.endsAt).getTime();
@@ -86,7 +86,9 @@ export function MemberEventPage() {
         ) : (!priced || hasTicket) && (
           <button className="btn lg accent" style={{ alignSelf: 'flex-start' }} disabled={checkIn.busy} onClick={() => checkIn.run()}><ScanLine size={17} /> {t('checkIn')}</button>
         ))}
-        {!priced && <div className="row wrap">
+        {ev.registrationFormId ? (
+          <Link to={`/app/forms/${ev.registrationFormId}`} className="btn lg primary" style={{ alignSelf: 'flex-start' }}><ClipboardList size={17} /> {t('register')}</Link>
+        ) : !priced && <div className="row wrap">
           <button className={`btn lg ${ev.myRsvp === 'going' ? 'primary' : ''}`} disabled={rsvp.busy || full} onClick={() => rsvp.run('going')}>
             {ev.myRsvp === 'going' ? `✓ ${t('going')}` : t('imGoing')}
           </button>

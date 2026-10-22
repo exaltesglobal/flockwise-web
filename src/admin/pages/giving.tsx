@@ -18,7 +18,7 @@ import { PageHeader } from '../layout';
 const METHOD: Record<PaymentMethod, string> = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', cash: 'Cash', cheque: 'Cheque', bank_transfer: 'Bank transfer' };
 const STATUS_TONE = { succeeded: 'ok', pending: 'warn', failed: 'danger', refunded: 'gray' } as const;
 
-type Tab = 'donations' | 'funds' | 'pledges' | 'receipts';
+type Tab = 'donations' | 'batches' | 'funds' | 'pledges' | 'receipts';
 
 /** Indian financial year (1 April – 31 March) as YYYY-MM-DD bounds. */
 function fiscalYear(offset = 0) {
@@ -50,12 +50,14 @@ export function GivingPage() {
       <div>
         <Segmented value={tab} onChange={setTab} options={[
           { value: 'donations', label: 'Donations' },
+          { value: 'batches', label: 'Batches' },
           { value: 'funds', label: 'Funds' },
           { value: 'pledges', label: 'Pledges' },
           ...(isIndia ? [{ value: 'receipts' as Tab, label: '80G receipts' }] : []),
         ]} />
       </div>
       {tab === 'donations' && <Donations funds={funds.data ?? []} currency={currency} onChanged={funds.reload} />}
+      {tab === 'batches' && <Batches funds={funds.data ?? []} currency={currency} />}
       {tab === 'funds' && <Funds funds={funds} currency={currency} />}
       {tab === 'pledges' && <Pledges funds={funds.data ?? []} currency={currency} />}
       {tab === 'receipts' && <Receipts currency={currency} />}
@@ -187,7 +189,7 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
   );
 }
 
-function OfflineGiftForm({ funds, currency, onClose, onSaved }: { funds: AdminFund[]; currency: Currency; onClose: () => void; onSaved: () => void }) {
+function OfflineGiftForm({ funds, currency, onClose, onSaved, batch }: { funds: AdminFund[]; currency: Currency; onClose: () => void; onSaved: () => void; batch?: { id: string; name: string } }) {
   const [donorName, setDonorName] = useState('');
   const [donorId, setDonorId] = useState<string | null>(null);
   const [matches, setMatches] = useState<{ id: string; name: string }[]>([]);
@@ -212,13 +214,18 @@ function OfflineGiftForm({ funds, currency, onClose, onSaved }: { funds: AdminFu
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const r = await save.run({ donorId, donorName: donorName.trim(), fundId, amount: amt, method, pan: pan.trim().toUpperCase() || undefined, donorCitizenship: foreign ? 'OTHER' : 'IN', receivedAt });
-    if (r) onSaved();
+    const r = await save.run({ donorId, donorName: donorName.trim(), fundId, amount: amt, method, pan: pan.trim().toUpperCase() || undefined, donorCitizenship: foreign ? 'OTHER' : 'IN', receivedAt, batchId: batch?.id ?? null });
+    if (!r) return;
+    if (batch) {
+      // Batch entry: stay open for the next envelope.
+      setDonorName(''); setDonorId(null); setAmount(''); setPan(''); setForeign(false);
+    }
+    onSaved();
   }
 
   return (
-    <Modal title="Record a cash or cheque gift" onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" form="gift-form" disabled={save.busy || !donorName.trim() || !amt}>Save gift</button></>}
+    <Modal title={batch ? `Add to ${batch.name}` : 'Record a cash or cheque gift'} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>{batch ? 'Done' : 'Cancel'}</button><button className="btn primary" form="gift-form" disabled={save.busy || !donorName.trim() || !amt}>{batch ? 'Save and add another' : 'Save gift'}</button></>}
     >
       <form id="gift-form" className="stack" onSubmit={onSubmit}>
         <FormError error={save.error} />
@@ -477,5 +484,109 @@ function PledgeForm({ funds, currency, onClose, onSaved }: { funds: AdminFund[];
         </div>
       </div>
     </Modal>
+  );
+}
+
+function Batches({ funds, currency }: { funds: AdminFund[]; currency: Currency }) {
+  const { data, error, reload } = useApi(AdminApi.batches.list);
+  const [open, setOpen] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const can = useCan();
+  const toast = useToast();
+  if (open) return <BatchDetail id={open} funds={funds} currency={currency} onBack={() => { setOpen(null); reload(); }} />;
+  return (
+    <div className="card">
+      <div className="toolbar">
+        <span className="small muted grow">Count Sunday's cash and cheques together, check the total, then commit the batch so it can't change.</span>
+        {can('giving.edit') && <button className="btn primary" onClick={() => setCreating(true)}><Plus size={16} /> New batch</button>}
+      </div>
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? <Empty icon={<Gift size={28} />} title="No batches yet" /> : (
+        <div className="table-wrap"><table className="table">
+          <thead><tr><th>Batch</th><th>Date</th><th className="num">Gifts</th><th className="num">Total</th><th>Status</th></tr></thead>
+          <tbody>{data.map((b) => (
+            <tr key={b.id} className="clickable" onClick={() => setOpen(b.id)}>
+              <td><b>{b.name}</b><div className="small muted">By {b.createdBy}</div></td>
+              <td className="small">{formatDate(b.date)}</td>
+              <td className="num">{b.count}</td>
+              <td className="num">{formatMoney(b.total, currency)}{b.difference ? <div className="small" style={{ color: 'var(--danger)' }}>{b.difference > 0 ? '+' : ''}{formatMoney(b.difference, currency)} vs counted</div> : null}</td>
+              <td>{b.status === 'committed' ? <span className="badge ok">Committed</span> : <span className="badge warn">Open</span>}</td>
+            </tr>
+          ))}</tbody>
+        </table></div>
+      )}
+      {creating && <NewBatch currency={currency} onClose={() => setCreating(false)} onSaved={(id) => { setCreating(false); toast('Batch opened'); setOpen(id); }} />}
+    </div>
+  );
+}
+
+function NewBatch({ currency, onClose, onSaved }: { currency: Currency; onClose: () => void; onSaved: (id: string) => void }) {
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [name, setName] = useState('');
+  const [expected, setExpected] = useState('');
+  const save = useAction(() => AdminApi.batches.create({ name: name.trim() || undefined, date, expectedTotal: expected ? Math.round(Number(expected) * 100) : null }));
+  return (
+    <Modal title="New deposit batch" onClose={onClose} footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy} onClick={async () => { const b = await save.run(); if (b) onSaved(b.id); }}>Open batch</button></>}>
+      <div className="stack">
+        <FormError error={save.error} />
+        <Field label="Date"><input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+        <Field label="Name" hint="Leave empty for “Sunday offering <date>”."><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label={`Counted total (${currency})`} hint="What the counting team got. Flockwise checks the entries add up to this."><input type="number" min={0} className="input" value={expected} onChange={(e) => setExpected(e.target.value)} /></Field>
+      </div>
+    </Modal>
+  );
+}
+
+function BatchDetail({ id, funds, currency, onBack }: { id: string; funds: AdminFund[]; currency: Currency; onBack: () => void }) {
+  const { data, error, reload } = useApi(() => AdminApi.batches.get(id), [id]);
+  const [adding, setAdding] = useState(false);
+  const can = useCan();
+  const toast = useToast();
+  if (error) return <ErrorState error={error} onRetry={reload} />;
+  if (!data) return <Loading />;
+  const b = data.batch;
+  const open = b.status === 'open';
+  const commit = async () => {
+    try { await AdminApi.batches.commit(b.id); }
+    catch (e) {
+      if (!confirm(`${(e as Error).message}\n\nCommit anyway?`)) return;
+      await AdminApi.batches.commit(b.id, true);
+    }
+    toast('Batch committed'); reload();
+  };
+  return (
+    <div className="stack">
+      <button className="link-btn small" style={{ alignSelf: 'flex-start' }} onClick={onBack}>← All batches</button>
+      <div className="card card-pad stack">
+        <div className="row wrap" style={{ gap: 8 }}>
+          <h2 className="grow">{b.name}</h2>
+          {open ? <span className="badge warn">Open</span> : <span className="badge ok">Committed by {b.committedBy}</span>}
+        </div>
+        <div className="stat-row">
+          <div className="card mini-stat"><b>{b.count}</b><span>Gifts</span></div>
+          <div className="card mini-stat"><b>{formatMoney(b.total, currency)}</b><span>Entered</span></div>
+          {b.expectedTotal !== null && <div className="card mini-stat"><b>{formatMoney(b.expectedTotal, currency)}</b><span>Counted</span></div>}
+          {b.difference !== null && <div className="card mini-stat"><b style={{ color: b.difference ? 'var(--danger)' : 'var(--ok)' }}>{b.difference ? formatMoney(b.difference, currency) : 'Balanced'}</b><span>Difference</span></div>}
+          {b.byMethod.map((m) => <div key={m.method} className="card mini-stat"><b>{formatMoney(m.total, currency)}</b><span>{METHOD[m.method as PaymentMethod] ?? m.method} · {m.count}</span></div>)}
+        </div>
+        {can('giving.edit') && (
+          <div className="row wrap" style={{ gap: 8 }}>
+            {open && <button className="btn primary" onClick={() => setAdding(true)}><Plus size={15} /> Add gifts</button>}
+            {open && <button className="btn" disabled={!b.count} onClick={commit}>Commit batch</button>}
+            {!open && <button className="btn" onClick={async () => { await AdminApi.batches.reopen(b.id); reload(); }}><RotateCcw size={15} /> Reopen</button>}
+            {open && !b.count && <button className="btn ghost danger" onClick={async () => { await AdminApi.batches.remove(b.id); onBack(); }}><Trash2 size={15} /> Delete</button>}
+            <button className="btn ghost" disabled={!data.donations.length} onClick={() => downloadCsv(`${b.name}.csv`, [['Donor', 'Fund', 'Method', 'Amount', 'Receipt'], ...data.donations.map((d) => [d.donorName, d.fundName, d.method, d.amount / 100, d.receiptNumber])])}><Download size={15} /> Export</button>
+          </div>
+        )}
+      </div>
+      <div className="card">
+        {data.donations.length === 0 ? <Empty title="No gifts in this batch yet" /> : (
+          <div className="table-wrap"><table className="table">
+            <thead><tr><th>Donor</th><th>Fund</th><th>Method</th><th className="num">Amount</th><th>Receipt</th></tr></thead>
+            <tbody>{data.donations.map((d) => <tr key={d.id} style={{ opacity: d.status === 'refunded' ? 0.5 : 1 }}><td>{d.donorName}</td><td className="small">{d.fundName}</td><td className="small">{METHOD[d.method]}</td><td className="num">{formatMoney(d.amount, currency)}</td><td className="small mono">{d.receiptNumber ?? '—'}</td></tr>)}</tbody>
+          </table></div>
+        )}
+      </div>
+      {adding && <OfflineGiftForm batch={{ id: b.id, name: b.name }} funds={funds.filter((f) => f.active)} currency={currency} onClose={() => setAdding(false)} onSaved={() => { reload(); toast('Added'); }} />}
+    </div>
   );
 }

@@ -1,0 +1,26 @@
+/* Public church page and public registration forms (no sign-in). */
+.pub { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+.pub-wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.pub-top { background: var(--card); border-bottom: 1px solid var(--border); padding-block: 12px; position: sticky; top: 0; z-index: 5; }
+.pub-brand { color: var(--text); font-weight: 700; font-size: 17px; min-width: 0; }
+.pub-brand:hover { text-decoration: none; }
+.pub-brand img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+.pub-main { flex: 1; padding-block: 24px 48px; display: flex; flex-direction: column; gap: 36px; }
+.pub-hero { border-radius: var(--radius-lg); padding: clamp(24px, 5vw, 48px); color: #fff; display: flex; flex-direction: column; gap: 14px;
+  background: linear-gradient(135deg, var(--fw-pasture), var(--fw-deep)); background-size: cover; background-position: center; }
+.pub-hero h1 { color: #fff; font-size: clamp(28px, 5vw, 44px); line-height: 1.1; text-wrap: balance; }
+.pub-hero .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fw-mint); font-weight: 700; }
+.pub-hero .lead { font-size: clamp(16px, 2.2vw, 19px); color: #e4efec; max-width: 60ch; }
+.pub-times { display: flex; flex-direction: column; gap: 6px; color: #e4efec; }
+.btn.ghost-light { background: transparent; border-color: rgba(255, 255, 255, 0.5); color: #fff; }
+.btn.ghost-light:hover { background: rgba(255, 255, 255, 0.12); }
+.pub-section { display: flex; flex-direction: column; gap: 14px; }
+.pub-section h2 { font-size: 22px; }
+.pub-prose { max-width: 68ch; white-space: pre-wrap; line-height: 1.6; }
+.pub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+.pub-grid > * { min-width: 0; }
+.pub-date { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); }
+.clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pub-form { max-width: 680px; width: 100%; margin: 0 auto; }
+.pub-foot { border-top: 1px solid var(--border); padding-block: 16px; background: var(--card); }
+.pub-foot a:hover { text-decoration: none; }

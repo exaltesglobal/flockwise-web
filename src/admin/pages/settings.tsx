@@ -12,6 +12,7 @@ import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
+import { CustomFieldsSettings, PublicPageSettings } from './publishing';
 
 const ROLE_HELP: Record<StaffRole, string> = {
   owner: 'Everything, including billing and ownership',
@@ -24,7 +25,7 @@ const ROLE_HELP: Record<StaffRole, string> = {
 };
 const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
-type Tab = 'church' | 'giving' | 'campuses' | 'kids' | 'team' | 'audit' | 'server';
+type Tab = 'church' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'team' | 'audit' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
@@ -33,12 +34,17 @@ export function SettingsPage() {
     { value: 'giving', label: 'Giving & compliance', show: can('settings') },
     { value: 'campuses', label: 'Campuses', show: can('settings') },
     { value: 'kids', label: 'Kids check-in', show: can('settings') },
+    { value: 'fields', label: 'Custom fields', show: can('settings') },
+    { value: 'page', label: 'Public page', show: can('settings') },
     { value: 'team', label: 'Team & roles', show: can('staff') },
     { value: 'audit', label: 'Activity log', show: can('settings') },
     { value: 'server', label: 'Server', show: true },
   ];
   const visible = tabs.filter((t) => t.show);
-  const [tab, setTab] = useState<Tab>(() => (window.location.hash === '#server' ? 'server' : visible[0].value));
+  const [tab, setTab] = useState<Tab>(() => {
+    const h = window.location.hash.slice(1) as Tab;
+    return visible.some((t) => t.value === h) ? h : visible[0].value;
+  });
 
   return (
     <>
@@ -49,6 +55,8 @@ export function SettingsPage() {
       {(tab === 'church' || tab === 'giving' || tab === 'kids') && <ChurchSettingsForm section={tab} />}
       {tab === 'campuses' && <Campuses />}
       {tab === 'kids' && <Rooms />}
+      {tab === 'fields' && <CustomFieldsSettings />}
+      {tab === 'page' && <PublicPageSettings />}
       {tab === 'team' && <Team />}
       {tab === 'audit' && <Audit />}
       {tab === 'server' && <div className="card card-pad" id="server"><ServerSettings /></div>}

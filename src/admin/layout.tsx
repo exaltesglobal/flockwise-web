@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, ClipboardList, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
+import { BarChart3, BookOpen, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -17,10 +17,15 @@ import './admin.css';
 const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[] }[] = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
+  { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
+  { to: '/admin/workflows', label: 'Follow-up workflows', icon: GitBranch, perm: ['people.view', 'care'] },
   { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
+  { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
+  { to: '/admin/forms', label: 'Forms & registrations', icon: FileText, perm: ['events', 'people.edit'] },
   { to: '/admin/checkin', label: 'Check-in', icon: ScanLine, perm: ['checkin'] },
   { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
   { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
+  { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },
   { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
   { to: '/admin/giving', label: 'Giving', icon: Gift, perm: ['giving.view'] },
   { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },

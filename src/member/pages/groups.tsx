@@ -1,4 +1,5 @@
 import { Clock, MapPin, UserRound } from 'lucide-react';
+import { Link } from 'react-router';
 
 import { MemberApi } from '@/api/endpoints';
 import { ErrorState, Loading, useToast } from '@/components/ui';
@@ -33,7 +34,7 @@ export function MemberGroupsPage() {
                   <span className="small muted">{t('members', { count: g.memberCount })}</span>
                 </div>
                 {g.membership === 'member' ? (
-                  <span className="badge ok">{t('youreMember')}</span>
+                  <Link to={`/app/groups/${g.id}`} className="btn sm primary">{t('openGroup')}</Link>
                 ) : g.membership === 'requested' ? (
                   <span className="badge warn">{t('requested')}</span>
                 ) : (

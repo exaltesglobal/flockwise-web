@@ -1,4 +1,4 @@
-import { BookUser, HandHeart, QrCode, Sparkles } from 'lucide-react';
+import { BookOpen, BookUser, ClipboardList, HandHeart, QrCode, Sparkles } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { memberSession } from '@/api/client';
@@ -25,6 +25,8 @@ export function MemberHomePage() {
       <nav className="quick-links" aria-label={t('quickLinks')}>
         <Link to="/app/serving" className="card"><HandHeart size={22} />{t('tabServing')}</Link>
         <Link to="/app/prayer" className="card"><Sparkles size={22} />{t('tabPrayer')}</Link>
+        <Link to="/app/forms" className="card"><ClipboardList size={22} />{t('tabForms')}</Link>
+        <Link to="/app/sermons" className="card"><BookOpen size={22} />{t('tabSermons')}</Link>
         <Link to="/app/directory" className="card"><BookUser size={22} />{t('tabDirectory')}</Link>
         <Link to="/app/me#qr" className="card"><QrCode size={22} />{t('myQr').split(' ').slice(0, 2).join(' ')}</Link>
       </nav>

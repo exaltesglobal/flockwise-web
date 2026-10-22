@@ -3,22 +3,31 @@ import { createBrowserRouter, createMemoryRouter, Navigate } from 'react-router'
 import { AdminLayout, AdminSignIn } from '@/admin/layout';
 import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
+import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CheckinPage } from '@/admin/pages/checkin';
 import { DashboardPage } from '@/admin/pages/dashboard';
 import { EventsPage } from '@/admin/pages/events';
+import { FormsPage } from '@/admin/pages/forms';
 import { GivingPage } from '@/admin/pages/giving';
 import { GroupsPage } from '@/admin/pages/groups';
 import { ImportPage } from '@/admin/pages/import';
 import { InsightsPage } from '@/admin/pages/insights';
+import { ListsPage, WorkflowsPage } from '@/admin/pages/lists';
+import { LiveServicePage } from '@/admin/pages/live';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
+import { SermonsPage } from '@/admin/pages/publishing';
 import { ServicesPage } from '@/admin/pages/services';
 import { SettingsPage } from '@/admin/pages/settings';
 import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
+import { FormReturnPage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
+import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
+import { MemberGroupPage } from '@/member/pages/group';
+import { MemberSermonsPage } from '@/member/pages/sermons';
 import { MemberGivePage } from '@/member/pages/give';
 import { MemberGroupsPage } from '@/member/pages/groups';
 import { MemberHomePage } from '@/member/pages/home';
@@ -42,6 +51,12 @@ const routes = [
       { path: 'checkin', element: <CheckinPage /> },
       { path: 'volunteers', element: <VolunteersPage /> },
       { path: 'services', element: <ServicesPage /> },
+      { path: 'services/:eventId/live', element: <LiveServicePage /> },
+      { path: 'sermons', element: <SermonsPage /> },
+      { path: 'forms', element: <FormsPage /> },
+      { path: 'calendar', element: <CalendarPage /> },
+      { path: 'lists', element: <ListsPage /> },
+      { path: 'workflows', element: <WorkflowsPage /> },
       { path: 'groups', element: <GroupsPage /> },
       { path: 'giving', element: <GivingPage /> },
       { path: 'messages', element: <MessagesPage /> },
@@ -53,6 +68,9 @@ const routes = [
   },
   { path: '/app/sign-in', element: <MemberSignIn /> },
   { path: '/legal/:slug', element: <LegalPage /> },
+  { path: '/church', element: <PublicChurchPage /> },
+  { path: '/forms/return', element: <FormReturnPage /> },
+  { path: '/forms/:id', element: <PublicFormPage /> },
   {
     path: '/app',
     element: <MemberLayout />,
@@ -61,6 +79,10 @@ const routes = [
       { path: 'events', element: <MemberEventsPage /> },
       { path: 'events/:id', element: <MemberEventPage /> },
       { path: 'groups', element: <MemberGroupsPage /> },
+      { path: 'groups/:id', element: <MemberGroupPage /> },
+      { path: 'forms', element: <MemberFormsPage /> },
+      { path: 'forms/:id', element: <MemberFormPage /> },
+      { path: 'sermons', element: <MemberSermonsPage /> },
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },

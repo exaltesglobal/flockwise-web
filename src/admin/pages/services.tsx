@@ -1,10 +1,12 @@
-import { ArrowDown, ArrowUp, ClipboardList, Copy, Music, Pencil, Plus, Printer, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, Music, Pencil, Plus, Printer, Radio, Search, Trash2, X } from 'lucide-react';
+import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 
-import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongView } from '@/api/admin-types';
+import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongAttachment, SongView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
-import { formatDay, formatRelative, formatTime } from '@/lib/format';
+import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format';
+import { ChordChart, transposeKey } from '@/lib/chords';
 import { useCan } from '@/lib/perms';
 import { printHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
@@ -28,15 +30,16 @@ let seq = 0;
 const draftKey = () => `d${++seq}`;
 
 export function ServicesPage() {
-  const [tab, setTab] = useState<'plans' | 'songs'>('plans');
+  const [tab, setTab] = useState<'plans' | 'songs' | 'ccli'>('plans');
   return (
     <>
       <PageHeader title="Service planning" subtitle="Order of service, songs and keys, timings and who is serving. Volunteers see the plan in the app once they accept." />
       <div className="tabs">
         <button className={tab === 'plans' ? 'on' : ''} onClick={() => setTab('plans')}>Plans</button>
         <button className={tab === 'songs' ? 'on' : ''} onClick={() => setTab('songs')}>Song library</button>
+        <button className={tab === 'ccli' ? 'on' : ''} onClick={() => setTab('ccli')}>CCLI report</button>
       </div>
-      {tab === 'plans' ? <Plans /> : <Songs />}
+      {tab === 'plans' ? <Plans /> : tab === 'songs' ? <Songs /> : <CcliReport />}
     </>
   );
 }
@@ -121,6 +124,7 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
             </select>
           )}
           <button className="btn" onClick={() => printPlan(detail.data!, theme, notes, items)}><Printer size={15} /> Print</button>
+          {items.length > 0 && <Link className="btn accent" to={`/admin/services/${eventId}/live`}><Radio size={15} /> Live</Link>}
           {editable && <button className="btn primary" disabled={!dirty || save.busy} onClick={async () => { if (await save.run()) { toast('Plan saved'); setDirty(false); onSaved(); } }}>{save.busy ? 'Saving…' : 'Save plan'}</button>}
         </div>
       </div>
@@ -247,18 +251,70 @@ function Songs() {
         </div>
       )}
       {editing && <SongForm song={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); list.reload(); toast('Saved'); }} />}
-      {viewing && (
-        <Modal title={viewing.title} onClose={() => setViewing(null)} footer={<button className="btn" onClick={() => { navigator.clipboard?.writeText(viewing.lyrics); toast('Lyrics copied'); }}><Copy size={15} /> Copy lyrics</button>}>
-          <p className="small muted">{viewing.author} · Key {viewing.defaultKey}{viewing.bpm ? ` · ${viewing.bpm} bpm` : ''}</p>
-          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15, marginTop: 12 }}>{viewing.lyrics || 'No lyrics saved.'}</pre>
-        </Modal>
+      {viewing && <SongSheet song={viewing} onClose={() => setViewing(null)} />}
+    </div>
+  );
+}
+
+function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
+  const [steps, setSteps] = useState(0);
+  const toast = useToast();
+  const hasChart = !!song.chordChart?.trim();
+  return (
+    <Modal wide title={song.title} onClose={onClose} footer={<button className="btn" onClick={() => { navigator.clipboard?.writeText(song.lyrics); toast('Lyrics copied'); }}><Copy size={15} /> Copy lyrics</button>}>
+      <div className="stack">
+        <div className="row wrap" style={{ gap: 8 }}>
+          <span className="small muted grow">{song.author}{song.ccli ? ` · CCLI ${song.ccli}` : ''}{song.bpm ? ` · ${song.bpm} bpm` : ''}</span>
+          {hasChart && <>
+            <span className="small">Key</span>
+            <button className="btn sm icon" onClick={() => setSteps(steps - 1)} aria-label="Transpose down">−</button>
+            <b className="mono" style={{ minWidth: 28, textAlign: 'center' }}>{transposeKey(song.defaultKey || 'C', steps)}</b>
+            <button className="btn sm icon" onClick={() => setSteps(steps + 1)} aria-label="Transpose up">+</button>
+            {steps !== 0 && <button className="btn sm ghost" onClick={() => setSteps(0)}>Reset</button>}
+          </>}
+        </div>
+        {(song.attachments?.length ?? 0) > 0 && (
+          <div className="row wrap" style={{ gap: 6 }}>
+            {song.attachments!.map((a) => <a key={a.id} className="btn sm" href={a.url} target="_blank" rel="noreferrer"><ExternalLink size={13} /> {a.name}</a>)}
+          </div>
+        )}
+        {hasChart ? <ChordChart text={song.chordChart!} steps={steps} /> : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics || 'No lyrics saved.'}</pre>}
+        {hasChart && song.lyrics && <details><summary className="small muted">Plain lyrics</summary><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics}</pre></details>}
+      </div>
+    </Modal>
+  );
+}
+
+function CcliReport() {
+  const today = new Date().toISOString().slice(0, 10);
+  const [from, setFrom] = useState(new Date(Date.now() - 180 * 86400000).toISOString().slice(0, 10));
+  const [to, setTo] = useState(today);
+  const { data, error, reload } = useApi(() => AdminApi.ccli(from, to), [from, to]);
+  return (
+    <div className="card">
+      <div className="toolbar">
+        <label className="row small" style={{ gap: 6 }}>From <input type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
+        <label className="row small" style={{ gap: 6 }}>To <input type="date" className="input" value={to} max={today} onChange={(e) => setTo(e.target.value)} /></label>
+        <div className="grow" />
+        <button className="btn" disabled={!data?.rows.length} onClick={() => downloadCsv(`ccli-report-${from}-to-${to}.csv`, [['Song', 'Author', 'CCLI number', 'Times used', 'Dates'], ...data!.rows.map((r) => [r.title, r.author, r.ccli, r.uses, r.dates.join(' ')])])}><Download size={15} /> Export CSV</button>
+      </div>
+      <p className="small muted" style={{ padding: '0 16px' }}>Songs used in services in this period, for your CCLI Copyright Reporting. Songs without a CCLI number are flagged.</p>
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.rows.length === 0 ? <Empty icon={<Music size={28} />} title="No songs used in this period" /> : (
+        <div className="table-wrap"><table className="table">
+          <thead><tr><th>Song</th><th>CCLI #</th><th className="num">Uses</th><th>Dates</th></tr></thead>
+          <tbody>{data.rows.map((r) => (
+            <tr key={r.songId}><td><b>{r.title}</b><div className="small muted">{r.author}</div></td><td className="mono">{r.ccli || <span className="badge warn">Missing</span>}</td><td className="num">{r.uses}</td><td className="small muted">{r.dates.map((d) => formatDay(d)).join(', ')}</td></tr>
+          ))}</tbody>
+        </table></div>
       )}
     </div>
   );
 }
 
 function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '' });
+  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '', chordChart: song?.chordChart ?? '', attachments: song?.attachments ?? [] });
+  const atts = form.attachments ?? [];
+  const setAtt = (i: number, patch: Partial<SongAttachment>) => set('attachments', atts.map((a, j) => (j === i ? { ...a, ...patch } : a)));
   const [tags, setTags] = useState((song?.tags ?? []).join(', '));
   const save = useAction(() => {
     const input = { ...form, tags: tags.split(',').map((t) => t.trim()).filter(Boolean) };
@@ -279,7 +335,19 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
           <Field label="CCLI number"><input className="input" value={form.ccli} onChange={(e) => set('ccli', e.target.value)} /></Field>
           <Field label="Tags" hint="e.g. Telugu, Opening, Communion"><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} /></Field>
         </div>
-        <Field label="Lyrics or chord chart"><textarea className="textarea" style={{ minHeight: 200 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} /></Field>
+        <Field label="Lyrics"><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} /></Field>
+        <Field label="Chord chart" hint="ChordPro style: put chords in brackets before the syllable, e.g. [G]Amazing [C]grace. Musicians can transpose it to any key."><textarea className="textarea mono" style={{ minHeight: 160 }} value={form.chordChart ?? ''} onChange={(e) => set('chordChart', e.target.value)} placeholder={'[Verse 1]\n[G]Amazing [G7]grace, how [C]sweet the [G]sound'} /></Field>
+        <span className="section-title">Attachments</span>
+        <p className="small muted" style={{ marginTop: -8 }}>Links to lead sheets, MP3s or videos (Google Drive, Dropbox, YouTube).</p>
+        {atts.map((a, i) => (
+          <div key={a.id} className="row wrap" style={{ gap: 6 }}>
+            <input className="input" style={{ width: 170 }} placeholder="Name" value={a.name} onChange={(e) => setAtt(i, { name: e.target.value })} />
+            <input className="input grow" style={{ minWidth: 200 }} placeholder="https://" value={a.url} onChange={(e) => setAtt(i, { url: e.target.value })} />
+            <select className="select" style={{ width: 120 }} value={a.kind} onChange={(e) => setAtt(i, { kind: e.target.value as SongAttachment['kind'] })}>{['chart', 'lyrics', 'audio', 'video', 'other'].map((k) => <option key={k} value={k}>{k[0].toUpperCase() + k.slice(1)}</option>)}</select>
+            <button className="btn ghost icon sm danger" onClick={() => set('attachments', atts.filter((_, j) => j !== i))}><X size={15} /></button>
+          </div>
+        ))}
+        <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => set('attachments', [...atts, { id: `sa${Date.now()}`, name: '', url: '', kind: 'chart' }])}><Plus size={14} /> Add a link</button>
       </div>
     </Modal>
   );

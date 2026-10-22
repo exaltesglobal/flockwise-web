@@ -1,4 +1,4 @@
-import { BookUser, CalendarDays, Gift, HandHeart, Home, Sparkles, UserRound, UsersRound } from 'lucide-react';
+import { BookOpen, BookUser, ClipboardList, CalendarDays, Gift, HandHeart, Home, Sparkles, UserRound, UsersRound } from 'lucide-react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { memberSession } from '@/api/client';
@@ -31,6 +31,8 @@ export function MemberLayout() {
     { to: '/app/serving', label: t('tabServing'), icon: HandHeart },
     { to: '/app/prayer', label: t('tabPrayer'), icon: Sparkles },
     ...tabs.slice(2, 4),
+    { to: '/app/forms', label: t('tabForms'), icon: ClipboardList },
+    { to: '/app/sermons', label: t('tabSermons'), icon: BookOpen },
     { to: '/app/directory', label: t('tabDirectory'), icon: BookUser },
     tabs[4],
   ];

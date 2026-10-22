@@ -117,3 +117,34 @@ button.chip.on { background: var(--primary); color: #fff; }
 .bars .bar.stacked .stack-col { width: 100%; max-width: 44px; display: flex; flex-direction: column; border-radius: 6px 6px 2px 2px; overflow: hidden; }
 .bars .bar.stacked .stack-col i { max-width: none; border-radius: 0; opacity: 0.85; min-height: 0; }
 .bars .bar.stacked .stack-col i.kids { background: var(--accent); }
+
+/* calendar week */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--border); }
+.week-day { border-right: 1px solid var(--border); padding: 8px; min-height: 180px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.week-day:last-child { border-right: 0; }
+.week-day.today { background: color-mix(in srgb, var(--tint) 50%, transparent); }
+.week-head { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.week-head b { color: var(--text); font-size: 16px; }
+.week-head button { margin-left: auto; }
+.week-empty { padding: 4px 2px; }
+.week-item { border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 8px; padding: 6px 8px; background: var(--card); display: flex; flex-direction: column; gap: 2px; font-size: 13px; min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 900px) { .week { grid-template-columns: minmax(0, 1fr); } .week-day { border-right: 0; border-bottom: 1px solid var(--border); min-height: 0; } }
+
+/* live service */
+.live { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 900px) { .live { grid-template-columns: minmax(0, 1fr); } }
+.live-now { background: var(--primary); color: #fff; border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 10px; }
+.live-now .clock { font-family: var(--font-heading); font-size: clamp(48px, 9vw, 96px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.live-now .clock.over { color: #FDA29B; }
+.live-item { display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; align-items: center; }
+.live-item.on { background: var(--tint); font-weight: 600; }
+.live-item.done { color: var(--muted); }
+
+/* chord chart */
+.chart { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-x: auto; }
+.chart .chord { color: var(--accent); font-weight: 700; }
+.chart .section { font-weight: 700; margin-top: 10px; display: block; }
+
+/* ---------- sermons ---------- */
+.sermon-thumb { width: 56px; height: 40px; border-radius: 6px; background: var(--tint); color: var(--primary); display: grid; place-items: center; overflow: hidden; flex-shrink: 0; }
+.sermon-thumb img { width: 100%; height: 100%; object-fit: cover; }

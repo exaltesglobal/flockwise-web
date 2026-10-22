@@ -1,5 +1,5 @@
 import { CalendarCheck, Copy, Download, FileText, Gift, HandHeart, HeartHandshake, Pencil, Plus, Search, Trash2, Upload, Users } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
 import type { Consent, LanguageCode, Person, PersonInput, PersonStatus } from '@/api/admin-types';
@@ -206,6 +206,7 @@ const CONSENT_LABELS: Record<keyof Consent, string> = { email: 'Email', sms: 'SM
 function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; onClose: () => void; onEdit: (p: Person) => void; onDeleted: () => void; onOpen: (id: string) => void }) {
   const { data, error, reload } = useApi(() => AdminApi.people.timeline(id), [id]);
   const campuses = useApi(AdminApi.campuses.list);
+  const fields = useApi(AdminApi.fields.list);
   const [tab, setTab] = useState<'profile' | 'activity'>('profile');
   const [statement, setStatement] = useState(false);
   const toast = useToast();
@@ -275,10 +276,12 @@ function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; 
                 <dt>Groups</dt><dd>{p.groups.length ? p.groups.map((g) => g.name).join(', ') : '—'}</dd>
                 <dt>Check-in code</dt><dd><span className="kbd">{p.checkinCode}</span></dd>
                 <dt>Consent</dt><dd className="row wrap" style={{ gap: 4 }}>{(Object.keys(CONSENT_LABELS) as (keyof Consent)[]).map((k) => <span key={k} className={`badge ${p.consent[k] ? 'ok' : 'gray'}`}>{p.consent[k] ? '✓' : '✕'} {CONSENT_LABELS[k]}</span>)}</dd>
+                {fields.data?.filter((f) => p.custom?.[f.id] !== undefined && p.custom?.[f.id] !== null && p.custom?.[f.id] !== '').map((f) => <Fragment key={f.id}><dt>{f.label}</dt><dd>{p.custom![f.id] === true ? 'Yes' : p.custom![f.id] === false ? 'No' : String(p.custom![f.id])}</dd></Fragment>)}
                 <dt>Added</dt><dd>{formatDate(p.joinedAt)}</dd>
                 <dt>Last attended</dt><dd>{p.lastAttendedAt ? formatRelative(p.lastAttendedAt) : 'Never'}</dd>
               </dl>
               {p.medicalNotes && <div className="alert warn"><b>Medical notes:</b> {p.medicalNotes}</div>}
+              <PersonWorkflows personId={p.id} />
               {data.household.length > 0 && (
                 <div className="stack" style={{ gap: 8 }}>
                   <span className="section-title">{p.householdName ?? 'Household'}</span>
@@ -401,8 +404,10 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     allergies: person?.allergies ?? '',
     medicalNotes: person?.medicalNotes ?? '',
     consent: person?.consent ?? { email: true, sms: true, whatsapp: true, directory: false },
+    custom: person?.custom ?? {},
   }));
-  const [section, setSection] = useState<'basics' | 'family' | 'privacy'>('basics');
+  const fields = useApi(AdminApi.fields.list);
+  const [section, setSection] = useState<'basics' | 'family' | 'privacy' | 'more'>('basics');
   const [tags, setTags] = useState((person?.tags ?? []).join(', '));
   const save = useAction(async (input: PersonInput) => (person ? AdminApi.people.update(person.id, input) : AdminApi.people.create(input)));
   const set = <K extends keyof PersonInput>(k: K, v: PersonInput[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -412,6 +417,7 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const clean = Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])) as PersonInput;
+    clean.custom = form.custom ?? {};
     clean.tags = tags.split(',').map((t) => t.trim()).filter(Boolean);
     const saved = await save.run(clean);
     if (saved) onSaved(saved);
@@ -423,7 +429,18 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     >
       <form id="person-form" className="stack" onSubmit={onSubmit}>
         <FormError error={save.error?.fields ? null : save.error} />
-        <Segmented value={section} onChange={setSection} options={[{ value: 'basics', label: 'Basics' }, { value: 'family', label: 'Family & health' }, { value: 'privacy', label: 'Privacy & notes' }]} />
+        <Segmented value={section} onChange={setSection} options={[{ value: 'basics', label: 'Basics' }, { value: 'family', label: 'Family & health' }, { value: 'privacy', label: 'Privacy & notes' }, ...((fields.data?.length ?? 0) > 0 ? [{ value: 'more' as const, label: 'More' }] : [])]} />
+        {section === 'more' && (
+          <div className="grid cols-2">
+            {fields.data?.map((f) => {
+              const v = form.custom?.[f.id];
+              const setV = (value: string | number | boolean | null) => set('custom', { ...(form.custom ?? {}), [f.id]: value });
+              if (f.type === 'checkbox') return <label key={f.id} className="check" style={{ alignSelf: 'end' }}><input type="checkbox" checked={!!v} onChange={(e) => setV(e.target.checked)} /> {f.label}</label>;
+              if (f.type === 'select') return <Field key={f.id} label={f.label}><select className="select" value={String(v ?? '')} onChange={(e) => setV(e.target.value || null)}><option value="">Not set</option>{f.options.map((o) => <option key={o}>{o}</option>)}</select></Field>;
+              return <Field key={f.id} label={f.label}><input className="input" type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'} value={v === null || v === undefined ? '' : String(v)} onChange={(e) => setV(e.target.value === '' ? null : f.type === 'number' ? Number(e.target.value) : e.target.value)} /></Field>;
+            })}
+          </div>
+        )}
         {section === 'basics' && (
           <div className="grid cols-2">
             <Field label="First name" error={fe.firstName}><input className="input" autoFocus value={form.firstName} onChange={(e) => set('firstName', e.target.value)} /></Field>
@@ -483,5 +500,35 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
         )}
       </form>
     </Modal>
+  );
+}
+
+/** Follow-up workflows this person is on, with a quick way to add them to one. */
+function PersonWorkflows({ personId }: { personId: string }) {
+  const cards = useApi(() => AdminApi.workflows.cards({ personId }), [personId]);
+  const workflows = useApi(AdminApi.workflows.list);
+  const can = useCan();
+  const toast = useToast();
+  const active = (cards.data ?? []).filter((c) => c.status === 'active');
+  if (!can('people.edit', 'care') && !active.length) return null;
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <span className="section-title">Follow-up workflows</span>
+      {active.map((c) => (
+        <div key={c.id} className="card card-pad row" style={{ gap: 8 }}>
+          <div className="grow">
+            <div style={{ fontWeight: 600 }}>{c.workflowName}</div>
+            <div className="small muted">Step {c.stepIndex + 1}: {c.stepTitle}{c.assigneeName ? ` · ${c.assigneeName}` : ''} · {c.overdue ? <span style={{ color: 'var(--danger)' }}>overdue</span> : `due ${formatRelative(c.dueAt)}`}</div>
+          </div>
+          {can('people.edit', 'care') && <button className="btn sm" onClick={async () => { await AdminApi.workflows.act(c.id, 'advance'); cards.reload(); toast('Step done'); }}>Done, next step</button>}
+        </div>
+      ))}
+      {can('people.edit', 'care') && (workflows.data?.length ?? 0) > 0 && (
+        <select className="select" value="" onChange={async (e) => { if (!e.target.value) return; await AdminApi.workflows.add(e.target.value, { personIds: [personId] }); cards.reload(); toast('Added to workflow'); }}>
+          <option value="">Add to a workflow…</option>
+          {workflows.data!.filter((w) => w.active).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+        </select>
+      )}
+    </div>
   );
 }

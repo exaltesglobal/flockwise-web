@@ -18,8 +18,8 @@ export function printLabels(labels: CheckinLabel[]) {
   if (!labels.length) return;
   const body = labels
     .map((l) => `<div class="label ${l.kind}">
-      <div class="top"><span class="name">${esc(l.name)}</span><span class="code">${esc(l.securityCode)}</span></div>
-      <div class="meta">${l.kind === 'child' ? esc(l.room ?? 'Kids') : 'Parent / guardian pickup tag'} · ${esc(l.event)} · ${esc(l.date)}</div>
+      <div class="top"><span class="name">${esc(l.name)}</span>${l.securityCode ? `<span class="code">${esc(l.securityCode)}</span>` : ''}</div>
+      <div class="meta">${l.kind === 'child' ? esc(l.room ?? 'Kids') : l.kind === 'volunteer' ? `Serving · ${esc(l.room ?? '')}` : 'Parent / guardian pickup tag'} · ${esc(l.event)} · ${esc(l.date)}</div>
       ${l.allergies ? `<div class="alert">⚠ ${esc(l.allergies)}</div>` : ''}
     </div>`)
     .join('');
@@ -160,6 +160,7 @@ function Desk({ event }: { event: AdminEvent }) {
           ))}
         </div>
       )}
+      {summary.data && <CountsAndVolunteers eventId={event.id} data={summary.data} onChanged={summary.reload} />}
       <div className="split">
         <div className="card card-pad stack">
           <h3>Check someone in</h3>
@@ -181,7 +182,7 @@ function Desk({ event }: { event: AdminEvent }) {
                     <tr key={c.id} style={{ opacity: c.checkedOutAt ? 0.55 : 1 }}>
                       <td>
                         <div style={{ fontWeight: 600 }}>{c.personName}</div>
-                        <div className="small muted">{c.householdName ?? ''}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}</div>
+                        <div className="small muted">{c.householdName ?? ''}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}{c.volunteer && <span className="badge accent" style={{ marginLeft: 6 }}>Serving: {c.volunteer.teamName}</span>}</div>
                       </td>
                       <td className="small">{c.isChild ? c.roomName ?? 'No room' : <span className="muted">Adult</span>}</td>
                       <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method}</span>}</td>
@@ -413,6 +414,50 @@ function Kiosk({ event, onExit }: { event: AdminEvent; onExit: () => void }) {
         </div>
       )}
       <p className="small muted" style={{ textAlign: 'center' }}>Flockwise · {now.toLocaleDateString('en-IN')}</p>
+    </div>
+  );
+}
+
+const AREAS = ['Main hall', 'Balcony', 'Overflow', 'Kids church', 'Online'];
+
+/** Headcounts by area for services without full check-in, and which scheduled volunteers haven't arrived. */
+function CountsAndVolunteers({ eventId, data, onChanged }: { eventId: string; data: import('@/api/admin-types').CheckinSummary; onChanged: () => void }) {
+  const [area, setArea] = useState('Main hall');
+  const [count, setCount] = useState('');
+  const [showMissing, setShowMissing] = useState(false);
+  const toast = useToast();
+  const record = async () => {
+    const n = Number(count);
+    if (!area.trim() || !Number.isFinite(n) || count === '') return;
+    try { await AdminApi.headcounts.record(eventId, area.trim(), n); setCount(''); toast('Headcount saved'); onChanged(); } catch (e) { toast((e as Error).message, 'error'); }
+  };
+  const v = data.volunteers;
+  return (
+    <div className="grid cols-2">
+      <div className="card card-pad stack" style={{ gap: 10 }}>
+        <div className="row"><h3 className="grow">Headcount</h3><b style={{ fontSize: 22 }}>{data.headcountTotal}</b></div>
+        <div className="row wrap" style={{ gap: 6 }}>
+          <input className="input" list="hc-areas" style={{ flex: '1 1 140px' }} value={area} onChange={(e) => setArea(e.target.value)} placeholder="Area" />
+          <datalist id="hc-areas">{AREAS.map((a) => <option key={a} value={a} />)}</datalist>
+          <input className="input" type="number" min={0} inputMode="numeric" style={{ width: 100 }} value={count} onChange={(e) => setCount(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && record()} placeholder="Count" />
+          <button className="btn primary" onClick={record} disabled={count === ''}>Save</button>
+        </div>
+        {data.headcounts.length > 0 ? (
+          <div className="row wrap" style={{ gap: 6 }}>
+            {data.headcounts.map((h) => <span key={h.id} className="chip" title={`By ${h.recordedBy} at ${formatTime(h.at)}`}>{h.area}: {h.count}<button onClick={async () => { await AdminApi.headcounts.remove(h.id); onChanged(); }}>×</button></span>)}
+          </div>
+        ) : <span className="small muted">Ushers can count each area. A recount replaces the earlier number, and the total becomes the service attendance.</span>}
+      </div>
+      <div className="card card-pad stack" style={{ gap: 10 }}>
+        <div className="row"><h3 className="grow">Volunteers</h3><b style={{ fontSize: 22 }}>{v.checkedIn}<span className="muted" style={{ fontSize: 15 }}> / {v.scheduled}</span></b></div>
+        {v.scheduled === 0 ? <span className="small muted">Nobody is scheduled to serve at this service.</span> : v.missing.length === 0 ? <span className="small" style={{ color: 'var(--ok)' }}>Everyone scheduled has arrived.</span> : (
+          <>
+            <span className="small muted">{v.missing.length} scheduled {v.missing.length === 1 ? 'volunteer hasn’t' : 'volunteers haven’t'} checked in yet. They get a name badge with their team when they do.</span>
+            <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => setShowMissing(!showMissing)}>{showMissing ? 'Hide' : 'Show'} who</button>
+            {showMissing && v.missing.map((m) => <div key={m.personId + m.positionName} className="small row" style={{ gap: 6 }}><b>{m.name}</b><span className="muted">{m.teamName}{m.positionName ? ` · ${m.positionName}` : ''}</span></div>)}
+          </>
+        )}
+      </div>
     </div>
   );
 }

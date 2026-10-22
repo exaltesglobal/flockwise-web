@@ -30,6 +30,7 @@ const AUDIENCE_TYPES: { value: AudienceType; label: string }[] = [
   { value: 'tag', label: 'A tag' },
   { value: 'campus', label: 'A campus' },
   { value: 'event', label: 'Event RSVPs' },
+  { value: 'list', label: 'A smart list' },
   { value: 'people', label: 'Chosen people' },
 ];
 const STATUSES = [
@@ -41,7 +42,11 @@ const STATUSES = [
 
 export function MessagesPage() {
   const [tab, setTab] = useState<Tab>('history');
-  const [composing, setComposing] = useState<Partial<Message> | null>(null);
+  // Opening /admin/messages?list=<id> starts a message to that smart list.
+  const [composing, setComposing] = useState<Partial<Message> | null>(() => {
+    const listId = new URLSearchParams(window.location.search).get('list');
+    return listId ? { audience: { type: 'list', ids: [listId] } } : null;
+  });
   const channels = useApi(AdminApi.messages.channels);
   const list = useApi(AdminApi.messages.list);
   const toast = useToast();
@@ -294,6 +299,7 @@ function useOptions(type: AudienceType) {
         case 'tag': return (await AdminApi.people.tags()).map((t) => ({ id: t.tag, name: `${t.tag} (${t.count})` }));
         case 'campus': return (await AdminApi.campuses.list()).map((c) => ({ id: c.id, name: c.name }));
         case 'event': return (await AdminApi.events.list('upcoming')).data.map((e) => ({ id: e.id, name: `${e.title} · ${formatDate(e.startsAt)}` }));
+        case 'list': return (await AdminApi.lists.list()).map((l) => ({ id: l.id, name: `${l.name} (${l.count})` }));
         default: return [];
       }
     };
