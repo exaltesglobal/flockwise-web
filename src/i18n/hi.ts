@@ -322,4 +322,21 @@ export const hi: Strings = {
   doorDone: 'उपस्थिति दर्ज हो गई। स्वागत है!',
   doorExpired: 'यह कोड समाप्त हो गया। दरवाज़े पर QR फिर से स्कैन करें।',
   doorScanHint: 'अपने कैमरे से लीडर के फ़ोन पर QR स्कैन करें।',
+
+  // Christmas carol rounds
+  carolsTitle: 'क्रिसमस कैरोल',
+  carolsHome: 'आपके घर पर कैरोल गायक',
+  carolsBody: 'हर दिसंबर चर्च की टीम उन घरों में गाने आती है जो बुलाते हैं। अपने परिवार के लिए सही रातें चुनें और हम आएँगे।',
+  carolsAsk: 'विज़िट के लिए कहें',
+  carolsPickNights: '3 तक ऐसी रातें चुनें जो आपको ठीक हों',
+  carolsNote: 'टीम को कुछ बताना हो (गेट कोड, सही समय)',
+  carolsSend: 'अनुरोध भेजें',
+  carolsAsked: 'आपका घर सूची में है। हम एक रात पहले बताएँगे।',
+  carolsChange: 'रातें बदलें',
+  carolsCancel: 'अनुरोध रद्द करें',
+  carolsVisit: '{team} {date} को आपके घर आएगी',
+  carolsVisitTime: 'लगभग {time}',
+  carolsVisited: 'टीम आपके घर आई। स्वागत के लिए धन्यवाद!',
+  carolsNone: 'कैरोल राउंड अभी खुले नहीं हैं। दिसंबर में फिर देखें।',
+  carolsAnyNight: 'कोई भी रात ठीक है',
 };

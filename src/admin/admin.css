@@ -457,3 +457,9 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .hub-pick-row { padding: 8px 12px; cursor: pointer; gap: 10px; }
 .hub-pick-row:hover { background: var(--tint); }
 .linkish { border: 0; background: none; padding: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
+
+/* Carol rounds */
+.carol-stops tr.done td { background: color-mix(in srgb, var(--ok) 6%, transparent); }
+.carol-stops td.nowrap, .carol-stops th.nowrap { white-space: nowrap; }
+.carol-note { margin-top: 6px; max-width: 320px; }
+.chip.off { background: transparent; border: 1px solid var(--border); color: var(--muted); }

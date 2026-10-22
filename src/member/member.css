@@ -69,3 +69,8 @@ input.switch:checked::after { transform: translateX(18px); }
 .cols-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 22px; align-items: start; }
 .cols-auto > * { min-width: 0; }
 .col-stack { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+/* Carol rounds: the nights a household can pick */
+.carol-dates { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-toggle { border: 1px solid var(--border); background: var(--card, transparent); color: inherit; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.chip-toggle.on { background: var(--primary); color: var(--on-primary, #fff); border-color: var(--primary); }

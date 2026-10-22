@@ -319,6 +319,23 @@ export const en = {
   doorDone: 'Marked present. Welcome!',
   doorExpired: 'This door code has expired. Scan the QR at the door again.',
   doorScanHint: 'Scan the QR on the leader\'s phone with your camera.',
+
+  // Christmas carol rounds
+  carolsTitle: 'Christmas carols',
+  carolsHome: 'Carol singers at your home',
+  carolsBody: 'Every December the church team sings at homes that ask. Pick the nights that suit your family and we will come by.',
+  carolsAsk: 'Ask for a visit',
+  carolsPickNights: 'Pick up to 3 nights that suit you',
+  carolsNote: 'Anything the team should know (gate code, best time)',
+  carolsSend: 'Send request',
+  carolsAsked: 'Your home is on the list. We will tell you the night before.',
+  carolsChange: 'Change nights',
+  carolsCancel: 'Cancel request',
+  carolsVisit: '{team} will sing at your home on {date}',
+  carolsVisitTime: 'around {time}',
+  carolsVisited: 'The team visited your home. Thank you for welcoming them!',
+  carolsNone: 'Carol rounds are not open yet. Check back in December.',
+  carolsAnyNight: 'Any night is fine',
 };
 
 export type Strings = typeof en;

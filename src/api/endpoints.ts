@@ -2,6 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
+import type { CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
@@ -10,6 +11,9 @@ export type CampaignInput = { name: string; kind: CampaignKind; description?: st
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
+/** The carol rounds page: this year's season, the areas and teams to plan with, and the funds offerings can go to. */
+export type CarolsHub = { season: CarolSeasonView | null; seasons: { id: string; name: string; from: string; to: string }[]; zones: { id: string; name: string; homes: number }[]; teams: { id: string; name: string }[]; funds: { id: string; name: string }[]; currency: Currency };
+export type CarolSeasonInput = Partial<Pick<CarolSeason, 'name' | 'from' | 'to' | 'startTime' | 'minutesPerHouse' | 'travelMinutes' | 'housesPerNight' | 'offDays' | 'fundId' | 'message'>>;
 export type RazorpayKeysInput = { keyId: string; keySecret: string; webhookSecret: string; fcra?: { keyId: string; keySecret: string; webhookSecret: string } | null };
 // Member endpoints match the mobile app exactly (docs/API.md); admin ones are in docs/API-ADMIN.md.
 import type {
@@ -218,6 +222,11 @@ export const MemberApi = {
     campaigns: () => m.get<MemberCampaign[]>('/giving/campaigns'),
     removePledge: (id: string) => m.del<void>(`/giving/pledges/${id}`),
   },
+  carols: {
+    get: () => m.get<MyCarols>('/me/carols'),
+    request: (input: { preferredDates: string[]; note?: string }) => m.post<NonNullable<MyCarols['request']>>('/me/carols/request', input),
+    cancel: () => m.del<void>('/me/carols/request'),
+  },
   serving: {
     get: () => m.get<MyServing>('/me/serving'),
     respond: (id: string, status: 'accepted' | 'declined', note?: string) => m.post<Assignment>(`/me/serving/${id}/respond`, { status, note }),
@@ -411,6 +420,20 @@ export const AdminApi = {
     create: (input: Omit<Campus, 'id'>) => a.post<Campus>('/admin/campuses', input),
     update: (id: string, input: Partial<Omit<Campus, 'id'>>) => a.patch<Campus>(`/admin/campuses/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/campuses/${id}`),
+  },
+  carols: {
+    get: () => a.get<CarolsHub>('/admin/carols'),
+    season: (id: string) => a.get<CarolSeasonView>(`/admin/carols/seasons/${id}`),
+    createSeason: (input: CarolSeasonInput) => a.post<CarolSeasonView>('/admin/carols/seasons', input),
+    updateSeason: (id: string, input: CarolSeasonInput) => a.patch<CarolSeasonView>(`/admin/carols/seasons/${id}`, input),
+    removeSeason: (id: string) => a.del<void>(`/admin/carols/seasons/${id}`),
+    plan: (id: string, input: { zoneIds: string[]; teamIds: string[]; onlyRequests?: boolean }) => a.post<CarolSeasonView>(`/admin/carols/seasons/${id}/plan`, input),
+    addNight: (id: string, input: { date: string; teamId?: string | null; startTime?: string; area?: string }) => a.post<CarolNightView>(`/admin/carols/seasons/${id}/nights`, input),
+    updateNight: (id: string, input: { date?: string; startTime?: string; teamId?: string | null; area?: string; notes?: string; order?: string[] }) => a.patch<CarolNightView>(`/admin/carols/nights/${id}`, input),
+    removeNight: (id: string) => a.del<void>(`/admin/carols/nights/${id}`),
+    addStop: (id: string, input: { personId?: string; familyKey?: string }) => a.post<CarolNightView>(`/admin/carols/nights/${id}/stops`, input),
+    removeStop: (id: string, key: string) => a.del<CarolNightView>(`/admin/carols/nights/${id}/stops/${encodeURIComponent(key)}`),
+    updateStop: (id: string, key: string, input: { status?: CarolStopStatus; offering?: number | null; note?: string }) => a.patch<CarolNightView>(`/admin/carols/nights/${id}/stops/${encodeURIComponent(key)}`, input),
   },
   teamHub: {
     get: () => a.get<HubView>('/admin/team-hub'),
