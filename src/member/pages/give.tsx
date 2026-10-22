@@ -1,4 +1,4 @@
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, FileText, Plus, Printer, Target, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -8,6 +8,7 @@ import type { GiveFrequency } from '@/api/types';
 import { ErrorState, Field, FormError, Loading, Segmented } from '@/components/ui';
 import { useT } from '@/i18n';
 import { formatDate, formatMoney } from '@/lib/format';
+import { printHtml, statementHtml } from '@/lib/print';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -145,6 +146,91 @@ export function MemberGivePage() {
           </div>
         ) : history.data ? <p className="muted small">—</p> : <Loading />}
       </section>
+
+      <Pledges />
+      {india && <Statement />}
     </>
+  );
+}
+
+function Pledges() {
+  const { t, locale } = useT();
+  const pledges = useApi(MemberApi.giving.pledges);
+  const funds = useApi(MemberApi.giving.funds);
+  const [adding, setAdding] = useState(false);
+  const yearEnd = `${new Date().getMonth() >= 3 ? new Date().getFullYear() + 1 : new Date().getFullYear()}-03-31`;
+  const [form, setForm] = useState({ fundId: '', amount: '', endDate: yearEnd });
+  const add = useAction(() => MemberApi.giving.pledge({ fundId: form.fundId || funds.data![0].id, amount: Math.round(Number(form.amount) * 100), endDate: form.endDate }));
+  return (
+    <section className="stack">
+      <div className="section-head">
+        <h2>{t('pledges')}</h2>
+        {!adding && <button className="btn sm" onClick={() => setAdding(true)}><Plus size={14} /> {t('makePledge')}</button>}
+      </div>
+      {adding && funds.data && (
+        <div className="card card-pad stack">
+          <FormError error={add.error} />
+          <select className="select" value={form.fundId || funds.data[0]?.id} onChange={(e) => setForm({ ...form, fundId: e.target.value })}>
+            {funds.data.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+          <div className="row wrap">
+            <label className="stack small grow" style={{ gap: 4 }}>{t('amount')}<input className="input" type="number" min={1} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
+            <label className="stack small grow" style={{ gap: 4 }}>{t('completeBy')}<input className="input" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></label>
+          </div>
+          <div className="row">
+            <button className="btn primary" disabled={add.busy || !(Number(form.amount) > 0)} onClick={async () => { if (await add.run()) { setAdding(false); setForm({ fundId: '', amount: '', endDate: yearEnd }); pledges.reload(); } }}>{t('save')}</button>
+            <button className="btn ghost" onClick={() => setAdding(false)}>{t('cancel')}</button>
+          </div>
+        </div>
+      )}
+      {pledges.data?.map((p) => {
+        const pct = Math.min(100, Math.round((p.given / Math.max(1, p.amount)) * 100));
+        return (
+          <div key={p.id} className="card card-pad stack" style={{ gap: 8 }}>
+            <div className="row">
+              <Target size={18} className="muted" />
+              <strong className="grow">{p.fundName}</strong>
+              <span className="small muted">{t('completeBy')} {formatDate(p.endDate, locale)}</span>
+              <button className="btn ghost icon sm" title={t('remove')} onClick={async () => { if (confirm(t('remove'))) { await MemberApi.giving.removePledge(p.id); pledges.reload(); } }}><Trash2 size={14} /></button>
+            </div>
+            <div className="progress"><i style={{ width: `${pct}%` }} /></div>
+            <span className="small muted">{t('pledgeProgress', { given: formatMoney(p.given, p.currency, locale), amount: formatMoney(p.amount, p.currency, locale) })}</span>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function financialYears() {
+  const now = new Date();
+  const start = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  return [0, 1, 2].map((i) => `${start - i}-${String((start - i + 1) % 100).padStart(2, '0')}`);
+}
+
+function Statement() {
+  const { t, locale } = useT();
+  const years = financialYears();
+  const [fy, setFy] = useState(years[0]);
+  const { data } = useApi(() => MemberApi.giving.statement(fy), [fy]);
+  return (
+    <section className="stack">
+      <div className="section-head">
+        <h2 className="row" style={{ gap: 8 }}><FileText size={20} /> {t('statementTitle')}</h2>
+        <select className="select" style={{ width: 'auto' }} value={fy} onChange={(e) => setFy(e.target.value)}>
+          {years.map((y) => <option key={y} value={y}>FY {y}</option>)}
+        </select>
+      </div>
+      {!data ? <Loading /> : (
+        <div className="card card-pad stack">
+          <p className="small muted">{t('statementBody', { year: data.financialYear })}</p>
+          <div className="row" style={{ justifyContent: 'space-between' }}><span>{t('total')}</span><b>{formatMoney(data.total, data.currency, locale)}</b></div>
+          <div className="row" style={{ justifyContent: 'space-between' }}><span>{t('eligible80g')}</span><b style={{ color: 'var(--ok)' }}>{formatMoney(data.eligible80g, data.currency, locale)}</b></div>
+          <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={!data.gifts.length} onClick={() => printHtml(`${t('statementTitle')} ${data.financialYear}`, statementHtml(data))}>
+            <Printer size={16} /> {t('printStatement')}
+          </button>
+        </div>
+      )}
+    </section>
   );
 }

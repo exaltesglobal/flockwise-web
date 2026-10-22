@@ -3,9 +3,10 @@
 The Flockwise web app: the **church office dashboard** (`/admin`) and the **member portal**
 (`/app`, same features as the mobile app). Vite + React 19 + TypeScript + React Router.
 
-It talks to the backend only through the API in [docs/API.md](docs/API.md) (shared with the
-mobile app) and [docs/API-ADMIN.md](docs/API-ADMIN.md). Until the backend is live it runs on a
-built-in demo backend with sample data for "Grace Community Church" (sign-in code `123456`).
+It talks to [flockwise-api](../flockwise-api) through the contract in [docs/API.md](docs/API.md)
+(shared with the mobile app) and [docs/API-ADMIN.md](docs/API-ADMIN.md). With `VITE_USE_MOCKS=true`
+it runs the same engine in the browser with sample data for "Grace Community Church": any email
+signs in, code `123456`, and every message the system would send appears under Messages → Demo outbox.
 
 ## Run it
 
@@ -40,16 +41,19 @@ Static hosting also works: upload the contents of `dist/` to `public_html`. The 
 ## Structure
 
 ```
-src/api/        client (per-scope sessions, token refresh), endpoints, types, demo backend (mock.ts)
-src/admin/      office dashboard: dashboard, people, import, events, groups, giving (+80G), announcements, settings
-src/member/     member portal: home, events + RSVP, groups, give, me
-src/components/ shared UI, OTP sign-in, server switcher
-src/i18n/       English + Hindi strings, shared with the mobile app (Hindi is machine drafted: needs review)
+src/core/       business engine, copied from flockwise-api (run: node scripts/sync-core.mjs). Do not edit here.
+src/api/        client (per-scope sessions, token refresh), endpoints, demo backend (mock.ts runs src/core)
+src/admin/      office: dashboard, people, check-in (desk + kiosk), events, volunteers, service planning,
+                groups, giving (80G, pledges, statements), messages, announcements, care & prayer,
+                insights, import, settings (campuses, rooms, team & roles, activity log)
+src/member/     member portal: home, events (tickets, self check-in), serving, prayer wall, groups,
+                give (pledges, 80G statement), directory, me (QR code, privacy, language)
+src/components/ shared UI, email sign-in, QR code, server switcher
+src/i18n/       English, Hindi, Tamil, Telugu, Malayalam, Kannada (non-English drafts need a native review)
 server.mjs      zero-dependency production server with SPA fallback
 ```
 
-## What still needs the backend
+## Roles
 
-Everything works in demo mode. Against a real server, giving works today with
-[flockwise-api](../flockwise-api) (Razorpay). OTP sign-in, people, events, groups, announcements
-and settings endpoints are specified in the docs and still to be built server-side.
+The menu and buttons follow the signed-in staff member's permissions (owner, admin, pastor, finance,
+group leader, volunteer coordinator, check-in desk). The server enforces the same rules.

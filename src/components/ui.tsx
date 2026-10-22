@@ -94,12 +94,14 @@ export function Modal({
   children,
   footer,
   side = false,
+  wide = false,
 }: {
   title: ReactNode;
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
   side?: boolean;
+  wide?: boolean;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -108,7 +110,7 @@ export function Modal({
   }, [onClose]);
   return (
     <div className={`overlay ${side ? 'right' : ''}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" role="dialog" aria-modal="true">
+      <div className={`modal ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true">
         <div className="modal-head">
           <h2>{title}</h2>
           <button className="btn ghost icon sm" onClick={onClose} aria-label="Close">

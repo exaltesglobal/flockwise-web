@@ -1,4 +1,4 @@
-import { CalendarDays, Gift, Home, UserRound, UsersRound } from 'lucide-react';
+import { BookUser, CalendarDays, Gift, HandHeart, Home, Sparkles, UserRound, UsersRound } from 'lucide-react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { memberSession } from '@/api/client';
@@ -24,6 +24,15 @@ export function MemberLayout() {
     { to: '/app/groups', label: t('tabGroups'), icon: UsersRound },
     { to: '/app/me', label: t('tabMe'), icon: UserRound },
   ];
+  // Desktop has room for everything; on phones the extras live in Home's quick links.
+  const desktopTabs = [
+    ...tabs.slice(0, 2),
+    { to: '/app/serving', label: t('tabServing'), icon: HandHeart },
+    { to: '/app/prayer', label: t('tabPrayer'), icon: Sparkles },
+    ...tabs.slice(2, 4),
+    { to: '/app/directory', label: t('tabDirectory'), icon: BookUser },
+    tabs[4],
+  ];
 
   return (
     <div className="member">
@@ -38,7 +47,7 @@ export function MemberLayout() {
             </div>
           </div>
           <nav className="member-nav">
-            {tabs.map(({ to, label, icon: Icon, end }) => (
+            {desktopTabs.map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}>
                 <Icon size={17} /> {label}
               </NavLink>

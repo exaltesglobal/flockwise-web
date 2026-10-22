@@ -1,7 +1,7 @@
 @import '../admin/admin.css';
 .member { min-height: 100%; display: flex; flex-direction: column; padding-bottom: 72px; }
 .member-top { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-.member-top-inner { max-width: 960px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.member-top-inner { max-width: 1180px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .member-church { font-family: var(--font-heading); font-weight: 600; font-size: 16px; line-height: 1.2; }
 .member-nav { display: flex; gap: 4px; }
 .member-nav a { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 600; font-size: 14.5px; }
@@ -9,7 +9,7 @@
 .member-nav a.active { color: var(--primary); background: var(--tint); }
 .member-main { width: 100%; max-width: 760px; margin: 0 auto; padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 22px; }
 .member-tabs { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .member-nav { display: none; }
   .member-main { padding: 18px 16px 32px; }
   .member-tabs { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); z-index: 20; padding-bottom: env(safe-area-inset-bottom); }
@@ -17,7 +17,7 @@
   .member-tabs a.active { color: var(--primary); }
   .member-tabs a:hover { text-decoration: none; }
 }
-@media (min-width: 761px) { .member { padding-bottom: 0; } }
+@media (min-width: 901px) { .member { padding-bottom: 0; } }
 
 .hero-card { background: linear-gradient(135deg, var(--fw-pasture), var(--fw-deep)); color: #fff; border-radius: var(--radius-lg); padding: 22px; display: flex; flex-direction: column; gap: 10px; border: 0; }
 .hero-card .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fw-mint); font-weight: 600; }
@@ -33,3 +33,24 @@
 .fund-option { display: flex; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; align-items: flex-start; background: var(--card); }
 .fund-option.on { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: color-mix(in srgb, var(--tint) 50%, var(--card)); }
 .fund-option input { accent-color: var(--primary); margin-top: 4px; }
+
+.qr-card { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.qr-code-text { font-family: var(--font-heading); font-size: 26px; letter-spacing: 0.2em; font-weight: 700; color: var(--primary); }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; cursor: pointer; }
+.switch { appearance: none; width: 42px; height: 24px; border-radius: 99px; background: var(--border); position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.switch:checked { background: var(--primary); }
+.switch:checked::after { transform: translateX(18px); }
+.quick-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.quick-links a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 6px; color: inherit; font-size: 13px; font-weight: 600; text-align: center; }
+.quick-links a:hover { text-decoration: none; border-color: var(--primary); }
+.quick-links a svg { color: var(--primary); }
+.plan-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.plan-list li > span { display: inline-flex; }
+.plan-list li { display: list-item; }
+.plan-list li .grow { margin-right: 8px; }
+.search-box { position: relative; }
+.search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+.search-box .input { padding-left: 38px; }
+.member-nav a { padding: 8px 10px; font-size: 14px; }
+@media (max-width: 1100px) { .member-nav a svg { display: none; } }

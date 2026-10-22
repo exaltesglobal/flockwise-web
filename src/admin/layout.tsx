@@ -1,4 +1,4 @@
-import { CalendarDays, Gift, LayoutDashboard, LogOut, Megaphone, Menu, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
+import { BarChart3, CalendarDays, ClipboardList, Gift, HandHeart, HeartHandshake, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, ScanLine, Settings, Upload, Users, UsersRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -7,25 +7,32 @@ import { AdminApi } from '@/api/endpoints';
 import { OtpSignIn } from '@/components/otp-sign-in';
 import { DemoBanner } from '@/components/server-settings';
 import { Avatar, Logo } from '@/components/ui';
+import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
+import type { Permission } from '@/api/admin-types';
 
 import './admin.css';
 
-const NAV = [
+const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[] }[] = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/people', label: 'People', icon: Users },
-  { to: '/admin/events', label: 'Services & events', icon: CalendarDays },
-  { to: '/admin/groups', label: 'Groups', icon: UsersRound },
-  { to: '/admin/giving', label: 'Giving', icon: Gift },
-  { to: '/admin/announcements', label: 'Announcements', icon: Megaphone },
-  { to: '/admin/import', label: 'Import', icon: Upload },
-  { to: '/admin/settings', label: 'Settings', icon: Settings },
+  { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
+  { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
+  { to: '/admin/checkin', label: 'Check-in', icon: ScanLine, perm: ['checkin'] },
+  { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
+  { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
+  { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
+  { to: '/admin/giving', label: 'Giving', icon: Gift, perm: ['giving.view'] },
+  { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },
+  { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'] },
+  { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
+  { to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'] },
+  { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'] },
+  { to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] },
 ];
-
-const ROLE_LABEL = { owner: 'Owner', admin: 'Admin', pastor: 'Pastor', finance: 'Finance', leader: 'Group leader' } as const;
 
 export function AdminLayout() {
   const session = useSession(adminSession);
+  const can = useCan();
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
@@ -55,7 +62,7 @@ export function AdminLayout() {
             <small>{session.church.city}</small>
           </div>
           <nav className="admin-nav">
-            {NAV.map(({ to, label, icon: Icon, end }) => (
+            {NAV.filter((n) => !n.perm || can(...n.perm)).map(({ to, label, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end}>
                 <Icon size={18} /> {label}
               </NavLink>
@@ -65,7 +72,7 @@ export function AdminLayout() {
             <Avatar name={name} />
             <div className="grow">
               <div className="ellipsis">{name}</div>
-              <small>{ROLE_LABEL[session.staff.role]}</small>
+              <small>{ROLE_LABELS[session.staff.role]}</small>
             </div>
             <button className="btn ghost icon sm" onClick={signOut} title="Sign out" aria-label="Sign out">
               <LogOut size={17} />
@@ -105,26 +112,26 @@ export function AdminSignIn() {
   if (session?.staff) return <Navigate to={(location.state as { from?: string } | null)?.from ?? '/admin'} replace />;
   return (
     <div className="auth-page">
-      <DemoBanner text="Demo mode: any email or number works, and the code is 123456." />
+      <DemoBanner text="Demo mode: any email works, and the code is 123456." />
       <div className="auth-center">
         <div className="card auth-card">
           <Logo height={30} />
           <div>
             <h1>Church office sign in</h1>
-            <p className="muted">Use the email or mobile number your church admin added you with. We will send a one-time code.</p>
+            <p className="muted">Use the email address your church admin invited you with. We will email you a one-time code.</p>
           </div>
           <OtpSignIn
             auth={AdminApi.auth}
             store={adminSession}
             validate={(s) => (s.staff ? null : 'This account is not on the church staff list. Ask your church admin to invite you.')}
             labels={{
-              identifier: 'Email or mobile number',
+              identifier: 'Email address',
               sendCode: 'Send code',
               enterCode: 'Enter the 6-digit code',
               codeSentTo: (t) => `We sent a code to ${t}.`,
               verify: 'Sign in',
-              changeNumber: 'Use a different email or number',
-              demoHint: 'Demo mode: any email or number works, and the code is 123456.',
+              changeNumber: 'Use a different email',
+              demoHint: 'Demo mode: any email works, and the code is 123456.',
             }}
           />
         </div>

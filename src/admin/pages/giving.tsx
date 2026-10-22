@@ -1,4 +1,4 @@
-import { Download, Gift, Pencil, Plus, Search } from 'lucide-react';
+import { Download, FileText, Gift, Pencil, Plus, Printer, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 
 import type { AdminDonation, AdminFund, DonationQuery, FundInput, OfflineDonationInput, PaymentMethod } from '@/api/admin-types';
@@ -7,14 +7,18 @@ import { AdminApi } from '@/api/endpoints';
 import type { Currency } from '@/api/types';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { useCan } from '@/lib/perms';
+import { printHtml, statementHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
+
+import { PersonField, type PickedPerson } from '../components/person-picker';
 
 import { PageHeader } from '../layout';
 
 const METHOD: Record<PaymentMethod, string> = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', cash: 'Cash', cheque: 'Cheque', bank_transfer: 'Bank transfer' };
 const STATUS_TONE = { succeeded: 'ok', pending: 'warn', failed: 'danger', refunded: 'gray' } as const;
 
-type Tab = 'donations' | 'funds' | 'receipts';
+type Tab = 'donations' | 'funds' | 'pledges' | 'receipts';
 
 /** Indian financial year (1 April – 31 March) as YYYY-MM-DD bounds. */
 function fiscalYear(offset = 0) {
@@ -47,11 +51,13 @@ export function GivingPage() {
         <Segmented value={tab} onChange={setTab} options={[
           { value: 'donations', label: 'Donations' },
           { value: 'funds', label: 'Funds' },
+          { value: 'pledges', label: 'Pledges' },
           ...(isIndia ? [{ value: 'receipts' as Tab, label: '80G receipts' }] : []),
         ]} />
       </div>
       {tab === 'donations' && <Donations funds={funds.data ?? []} currency={currency} onChanged={funds.reload} />}
       {tab === 'funds' && <Funds funds={funds} currency={currency} />}
+      {tab === 'pledges' && <Pledges funds={funds.data ?? []} currency={currency} />}
       {tab === 'receipts' && <Receipts currency={currency} />}
     </>
   );
@@ -66,7 +72,9 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
   const [extra, setExtra] = useState<AdminDonation[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
+  const [statementFor, setStatementFor] = useState<string | null>(null);
   const toast = useToast();
+  const can = useCan();
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q), 250);
@@ -124,7 +132,7 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
         <div className="toolbar">
           <div className="search">
             <Search size={16} />
-            <input className="input" placeholder="Search donor or PAN" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input className="input" placeholder="Search donor, PAN or receipt no." value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           <select className="select" style={{ width: 180 }} value={range} onChange={(e) => setRange(e.target.value as keyof typeof R)}>
             {Object.entries(R).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -135,26 +143,36 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
           </select>
           <div className="grow" />
           <button className="btn" onClick={exportCsv}><Download size={16} /> Export</button>
-          <button className="btn primary" onClick={() => setRecording(true)}><Plus size={16} /> Record cash or cheque</button>
+          {can('giving.edit') && <button className="btn primary" onClick={() => setRecording(true)}><Plus size={16} /> Record cash or cheque</button>}
         </div>
         {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : rows.length === 0 ? (
           <Empty icon={<Gift size={32} />} title="No gifts in this period" />
         ) : (
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Date</th><th>Donor</th><th>Fund</th><th>Method</th><th>Status</th><th className="num">Amount</th></tr></thead>
+              <thead><tr><th>Date</th><th>Donor</th><th>Fund</th><th>Method</th><th>Receipt</th><th>Status</th><th className="num">Amount</th><th /></tr></thead>
               <tbody>
                 {rows.map((d) => (
                   <tr key={d.id}>
                     <td className="small" style={{ whiteSpace: 'nowrap' }}>{formatDate(d.createdAt)}</td>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{d.donorName}</div>
+                      <div style={{ fontWeight: 600 }}>{d.donorId ? <button className="link-btn" style={{ color: 'var(--text)' }} title="Giving statement" onClick={() => setStatementFor(d.donorId)}>{d.donorName}</button> : d.donorName}</div>
                       <div className="small muted">{d.pan ? <span className="mono">{d.pan}</span> : 'No PAN'}{d.fcra && <span className="badge warn" style={{ marginLeft: 6 }}>FCRA</span>}</div>
                     </td>
                     <td className="small">{d.fundName}{d.frequency === 'monthly' && <span className="badge gray" style={{ marginLeft: 6 }}>Monthly</span>}</td>
                     <td className="small">{METHOD[d.method]}</td>
+                    <td className="mono small">{d.receiptNumber ?? <span className="muted">—</span>}</td>
                     <td><span className={`badge ${STATUS_TONE[d.status]}`}>{d.status}</span></td>
                     <td className="num" style={{ fontWeight: 600 }}>{formatMoney(d.amount, d.currency)}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      {can('giving.edit') && d.status === 'succeeded' && <button className="btn ghost icon sm" title="Mark refunded" onClick={async () => {
+                        if (!confirm(`Mark the ${formatMoney(d.amount, d.currency)} gift from ${d.donorName} as refunded? Refund the money in Razorpay or by bank first.`)) return;
+                        await AdminApi.giving.refund(d.id);
+                        toast('Marked refunded');
+                        list.reload();
+                        onChanged();
+                      }}><RotateCcw size={15} /></button>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -163,6 +181,7 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
         )}
         {cursor && <div style={{ padding: 16, textAlign: 'center', borderTop: '1px solid var(--border)' }}><button className="btn" onClick={more}>Load more</button></div>}
       </div>
+      {statementFor && <StatementModal personId={statementFor} onClose={() => setStatementFor(null)} />}
       {recording && <OfflineGiftForm funds={funds.filter((f) => f.active)} currency={currency} onClose={() => setRecording(false)} onSaved={() => { setRecording(false); list.reload(); onChanged(); toast('Gift recorded'); }} />}
     </>
   );
@@ -269,6 +288,7 @@ function Funds({ funds, currency }: { funds: ReturnType<typeof useApi<AdminFund[
                   <span className="small muted">{Math.round((f.raisedThisYear / f.goal) * 100)}% of {formatMoney(f.goal, currency)} goal</span>
                 </>
               ) : <span className="small muted">raised this year</span>}
+              {f.pledged > 0 && <div className="small muted">{formatMoney(f.pledged, currency)} pledged</div>}
             </div>
           </div>
         ))}
@@ -305,6 +325,7 @@ function Receipts({ currency }: { currency: Currency }) {
   const [fy, setFy] = useState(0);
   const report = useApi(() => AdminApi.giving.receipts80g(years[fy].from.slice(0, 4) + '-' + years[fy].to.slice(2, 4)), [fy]);
   const toast = useToast();
+  const [statementFor, setStatementFor] = useState<string | null>(null);
   const donors = report.data?.donors ?? [];
   const withPan = donors.filter((d) => d.pan);
 
@@ -339,7 +360,7 @@ function Receipts({ currency }: { currency: Currency }) {
               <tbody>
                 {donors.slice(0, 200).map((d, i) => (
                   <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{d.name}</td>
+                    <td style={{ fontWeight: 600 }}>{d.donorId ? <button className="link-btn" style={{ color: 'var(--text)' }} onClick={() => setStatementFor(d.donorId)}>{d.name}</button> : d.name}</td>
                     <td>{d.pan ? <span className="mono">{d.pan}</span> : <span className="badge warn">Missing</span>}</td>
                     <td className="num">{d.count}</td>
                     <td className="small">{d.modes.map((m) => METHOD[m]).join(', ')}</td>
@@ -351,6 +372,110 @@ function Receipts({ currency }: { currency: Currency }) {
           </div>
         )}
       </div>
+      {statementFor && <StatementModal personId={statementFor} financialYear={years[fy].from.slice(0, 4) + '-' + years[fy].to.slice(2, 4)} onClose={() => setStatementFor(null)} />}
     </div>
+  );
+}
+
+export function StatementModal({ personId, financialYear, onClose }: { personId: string; financialYear?: string; onClose: () => void }) {
+  const { data, error, reload } = useApi(() => AdminApi.giving.statement(personId, financialYear), [personId, financialYear]);
+  return (
+    <Modal title={data ? `${data.donor.name} · FY ${data.financialYear}` : 'Giving statement'} onClose={onClose}
+      footer={data && <button className="btn primary" onClick={() => printHtml(`Statement ${data.donor.name}`, statementHtml(data))}><Printer size={15} /> Print or save PDF</button>}
+    >
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
+        <div className="stack">
+          <div className="stat-row">
+            <div className="card mini-stat"><b>{formatMoney(data.total, data.currency)}</b><span>{data.gifts.length} gifts</span></div>
+            <div className="card mini-stat"><b>{formatMoney(data.eligible80g, data.currency)}</b><span>Eligible for 80G</span></div>
+          </div>
+          {data.donor.pan ? <span className="small muted">PAN <span className="mono">{data.donor.pan}</span></span> : <div className="alert warn">No PAN on file. The donor needs to give a PAN to claim 80G.</div>}
+          {data.gifts.length === 0 ? <Empty icon={<FileText size={28} />} title="No gifts in this financial year" /> : (
+            <div className="table-wrap card">
+              <table className="table">
+                <thead><tr><th>Date</th><th>Receipt</th><th>Fund</th><th className="num">Amount</th></tr></thead>
+                <tbody>{data.gifts.map((g) => <tr key={g.id}><td className="small">{formatDate(g.date)}</td><td className="mono small">{g.receiptNumber ?? '—'}</td><td className="small">{g.fundName}{!g.eligible80g && <span className="badge gray" style={{ marginLeft: 6 }}>not 80G</span>}</td><td className="num">{formatMoney(g.amount, data.currency)}</td></tr>)}</tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function Pledges({ funds, currency }: { funds: AdminFund[]; currency: Currency }) {
+  const list = useApi(AdminApi.giving.pledges);
+  const [adding, setAdding] = useState(false);
+  const toast = useToast();
+  const can = useCan();
+  const rows = list.data ?? [];
+  const pledged = rows.reduce((s, p) => s + p.amount, 0);
+  const given = rows.reduce((s, p) => s + Math.min(p.given, p.amount), 0);
+  return (
+    <>
+      <div className="grid cols-3">
+        <div className="card kpi"><span className="label">Pledged</span><span className="value">{formatMoney(pledged, currency)}</span></div>
+        <div className="card kpi"><span className="label">Given towards pledges</span><span className="value">{formatMoney(given, currency)}</span></div>
+        <div className="card kpi"><span className="label">Fulfilled</span><span className="value">{pledged ? Math.round((given / pledged) * 100) : 0}%</span></div>
+      </div>
+      <div className="card">
+        <div className="toolbar">
+          <span className="small muted">Members can pledge from the app. Gifts to the same fund between the start and end dates count towards a pledge.</span>
+          <div className="grow" />
+          {can('giving.edit') && <button className="btn primary" onClick={() => setAdding(true)}><Plus size={16} /> Record pledge</button>}
+        </div>
+        {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : rows.length === 0 ? <Empty icon={<Gift size={32} />} title="No pledges yet" body="Use pledges for building campaigns and faith promises." /> : (
+          <div className="table-wrap">
+            <table className="table">
+              <thead><tr><th>Person</th><th>Fund</th><th>Period</th><th style={{ width: 220 }}>Progress</th><th className="num">Pledged</th><th /></tr></thead>
+              <tbody>
+                {rows.map((p) => {
+                  const pct = Math.min(100, Math.round((p.given / p.amount) * 100));
+                  return (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: 600 }}>{p.personName}</td>
+                      <td className="small">{p.fundName}</td>
+                      <td className="small muted">{formatDate(p.startDate)} – {formatDate(p.endDate)}</td>
+                      <td><div className="progress"><i style={{ width: `${pct}%`, background: pct >= 100 ? 'var(--ok)' : undefined }} /></div><span className="small muted">{formatMoney(p.given, p.currency)} · {pct}%</span></td>
+                      <td className="num" style={{ fontWeight: 600 }}>{formatMoney(p.amount, p.currency)}</td>
+                      <td style={{ textAlign: 'right' }}>{can('giving.edit') && <button className="btn ghost icon sm danger" title="Remove" onClick={async () => { if (!confirm('Remove this pledge?')) return; await AdminApi.giving.removePledge(p.id); toast('Removed'); list.reload(); }}><Trash2 size={15} /></button>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {adding && <PledgeForm funds={funds.filter((f) => f.active)} currency={currency} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); list.reload(); toast('Pledge recorded'); }} />}
+    </>
+  );
+}
+
+function PledgeForm({ funds, currency, onClose, onSaved }: { funds: AdminFund[]; currency: Currency; onClose: () => void; onSaved: () => void }) {
+  const [person, setPerson] = useState<PickedPerson | null>(null);
+  const [fundId, setFundId] = useState(funds[0]?.id ?? '');
+  const [amount, setAmount] = useState('');
+  const today = new Date().toISOString().slice(0, 10);
+  const [startDate, setStart] = useState(today);
+  const [endDate, setEnd] = useState(`${new Date().getFullYear() + 1}-03-31`);
+  const save = useAction(AdminApi.giving.createPledge);
+  const amt = Math.round(Number(amount) * 100);
+  return (
+    <Modal title="Record a pledge" onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy || !person || !amt} onClick={async () => { if (await save.run({ personId: person!.id, fundId, amount: amt, startDate, endDate })) onSaved(); }}>Save</button></>}
+    >
+      <div className="stack">
+        <FormError error={save.error} />
+        <Field label="Person"><PersonField value={person} onChange={setPerson} /></Field>
+        <div className="grid cols-2">
+          <Field label="Fund"><select className="select" value={fundId} onChange={(e) => setFundId(e.target.value)}>{funds.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}</select></Field>
+          <Field label={`Total pledged (${currency})`}><input className="input" type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+          <Field label="Starts"><input className="input" type="date" value={startDate} onChange={(e) => setStart(e.target.value)} /></Field>
+          <Field label="Complete by"><input className="input" type="date" value={endDate} onChange={(e) => setEnd(e.target.value)} /></Field>
+        </div>
+      </div>
+    </Modal>
   );
 }

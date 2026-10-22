@@ -1,11 +1,14 @@
-import { ArrowLeft, CalendarDays, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, MapPin, ScanLine, Ticket, Users } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
+import { memberSession } from '@/api/client';
 import type { RsvpStatus } from '@/api/types';
 import { MemberApi } from '@/api/endpoints';
 import { ErrorState, FormError, Loading } from '@/components/ui';
 import { useT } from '@/i18n';
-import { formatDay, formatTime } from '@/lib/format';
+import { formatDay, formatMoney, formatTime } from '@/lib/format';
+import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { EventCard } from './shared';
@@ -30,10 +33,23 @@ export function MemberEventPage() {
   const { t, locale } = useT();
   const { data: ev, error, reload, setData } = useApi(() => MemberApi.events.get(id), [id]);
   const rsvp = useAction(async (status: RsvpStatus) => setData(await MemberApi.events.rsvp(id, status)));
+  const session = useSession(memberSession);
+  const [paid, setPaid] = useState(false);
+  const ticket = useAction(async () => {
+    const intent = await MemberApi.events.buyTicket(id);
+    // Real backend: Razorpay hosted checkout. The demo settles instantly.
+    if (intent.checkoutUrl) window.location.href = intent.checkoutUrl;
+    else { setPaid(true); setData(await MemberApi.events.get(id)); }
+  });
+  const checkIn = useAction(async () => setData(await MemberApi.events.checkIn(id)));
 
   if (error) return <ErrorState error={error} onRetry={reload} />;
   if (!ev) return <Loading />;
   const full = !!ev.capacity && ev.goingCount >= ev.capacity && ev.myRsvp !== 'going';
+  const priced = !!ev.price && ev.price > 0;
+  const hasTicket = priced && (paid || ev.myRsvp === 'going');
+  const now = Date.now();
+  const checkInOpen = now >= new Date(ev.startsAt).getTime() - 3600_000 && now <= new Date(ev.endsAt).getTime();
 
   return (
     <>
@@ -52,15 +68,32 @@ export function MemberEventPage() {
           </span>
         </div>
         {ev.description && <p style={{ whiteSpace: 'pre-wrap' }}>{ev.description}</p>}
-        <FormError error={rsvp.error} />
-        <div className="row wrap">
+        <FormError error={rsvp.error ?? ticket.error ?? checkIn.error} />
+        {priced ? (
+          hasTicket ? (
+            <div className="row" style={{ gap: 8, color: 'var(--ok)', fontWeight: 600 }}><Ticket size={18} /> {t('ticketPaid')}</div>
+          ) : (
+            <div className="stack" style={{ gap: 6 }}>
+              <button className="btn lg primary" style={{ alignSelf: 'flex-start' }} disabled={ticket.busy || full} onClick={() => ticket.run()}>
+                <Ticket size={17} /> {t('getTicket', { price: formatMoney(ev.price!, session?.church.currency ?? 'INR', locale) })}
+              </button>
+              <span className="small muted">{t('ticketNote')}</span>
+            </div>
+          )
+        ) : null}
+        {checkInOpen && (ev.checkedIn ? (
+          <div className="row" style={{ gap: 8, color: 'var(--ok)', fontWeight: 600 }}><CheckCircle2 size={18} /> {t('checkedIn')}</div>
+        ) : (!priced || hasTicket) && (
+          <button className="btn lg accent" style={{ alignSelf: 'flex-start' }} disabled={checkIn.busy} onClick={() => checkIn.run()}><ScanLine size={17} /> {t('checkIn')}</button>
+        ))}
+        {!priced && <div className="row wrap">
           <button className={`btn lg ${ev.myRsvp === 'going' ? 'primary' : ''}`} disabled={rsvp.busy || full} onClick={() => rsvp.run('going')}>
             {ev.myRsvp === 'going' ? `✓ ${t('going')}` : t('imGoing')}
           </button>
           <button className={`btn lg ${ev.myRsvp === 'not_going' ? 'primary' : ''}`} disabled={rsvp.busy} onClick={() => rsvp.run('not_going')}>
             {t('notGoing')}
           </button>
-        </div>
+        </div>}
       </div>
     </>
   );

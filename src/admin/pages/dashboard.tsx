@@ -1,10 +1,11 @@
-import { Cake, CalendarDays, Gift, IndianRupee, UserPlus, Users, UsersRound } from 'lucide-react';
+import { AlertTriangle, Cake, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { Avatar, BarChart, ErrorState, Loading } from '@/components/ui';
 import { formatDay, formatMoney, formatMoneyShort, formatNumber, formatRelative, formatTime, greetingKey } from '@/lib/format';
+import { useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import { useApi } from '@/lib/use-api';
 
@@ -15,6 +16,7 @@ const GREETING = { goodMorning: 'Good morning', goodAfternoon: 'Good afternoon',
 export function DashboardPage() {
   const session = useSession(adminSession);
   const { data, error, reload } = useApi(AdminApi.dashboard);
+  const can = useCan();
 
   const header = <PageHeader title={`${GREETING[greetingKey()]}, ${session?.member.firstName ?? ''}`} subtitle="Here is how your church is doing this week." />;
   if (error) return (<>{header}<ErrorState error={error} onRetry={reload} /></>);
@@ -42,19 +44,46 @@ export function DashboardPage() {
           <span className="value">{formatNumber(data.attendance.lastSunday)}</span>
           <span className={`delta ${attDelta >= 0 ? 'up' : 'down'}`}>{attDelta >= 0 ? '▲' : '▼'} {Math.abs(attDelta)}% on the week before</span>
         </div>
-        <div className="card kpi">
+        {can('giving.view') ? <div className="card kpi">
           <span className="label"><IndianRupee size={15} /> Giving this month</span>
           <span className="value">{formatMoneyShort(data.giving.thisMonth, c)}</span>
           <span className="delta muted">
             {dayOfMonth} days in · last month {formatMoneyShort(data.giving.lastMonth, c)}
             {dayOfMonth > 25 && <span className={`delta ${givingDelta >= 0 ? 'up' : 'down'}`}> ({givingDelta >= 0 ? '+' : ''}{givingDelta}%)</span>}
           </span>
-        </div>
+        </div> : (
+          <Link to="/admin/volunteers" className="card kpi" style={{ color: 'inherit', textDecoration: 'none' }}>
+            <span className="label"><HandHeart size={15} /> Serving</span>
+            <span className="value">{data.serving.openSlots}</span>
+            <span className="delta muted">open slots · {data.serving.pending} awaiting reply</span>
+          </Link>
+        )}
         <Link to="/admin/groups" className="card kpi" style={{ color: 'inherit', textDecoration: 'none' }}>
           <span className="label"><UsersRound size={15} /> Join requests</span>
           <span className="value">{data.pendingJoinRequests}</span>
           <span className="delta muted">{data.pendingJoinRequests ? 'Waiting for a leader to approve →' : 'All caught up'}</span>
         </Link>
+      </div>
+
+      <div className="stat-row">
+        {can('care') && (
+          <>
+            <Link to="/admin/care" className="card mini-stat" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <b>{data.care.open}</b><span><HeartHandshake size={13} /> Open care cases{data.care.overdue ? <span className="badge danger" style={{ marginLeft: 6 }}>{data.care.overdue} overdue</span> : null}</span>
+            </Link>
+            <Link to="/admin/care?tab=at-risk" className="card mini-stat" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <b>{data.care.atRisk}</b><span><AlertTriangle size={13} /> Haven't been seen in 3+ weeks</span>
+            </Link>
+            <Link to="/admin/care?tab=prayer" className="card mini-stat" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <b>{data.care.prayer}</b><span><Sparkles size={13} /> Open prayer requests</span>
+            </Link>
+          </>
+        )}
+        {can('volunteers') && (
+          <Link to="/admin/volunteers" className="card mini-stat" style={{ color: 'inherit', textDecoration: 'none' }}>
+            <b>{data.serving.openSlots}</b><span><HandHeart size={13} /> Open serving slots{data.serving.nextEventTitle ? ` · ${data.serving.nextEventTitle}` : ''}</span>
+          </Link>
+        )}
       </div>
 
       <div className="grid cols-2">
@@ -70,7 +99,7 @@ export function DashboardPage() {
             />
           </div>
         </div>
-        <div className="card">
+        {can('giving.view') && <div className="card">
           <div className="card-head">
             <h2>Giving</h2>
             <Link to="/admin/giving" className="small">View all</Link>
@@ -81,7 +110,7 @@ export function DashboardPage() {
               format={(v) => formatMoney(v, c)}
             />
           </div>
-        </div>
+        </div>}
       </div>
 
       <div className="grid cols-3">
@@ -105,7 +134,7 @@ export function DashboardPage() {
           ))}
         </div>
 
-        <div className="card">
+        {can('giving.view') && <div className="card">
           <div className="card-head">
             <h2>Recent gifts</h2>
             <Gift size={16} className="muted" />
@@ -120,7 +149,7 @@ export function DashboardPage() {
               <b className="small">{formatMoney(d.amount, d.currency)}</b>
             </div>
           ))}
-        </div>
+        </div>}
 
         <div className="card">
           <div className="card-head">

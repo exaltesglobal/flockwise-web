@@ -19,11 +19,11 @@ type Labels = {
 };
 
 type AuthFns = {
-  requestOtp: (identifier: string) => Promise<OtpRequest>;
+  requestOtp: (email: string) => Promise<OtpRequest>;
   verifyOtp: (requestId: string, code: string) => Promise<Session>;
 };
 
-/** Passwordless sign-in shared by the admin and member sides: identifier, then a 6-digit code. */
+/** Passwordless sign-in shared by the admin and member sides: email, then the 6-digit code we emailed. */
 export function OtpSignIn({ auth, store, labels, validate }: { auth: AuthFns; store: SessionStore; labels: Labels; validate?: (s: Session) => string | null }) {
   const [identifier, setIdentifier] = useState('');
   const [otp, setOtp] = useState<OtpRequest | null>(null);
@@ -51,8 +51,8 @@ export function OtpSignIn({ auth, store, labels, validate }: { auth: AuthFns; st
   if (!otp) {
     return (
       <form className="stack" onSubmit={onRequest}>
-        <Field label={labels.identifier} error={request.error?.fields?.identifier}>
-          <input className="input" autoFocus autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="+91 98765 43210" />
+        <Field label={labels.identifier} error={request.error?.fields?.email ?? request.error?.fields?.identifier}>
+          <input className="input" type="email" inputMode="email" autoFocus autoComplete="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@example.com" />
         </Field>
         <FormError error={request.error?.fields ? null : request.error} />
         <button className="btn primary lg block" disabled={request.busy || !identifier.trim()}>

@@ -2,20 +2,29 @@ import { createBrowserRouter, createMemoryRouter, Navigate } from 'react-router'
 
 import { AdminLayout, AdminSignIn } from '@/admin/layout';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
+import { CarePage } from '@/admin/pages/care';
+import { CheckinPage } from '@/admin/pages/checkin';
 import { DashboardPage } from '@/admin/pages/dashboard';
 import { EventsPage } from '@/admin/pages/events';
 import { GivingPage } from '@/admin/pages/giving';
 import { GroupsPage } from '@/admin/pages/groups';
 import { ImportPage } from '@/admin/pages/import';
+import { InsightsPage } from '@/admin/pages/insights';
+import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
+import { ServicesPage } from '@/admin/pages/services';
 import { SettingsPage } from '@/admin/pages/settings';
+import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberGivePage } from '@/member/pages/give';
 import { MemberGroupsPage } from '@/member/pages/groups';
 import { MemberHomePage } from '@/member/pages/home';
+import { MemberDirectoryPage } from '@/member/pages/directory';
 import { MemberMePage } from '@/member/pages/me';
+import { MemberPrayerPage } from '@/member/pages/prayer';
+import { MemberServingPage } from '@/member/pages/serving';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -29,9 +38,15 @@ const routes = [
       { path: 'people/:id', element: <PeoplePage /> },
       { path: 'import', element: <ImportPage /> },
       { path: 'events', element: <EventsPage /> },
+      { path: 'checkin', element: <CheckinPage /> },
+      { path: 'volunteers', element: <VolunteersPage /> },
+      { path: 'services', element: <ServicesPage /> },
       { path: 'groups', element: <GroupsPage /> },
       { path: 'giving', element: <GivingPage /> },
+      { path: 'messages', element: <MessagesPage /> },
       { path: 'announcements', element: <AnnouncementsPage /> },
+      { path: 'care', element: <CarePage /> },
+      { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
@@ -45,6 +60,9 @@ const routes = [
       { path: 'events/:id', element: <MemberEventPage /> },
       { path: 'groups', element: <MemberGroupsPage /> },
       { path: 'give', element: <MemberGivePage /> },
+      { path: 'serving', element: <MemberServingPage /> },
+      { path: 'prayer', element: <MemberPrayerPage /> },
+      { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },
     ],
   },
