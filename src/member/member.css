@@ -55,3 +55,6 @@
 .member-nav a { padding: 8px 10px; font-size: 14px; }
 @media (max-width: 1100px) { .member-nav a svg { display: none; } }
 .live-card.on { border-color: var(--danger); }
+.fam-checkin { border-color: var(--primary); }
+.fam-code { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px; border-radius: var(--radius-sm); background: var(--tint); }
+.fam-code-value { font-family: ui-monospace, Menlo, monospace; font-size: 48px; font-weight: 800; letter-spacing: 0.15em; line-height: 1.1; }

@@ -1,5 +1,6 @@
-import { Download, LogOut, QrCode as QrIcon } from 'lucide-react';
+import { ChevronRight, Download, LogOut, QrCode as QrIcon, UsersRound } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
@@ -57,6 +58,15 @@ export function MemberMePage() {
           {m.householdName && <div className="small muted">{t('household')}: {m.householdName}</div>}
         </div>
       </div>
+
+      <Link to="/app/family" className="card card-pad row" style={{ gap: 12 }}>
+        <UsersRound size={22} className="muted" />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <b>{t('familyTitle')}</b>
+          <div className="small muted">{t('familyBody')}</div>
+        </div>
+        <ChevronRight size={18} className="muted" />
+      </Link>
 
       <div id="qr" className="card card-pad qr-card">
         <div className="stack" style={{ gap: 6 }}>

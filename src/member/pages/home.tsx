@@ -1,4 +1,4 @@
-import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, Newspaper, QrCode, Radio, Sparkles } from 'lucide-react';
+import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, Newspaper, QrCode, Radio, ScanLine, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -49,6 +49,8 @@ export function MemberHomePage() {
             </div>
           )}
 
+          <FamilyCheckinCard />
+
           <LiveCard />
 
           <BulletinCard />
@@ -80,6 +82,24 @@ export function MemberHomePage() {
         </>
       )}
     </>
+  );
+}
+
+/** When phone check-in is open and someone in the family is not in yet. */
+function FamilyCheckinCard() {
+  const { t } = useT();
+  const { data } = useApi(() => MemberApi.family.checkinEvents().catch(() => []));
+  const ev = data?.find((e) => e.open && e.members.some((m) => m.isChild && !m.checkedIn));
+  if (!ev) return null;
+  return (
+    <Link to="/app/family" className="card card-pad row fam-checkin" style={{ gap: 12 }}>
+      <ScanLine size={22} />
+      <div className="grow" style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600 }}>{t('familyHomeCard')}</div>
+        <div className="small muted">{ev.title}</div>
+      </div>
+      <span className="small">{t('familyCheckinTitle')} →</span>
+    </Link>
   );
 }
 

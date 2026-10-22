@@ -43,6 +43,7 @@ import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberBulletinPage } from '@/member/pages/bulletin';
 import { MemberMissionsPage } from '@/member/pages/missions';
 import { MemberLivePage } from '@/member/pages/live';
+import { MemberFamilyPage } from '@/member/pages/family';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
 import { MemberGroupPage } from '@/member/pages/group';
@@ -133,6 +134,7 @@ const routes = [
       { path: 'bulletin', element: <MemberBulletinPage /> },
       { path: 'missions', element: <MemberMissionsPage /> },
       { path: 'live', element: <MemberLivePage /> },
+      { path: 'family', element: <MemberFamilyPage /> },
       { path: 'bulletin/:id', element: <MemberBulletinPage /> },
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },

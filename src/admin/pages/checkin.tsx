@@ -135,7 +135,7 @@ export function CheckinPage() {
       <PageHeader
         title="Check-in"
         subtitle="Search a family, scan a member's QR code, print labels. Children get a security code their parent must show at pickup."
-        actions={<>{picker}<button className="btn" onClick={() => setKiosk(true)}><Maximize2 size={16} /> Kiosk mode</button></>}
+        actions={<>{picker}<PhoneCheckinToggle /><button className="btn" onClick={() => setKiosk(true)}><Maximize2 size={16} /> Kiosk mode</button></>}
       />
       <OfflineBanner desk={desk} />
       <Desk event={ev} desk={desk} />
@@ -144,6 +144,19 @@ export function CheckinPage() {
 }
 
 const EVENTS_KEY = 'fw.checkin.events';
+
+/** Whether parents may check their family in from the member app. */
+function PhoneCheckinToggle() {
+  const s = useApi(AdminApi.checkin.settings);
+  const toast = useToast();
+  if (!s.data) return null;
+  return (
+    <label className="btn ghost" title="Parents check their family in from the member app and show the pickup code here to print labels">
+      <input type="checkbox" checked={s.data.phoneCheckin} onChange={async (e) => { s.setData(await AdminApi.checkin.saveSettings({ phoneCheckin: e.target.checked })); toast(e.target.checked ? 'Families can check in from their phones' : 'Phone check-in is off'); }} />
+      Phone check-in
+    </label>
+  );
+}
 
 /** Shows whether the desk can keep going without internet, and what it still has to send. */
 function OfflineBanner({ desk }: { desk: OfflineDesk }) {
@@ -266,9 +279,10 @@ function Desk({ event, desk }: { event: AdminEvent; desk: OfflineDesk }) {
                         <div className="small muted">{c.householdName ?? ''}{isLocal(c) && <span className="badge warn" style={{ marginLeft: 6 }}>Not sent yet</span>}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}{c.volunteer && <span className="badge accent" style={{ marginLeft: 6 }}>Serving: {c.volunteer.teamName}</span>}</div>
                       </td>
                       <td className="small">{c.isChild ? c.roomName ?? 'No room' : <span className="muted">Adult</span>}</td>
-                      <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method}</span>}</td>
+                      <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method === 'app' ? 'phone' : c.method}</span>}{c.method === 'app' && c.isChild && <div className="small muted">from phone</div>}</td>
                       <td className="small muted">{formatTime(c.at)}{c.checkedOutAt ? ` → ${formatTime(c.checkedOutAt)}` : ''}</td>
                       <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        {c.method === 'app' && c.isChild && c.securityCode && !c.checkedOutAt && <button className="btn sm ghost" title="Print name labels" disabled={!desk.online} onClick={async () => printLabels((await AdminApi.checkin.reprint(event.id, c.securityCode!)).labels)}><Printer size={14} /></button>}
                         {c.isChild && !c.checkedOutAt && <button className="btn sm ghost" title="Page parent" disabled={!desk.online || isLocal(c)} onClick={() => setPaging(c)}><BellRing size={14} /> Page</button>}
                         {c.isChild && !c.checkedOutAt && <button className="btn sm" disabled={!desk.online || isLocal(c)} onClick={() => setCheckingOut(c)}><LogOut size={14} /> Pick up</button>}
                         <button className="btn ghost icon sm" title="Undo check-in" disabled={!desk.online || isLocal(c)} onClick={async () => {
