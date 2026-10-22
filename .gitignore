@@ -1,2 +1,7 @@
 node_modules
 dist
+public/terms/
+public/privacy/
+public/refunds/
+public/shipping/
+public/contact/
