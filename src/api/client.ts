@@ -125,14 +125,13 @@ export function qs(params: Record<string, string | undefined | null>) {
 
 // ----- the Flockwise team panel (/platform): its own short session, no refresh -----
 export type PlatformSession = { token: string; email: string; expiresAt: string };
-const PLATFORM_KEY = 'fw.session.platform';
 
-class PlatformStore {
+export class PlatformStore {
   private session: PlatformSession | null = null;
   private listeners = new Set<(s: PlatformSession | null) => void>();
-  constructor() {
+  constructor(private key: string) {
     try {
-      const s = JSON.parse(localStorage.getItem(PLATFORM_KEY) ?? 'null') as PlatformSession | null;
+      const s = JSON.parse(localStorage.getItem(key) ?? 'null') as PlatformSession | null;
       this.session = s && s.expiresAt > new Date().toISOString() ? s : null;
     } catch {
       this.session = null;
@@ -142,8 +141,8 @@ class PlatformStore {
   set(s: PlatformSession | null) {
     this.session = s;
     try {
-      if (s) localStorage.setItem(PLATFORM_KEY, JSON.stringify(s));
-      else localStorage.removeItem(PLATFORM_KEY);
+      if (s) localStorage.setItem(this.key, JSON.stringify(s));
+      else localStorage.removeItem(this.key);
     } catch {
       /* storage blocked: keep it for this visit */
     }
@@ -155,15 +154,17 @@ class PlatformStore {
   }
 }
 
-export const platformSession = new PlatformStore();
+export const platformSession = new PlatformStore('fw.session.platform');
+/** A church network or diocese office (/network): same kind of short session, kept apart. */
+export const networkSession = new PlatformStore('fw.session.network');
 
-async function platformSend<T>(method: Method, path: string, body?: unknown): Promise<T> {
-  const s = platformSession.get();
+async function platformSend<T>(method: Method, path: string, body?: unknown, store = platformSession): Promise<T> {
+  const s = store.get();
   if (isUsingMocks()) {
     try {
       return await mockRequest<T>('platform', method, path, body, s ? { token: s.token } : null);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) platformSession.set(null);
+      if (e instanceof ApiError && e.status === 401) store.set(null);
       throw e;
     }
   }
@@ -178,7 +179,7 @@ async function platformSend<T>(method: Method, path: string, body?: unknown): Pr
   } catch {
     throw new ApiError(0, 'network', 'Could not reach the server.');
   }
-  if (res.status === 401 && s) platformSession.set(null);
+  if (res.status === 401 && s) store.set(null);
   if (res.status === 204) return undefined as T;
   const json = await res.json().catch(() => null);
   if (!res.ok) {
@@ -193,4 +194,11 @@ export const platformApi = {
   get: <T>(path: string) => platformSend<T>('GET', path),
   post: <T>(path: string, body?: unknown) => platformSend<T>('POST', path, body ?? {}),
   patch: <T>(path: string, body?: unknown) => platformSend<T>('PATCH', path, body ?? {}),
+};
+
+export const networkApi = {
+  get: <T>(path: string) => platformSend<T>('GET', path, undefined, networkSession),
+  post: <T>(path: string, body?: unknown) => platformSend<T>('POST', path, body ?? {}, networkSession),
+  patch: <T>(path: string, body?: unknown) => platformSend<T>('PATCH', path, body ?? {}, networkSession),
+  del: <T>(path: string) => platformSend<T>('DELETE', path, undefined, networkSession),
 };

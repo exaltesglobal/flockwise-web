@@ -35,6 +35,7 @@ import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
 import { ChurchRoute } from '@/platform/church';
 import { SignupPage } from '@/platform/signup';
+import { NetworkPanel } from '@/platform/network';
 import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
@@ -63,6 +64,8 @@ const routes = [
   { path: '/c/:slug/*', element: <ChurchRoute /> },
   { path: '/c/:slug', element: <ChurchRoute /> },
   { path: '/platform/*', element: <TeamPanel /> },
+  { path: '/network', element: <NetworkPanel /> },
+  { path: '/network/:id', element: <NetworkPanel /> },
   {
     path: '/admin',
     element: <AdminLayout />,

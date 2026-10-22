@@ -32,8 +32,16 @@ const loadedRaw = new Map<string, string | null>();
 function churchEnv(id: string) {
   const e = Object.create(env) as typeof env;
   e.signAccess = (claims) => ({ token: `demo.${btoa(JSON.stringify({ ...claims, church: id }))}`, expiresAt: new Date(Date.now() + 30 * DAY).toISOString() });
+  e.network = networkHost(id);
   return e;
 }
+
+/** Church networks live in the directory, like on the server (server.ts). */
+function networkHost(id: string): NonNullable<typeof env.network> {
+  const h = () => platform.networks.hostFor(id);
+  return { list: () => h().list(), preview: (c) => h().preview(c), join: (c, s, by) => h().join(c, s, by), update: (n, s) => h().update(n, s), leave: (n) => h().leave(n) };
+}
+env.network = networkHost(MAIN);
 
 function makeEngine(id: string, db = new Db()) {
   const engine = createChurchEngine(db, id === MAIN ? env : churchEnv(id));
@@ -100,7 +108,14 @@ function sampleChurches() {
     const engine = makeEngine(s.id);
     bootstrapChurch(engine.db, engine.env, { id: s.id, name: s.name, country: 'IN', currency: 'INR', city: s.city, ownerEmail: `pastor@${s.slug}.example`, ownerName: 'Pastor' });
     const ctx = engine.systemCtx();
-    for (let i = 0; i < s.people; i++) engine.db.put('people', newPerson(ctx, { firstName: first[i % first.length], lastName: last[(i * 7) % last.length], status: i % 9 === 0 ? 'visitor' : 'member' }));
+    for (let i = 0; i < s.people; i++) engine.db.put('people', { ...newPerson(ctx, { firstName: first[i % first.length], lastName: last[(i * 7) % last.length], status: i % 9 === 0 ? 'visitor' : 'member' }), joinedAt: new Date(Date.now() - (((i * 53) % 1800) + 20) * DAY).toISOString() });
+    // Twelve Sundays of attendance, so a church network has numbers to add up.
+    for (let w = 12; w >= 1; w--) {
+      const d = new Date(Date.now() - w * 7 * DAY);
+      d.setUTCDate(d.getUTCDate() - d.getUTCDay());
+      const date = d.toISOString().slice(0, 10);
+      engine.db.put('attendanceHistory', { id: date, date, count: Math.round(s.people * (0.62 + ((w * 37 + s.people) % 17) / 100) + (12 - w) * s.people * 0.004) });
+    }
     const owner = engine.db.all('staff')[0];
     engine.db.put('staff', { ...owner, status: 'active', lastActiveAt: new Date(Date.now() - (s.days % 5) * DAY).toISOString() });
     if (s.plan === 'trial') startTrial(engine.db, new Date(Date.now() - 18 * DAY));
@@ -158,6 +173,26 @@ function loadPlatform() {
   }
   // Sample churches live in memory only; they are remade on each visit.
   if (!engines.has('ch_sample1')) sampleChurches();
+  demoNetwork();
+}
+
+const DEMO_NETWORK = 'net_demo';
+/** A diocese with Grace and three sample churches in it, for the /network demo. */
+function demoNetwork() {
+  if (platform.networks.get(DEMO_NETWORK)) return;
+  const now = new Date().toISOString();
+  platformDb.put('meta', { id: `network:${DEMO_NETWORK}`, value: JSON.stringify({ id: DEMO_NETWORK, name: 'South India Fellowship of Churches', kind: 'network', code: 'SIFC-2026', admins: [], createdAt: now, createdBy: 'demo' }) });
+  for (const [churchId, shareGiving, days] of [[MAIN, true, 60], ['ch_sample2', false, 40], ['ch_sample3', false, 90], ['ch_sample1', false, 8]] as const) {
+    platformDb.put('meta', { id: `netchurch:${DEMO_NETWORK}:${churchId}`, value: JSON.stringify({ networkId: DEMO_NETWORK, churchId, joinedAt: new Date(Date.now() - days * DAY).toISOString(), joinedBy: 'Pastor', shareGiving }) });
+  }
+}
+
+/** Demo only: whoever signs in to /network leads the sample network too. */
+function joinDemoNetwork(email: string) {
+  const m = platformDb.get('meta', `network:${DEMO_NETWORK}`);
+  if (!m) return;
+  const n = JSON.parse(m.value) as { admins: string[] };
+  if (!n.admins.includes(email)) platformDb.put('meta', { ...m, value: JSON.stringify({ ...n, admins: [...n.admins, email] }) });
 }
 
 function load() {
@@ -205,7 +240,7 @@ export function resetDemoData() {
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const PLATFORM_RE = /^\/(platform|signup|churches)(\/|$)/;
+const PLATFORM_RE = /^\/(platform|signup|churches|networks)(\/|$)/;
 
 export async function mockRequest<T>(scope: 'admin' | 'member' | 'platform', method: string, path: string, body: unknown, current: Session | { token: string } | null, churchRef?: string | null): Promise<T> {
   await wait(120 + Math.random() * 140);
@@ -217,6 +252,7 @@ export async function mockRequest<T>(scope: 'admin' | 'member' | 'platform', met
     const token = current && 'token' in current ? current.token : null;
     try {
       const result = await platform.handle({ method, path: pathname, query, body: body ?? {}, auth: null, token });
+      if (pathname === '/networks/auth/verify') joinDemoNetwork((result as { email: string }).email);
       return (result === undefined ? undefined : structuredClone(result)) as T;
     } finally {
       if (method !== 'GET') {

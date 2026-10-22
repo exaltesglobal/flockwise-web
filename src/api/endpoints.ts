@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
@@ -124,7 +124,7 @@ import type {
   WorkflowCardView,
   WorkflowView,
 } from './admin-types';
-import { adminSession, createApi, memberSession, platformApi, qs, type PlatformSession, type SessionStore } from './client';
+import { adminSession, createApi, memberSession, networkApi, platformApi, qs, type PlatformSession, type SessionStore } from './client';
 import type {
   ChurchEvent,
   Donation,
@@ -299,6 +299,20 @@ export const SignupApi = {
   complete: (input: SignupInput) => platformApi.post<{ church: { id: string; slug: string; name: string }; session: Session }>('/signup/complete', input),
 };
 
+/** A church network or diocese office (/network). Totals only; never anyone's details. */
+export const NetworkApi = {
+  request: (email: string) => networkApi.post<OtpRequest>('/networks/auth/request', { email }),
+  verify: (requestId: string, code: string) => networkApi.post<PlatformSession>('/networks/auth/verify', { requestId, code }),
+  signOut: () => networkApi.post<void>('/networks/auth/sign-out'),
+  mine: () => networkApi.get<NetworkSummary[]>('/networks/mine'),
+  create: (input: { name: string; kind: NetworkKind }) => networkApi.post<NetworkSummary>('/networks/new', input),
+  overview: (id: string) => networkApi.get<NetworkOverview>(`/networks/${id}`),
+  update: (id: string, patch: { name?: string; kind?: NetworkKind; admins?: string[] }) => networkApi.patch<NetworkOverview>(`/networks/${id}`, patch),
+  newCode: (id: string) => networkApi.post<NetworkOverview>(`/networks/${id}/code`),
+  removeChurch: (id: string, churchId: string) => networkApi.del<NetworkOverview>(`/networks/${id}/churches/${churchId}`),
+  remove: (id: string) => networkApi.del<void>(`/networks/${id}`),
+};
+
 export const TeamApi = {
   request: (email: string) => platformApi.post<OtpRequest>('/platform/auth/request', { email }),
   verify: (requestId: string, code: string) => platformApi.post<PlatformSession>('/platform/auth/verify', { requestId, code }),
@@ -433,6 +447,13 @@ export const AdminApi = {
     saveMarks: (id: string, classId: string, marks: Record<string, number | null | ''>) => a.put<SsExamResults>(`/admin/sunday-school/exams/${id}/marks`, { classId, marks }),
     sendResults: (id: string) => a.post<{ channel: string; sent: number; failed: number; noParent: string[] }>(`/admin/sunday-school/exams/${id}/send`),
     prizes: (from?: string, to?: string) => a.get<SsPrizes>(`/admin/sunday-school/prizes${qs({ from, to })}`),
+  },
+  networks: {
+    list: () => a.get<{ available: boolean; networks: ChurchNetworkLink[] }>('/admin/networks'),
+    preview: (code: string) => a.get<{ id: string; name: string; kind: NetworkKind; churches: number }>(`/admin/networks/preview${qs({ code })}`),
+    join: (code: string, shareGiving: boolean) => a.post<ChurchNetworkLink>('/admin/networks/join', { code, shareGiving }),
+    update: (id: string, shareGiving: boolean) => a.patch<ChurchNetworkLink>(`/admin/networks/${id}`, { shareGiving }),
+    leave: (id: string) => a.del<void>(`/admin/networks/${id}`),
   },
   livestream: {
     overview: () => a.get<LiveOverview>('/admin/livestream'),
