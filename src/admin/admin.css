@@ -261,3 +261,4 @@ button.chip.on { background: var(--primary); color: #fff; }
 .zone-card:hover { border-color: var(--primary); }
 .upper { text-transform: uppercase; letter-spacing: .06em; margin: 0; }
 .danger-text { color: var(--danger); }
+.progress.over > i { background: var(--danger, #c0392b); }

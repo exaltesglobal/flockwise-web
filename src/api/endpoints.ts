@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { Certificate, PaymentsStatus, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
+import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
 export type RazorpayKeysInput = { keyId: string; keySecret: string; webhookSecret: string; fcra?: { keyId: string; keySecret: string; webhookSecret: string } | null };
@@ -532,6 +532,22 @@ export const AdminApi = {
   groupPosts: {
     list: (groupId: string) => a.get<{ posts: GroupPost[]; resources: GroupResource[] }>(`/admin/groups/${groupId}/posts`),
     remove: (postId: string) => a.del<void>(`/admin/groups/posts/${postId}`),
+  },
+  accounts: {
+    summary: (fy?: string) => a.get<AccountsSummary>(`/admin/accounts/summary${qs({ fy })}`),
+    heads: () => a.get<AccountHead[]>('/admin/accounts/heads'),
+    createHead: (input: { name: string; tallyName?: string | null; tallyGroup?: string; budget?: string; fy?: string }) => a.post<AccountHead>('/admin/accounts/heads', input),
+    updateHead: (id: string, input: Partial<{ name: string; tallyName: string | null; tallyGroup: string; budget: string; fy: string; active: boolean }>) => a.patch<AccountHead>(`/admin/accounts/heads/${id}`, input),
+    tally: () => a.get<TallySettings>('/admin/accounts/tally'),
+    saveTally: (input: Partial<TallySettings>) => a.patch<TallySettings>('/admin/accounts/tally', input),
+    tallyExport: (f: { from: string; to: string; gifts?: '0'; expenses?: '0'; ledgers?: '0'; daily?: '1' }) => a.get<{ filename: string; xml: string; receipts: number; payments: number; incomeTotal: number; expenseTotal: number; ledgers: number }>(`/admin/accounts/tally-export${qs(f)}`),
+  },
+  expenses: {
+    list: (f: { status?: ExpenseStatus; headId?: string; mine?: '1' } = {}) => a.get<ExpenseView[]>(`/admin/expenses${qs(f)}`),
+    create: (input: { headId: string; amount: string; payee: string; description: string; date?: string; method?: ExpenseMethod | null; reference?: string; fcra?: boolean; billUrl?: string; paid?: boolean }) => a.post<ExpenseView>('/admin/expenses', input),
+    decide: (id: string, approve: boolean, note?: string) => a.post<ExpenseView>(`/admin/expenses/${id}/decide`, { approve, note }),
+    pay: (id: string, input: { method: ExpenseMethod; date?: string; reference?: string; fcra?: boolean }) => a.post<ExpenseView>(`/admin/expenses/${id}/pay`, input),
+    remove: (id: string) => a.del<void>(`/admin/expenses/${id}`),
   },
   zones: {
     list: () => a.get<ZoneView[]>('/admin/zones'),
