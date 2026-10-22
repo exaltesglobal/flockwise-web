@@ -22,7 +22,33 @@ export const transposeKey = (key: string, steps: number) => {
   return m ? shiftNote(m[1], steps, /b/.test(m[1])) + m[2] : key;
 };
 
-export function ChordChart({ text, steps = 0 }: { text: string; steps?: number }) {
+const MAJOR = [0, 2, 4, 5, 7, 9, 11];
+const noteIndex = (n: string) => (SHARPS.indexOf(n) >= 0 ? SHARPS.indexOf(n) : FLATS.indexOf(n));
+
+function degree(note: string, keyRoot: string) {
+  const i = noteIndex(note);
+  const k = noteIndex(keyRoot);
+  if (i < 0 || k < 0) return note;
+  const interval = (i - k + 12) % 12;
+  const d = MAJOR.indexOf(interval);
+  return d >= 0 ? String(d + 1) : `b${MAJOR.indexOf(interval + 1) + 1}`;
+}
+
+/** Nashville number for a chord in a key: in G, "Em7/B" is "6m7/3". */
+export function toNashville(chord: string, key: string) {
+  const k = /^([A-G][#b]?)/.exec(key.trim())?.[1];
+  const m = /^([A-G][#b]?)([^/]*)(?:\/([A-G][#b]?))?$/.exec(chord);
+  if (!k || !m) return chord;
+  return degree(m[1], k) + m[2] + (m[3] ? `/${degree(m[3], k)}` : '');
+}
+
+export type ChartMode = 'chords' | 'numbers';
+
+/**
+ * steps transposes the song; capo shows the shapes a guitarist plays with a capo on that fret
+ * (the song still sounds in the transposed key); "numbers" shows the Nashville number system.
+ */
+export function ChordChart({ text, steps = 0, capo = 0, mode = 'chords', songKey = 'C' }: { text: string; steps?: number; capo?: number; mode?: ChartMode; songKey?: string }) {
   const lines = text.split('\n');
   return (
     <div className="chart">
@@ -38,7 +64,7 @@ export function ChordChart({ text, steps = 0 }: { text: string; steps?: number }
         for (const part of line.split(/(\[[^\]]+\])/)) {
           const m = /^\[([^\]]+)\]$/.exec(part);
           if (m) {
-            const c = transposeChord(m[1], steps);
+            const c = mode === 'numbers' ? toNashville(m[1], songKey) : transposeChord(m[1], steps - capo);
             if (chords.length > words.length) words = words.padEnd(chords.length, ' ');
             chords = chords.padEnd(words.length, ' ') + c + ' ';
           } else words += part;

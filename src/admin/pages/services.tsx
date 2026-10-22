@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, Music, Pencil, Plus, Printer, Radio, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Text, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 
@@ -6,12 +6,13 @@ import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongAttachment, SongV
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format';
-import { ChordChart, transposeKey } from '@/lib/chords';
+import { type ChartMode, ChordChart, transposeKey } from '@/lib/chords';
 import { useCan } from '@/lib/perms';
 import { printHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
+import { RehearsalPlayer, SongStatsView } from './worship';
 
 const KINDS: { value: PlanItemKind; label: string }[] = [
   { value: 'song', label: 'Song' },
@@ -25,21 +26,30 @@ const KINDS: { value: PlanItemKind; label: string }[] = [
 ];
 const kindLabel = (k: PlanItemKind) => KINDS.find((x) => x.value === k)?.label ?? k;
 
-type Draft = Partial<PlanItem> & { key_: string };
+type Draft = Partial<PlanItem> & { key_: string; open_?: boolean };
+
+/** ISO time to the value a datetime-local input expects, in the browser's time zone. */
+const toLocalInput = (iso?: string | null) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
+const splitList = (v: string) => v.split(',').map((x) => x.trim()).filter(Boolean);
 let seq = 0;
 const draftKey = () => `d${++seq}`;
 
 export function ServicesPage() {
-  const [tab, setTab] = useState<'plans' | 'songs' | 'ccli'>('plans');
+  const [tab, setTab] = useState<'plans' | 'songs' | 'stats' | 'ccli'>('plans');
   return (
     <>
       <PageHeader title="Service planning" subtitle="Order of service, songs and keys, timings and who is serving. Volunteers see the plan in the app once they accept." />
       <div className="tabs">
         <button className={tab === 'plans' ? 'on' : ''} onClick={() => setTab('plans')}>Plans</button>
         <button className={tab === 'songs' ? 'on' : ''} onClick={() => setTab('songs')}>Song library</button>
+        <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Song stats</button>
         <button className={tab === 'ccli' ? 'on' : ''} onClick={() => setTab('ccli')}>CCLI report</button>
       </div>
-      {tab === 'plans' ? <Plans /> : tab === 'songs' ? <Songs /> : <CcliReport />}
+      {tab === 'plans' ? <Plans /> : tab === 'songs' ? <Songs /> : tab === 'stats' ? <SongStatsView /> : <CcliReport />}
     </>
   );
 }
@@ -75,9 +85,11 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
   const past = useApi(() => AdminApi.services.list('past'));
   const [theme, setTheme] = useState('');
   const [notes, setNotes] = useState('');
+  const [rehearsalAt, setRehearsalAt] = useState('');
+  const [rehearsalNotes, setRehearsalNotes] = useState('');
   const [items, setItems] = useState<Draft[]>([]);
   const [dirty, setDirty] = useState(false);
-  const save = useAction(() => AdminApi.services.save(eventId, { theme, notes, items: items.map(({ key_: _k, ...i }) => i) }));
+  const save = useAction(() => AdminApi.services.save(eventId, { theme, notes, rehearsalAt: rehearsalAt ? new Date(rehearsalAt).toISOString() : null, rehearsalNotes, items: items.map(({ key_: _k, open_: _o, ...i }) => i) }));
   const toast = useToast();
   const can = useCan();
   const editable = can('services');
@@ -86,6 +98,8 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
     if (!detail.data) return;
     setTheme(detail.data.plan.theme);
     setNotes(detail.data.plan.notes);
+    setRehearsalAt(toLocalInput(detail.data.plan.rehearsalAt));
+    setRehearsalNotes(detail.data.plan.rehearsalNotes ?? '');
     setItems(detail.data.plan.items.map((i) => ({ ...i, key_: draftKey() })));
     setDirty(false);
   }, [detail.data]);
@@ -125,6 +139,7 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
           )}
           <button className="btn" onClick={() => printPlan(detail.data!, theme, notes, items)}><Printer size={15} /> Print</button>
           {items.length > 0 && <Link className="btn accent" to={`/admin/services/${eventId}/live`}><Radio size={15} /> Live</Link>}
+          {items.length > 0 && <Link className="btn" to={`/present/${eventId}`} title={dirty ? 'Save the plan first so the screens show your changes' : 'Lyrics and slides on the projector'}><MonitorPlay size={15} /> Present</Link>}
           {editable && <button className="btn primary" disabled={!dirty || save.busy} onClick={async () => { if (await save.run()) { toast('Plan saved'); setDirty(false); onSaved(); } }}>{save.busy ? 'Saving…' : 'Save plan'}</button>}
         </div>
       </div>
@@ -134,6 +149,8 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
           <div className="card card-pad grid cols-2">
             <Field label="Theme or sermon series"><input className="input" disabled={!editable} value={theme} onChange={(e) => { setTheme(e.target.value); setDirty(true); }} placeholder="The Good Shepherd · John 10" /></Field>
             <Field label="Notes for the team"><input className="input" disabled={!editable} value={notes} onChange={(e) => { setNotes(e.target.value); setDirty(true); }} placeholder="Communion this week" /></Field>
+            <Field label="Rehearsal"><input className="input" type="datetime-local" disabled={!editable} value={rehearsalAt} onChange={(e) => { setRehearsalAt(e.target.value); setDirty(true); }} /></Field>
+            <Field label="Rehearsal notes"><input className="input" disabled={!editable} value={rehearsalNotes} onChange={(e) => { setRehearsalNotes(e.target.value); setDirty(true); }} placeholder="Run the bridge twice, new intro on song 2" /></Field>
           </div>
           <div className="card">
             {items.length === 0 && <Empty icon={<ClipboardList size={28} />} title="Empty plan" body="Add songs, readings and the sermon below, or copy last week's plan." />}
@@ -157,12 +174,22 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
                         <input className="input grow" disabled={!editable} value={it.title ?? ''} onChange={(e) => update(it.key_, { title: e.target.value })} />
                       )}
                     </div>
-                    <div className="row" style={{ gap: 6 }}>
+                    <div className="row wrap" style={{ gap: 6 }}>
                       {it.kind === 'song' && <input className="input" disabled={!editable} style={{ width: 70 }} value={it.key ?? ''} onChange={(e) => update(it.key_, { key: e.target.value })} placeholder="Key" title="Key" />}
                       <input className="input" disabled={!editable} style={{ width: 160 }} value={it.person ?? ''} onChange={(e) => update(it.key_, { person: e.target.value })} placeholder="Who" />
-                      <input className="input grow" disabled={!editable} value={it.notes ?? ''} onChange={(e) => update(it.key_, { notes: e.target.value })} placeholder="Notes" />
+                      <input className="input grow" style={{ minWidth: 120 }} disabled={!editable} value={it.notes ?? ''} onChange={(e) => update(it.key_, { notes: e.target.value })} placeholder="Notes" />
                       <div className="row" style={{ gap: 2 }}><input className="input" disabled={!editable} style={{ width: 64 }} type="number" min={0} value={it.minutes ?? 0} onChange={(e) => update(it.key_, { minutes: Number(e.target.value) })} /><span className="small muted">min</span></div>
+                      <button className={`btn ghost icon sm ${it.open_ || it.text || it.arrangement?.length ? 'on' : ''}`} title={it.kind === 'song' ? 'Arrangement for this service' : 'Words for the projector'} aria-label="Projector words and arrangement" onClick={() => setItems((xs) => xs.map((x) => (x.key_ === it.key_ ? { ...x, open_: !x.open_ } : x)))}><Text size={15} /></button>
                     </div>
+                    {it.open_ && (it.kind === 'song' ? (
+                      <Field label="Arrangement for this service" hint={`Section order, separated by commas. Leave empty to use the song’s order${songs.data?.find((x) => x.id === it.songId)?.arrangement?.length ? ` (${songs.data!.find((x) => x.id === it.songId)!.arrangement!.join(', ')})` : ''}.`}>
+                        <input className="input" disabled={!editable} value={(it.arrangement ?? []).join(', ')} onChange={(e) => update(it.key_, { arrangement: splitList(e.target.value) })} placeholder="Verse 1, Chorus, Verse 2, Chorus, Bridge, Chorus" />
+                      </Field>
+                    ) : (
+                      <Field label="Words for the projector" hint="Scripture text, announcement points or sermon notes. A blank line starts a new slide.">
+                        <textarea className="textarea" disabled={!editable} rows={4} value={it.text ?? ''} onChange={(e) => update(it.key_, { text: e.target.value })} />
+                      </Field>
+                    ))}
                   </div>
                   {editable && (
                     <div className="stack" style={{ gap: 0 }}>
@@ -258,8 +285,11 @@ function Songs() {
 
 function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
   const [steps, setSteps] = useState(0);
+  const [capo, setCapo] = useState(0);
+  const [mode, setMode] = useState<ChartMode>('chords');
   const toast = useToast();
   const hasChart = !!song.chordChart?.trim();
+  const audio = (song.attachments ?? []).filter((a) => a.kind === 'audio' && a.url);
   return (
     <Modal wide title={song.title} onClose={onClose} footer={<button className="btn" onClick={() => { navigator.clipboard?.writeText(song.lyrics); toast('Lyrics copied'); }}><Copy size={15} /> Copy lyrics</button>}>
       <div className="stack">
@@ -271,14 +301,22 @@ function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
             <b className="mono" style={{ minWidth: 28, textAlign: 'center' }}>{transposeKey(song.defaultKey || 'C', steps)}</b>
             <button className="btn sm icon" onClick={() => setSteps(steps + 1)} aria-label="Transpose up">+</button>
             {steps !== 0 && <button className="btn sm ghost" onClick={() => setSteps(0)}>Reset</button>}
+            <select className="select" style={{ width: 96 }} value={capo} onChange={(e) => setCapo(Number(e.target.value))} aria-label="Capo">
+              {Array.from({ length: 8 }, (_, i) => <option key={i} value={i}>{i ? `Capo ${i}` : 'No capo'}</option>)}
+            </select>
+            <Segmented value={mode} onChange={setMode} options={[{ value: 'chords', label: 'Chords' }, { value: 'numbers', label: 'Numbers' }]} />
           </>}
         </div>
+        {capo > 0 && mode === 'chords' && <div className="small muted">Shapes for capo {capo}. Sounds in {transposeKey(song.defaultKey || 'C', steps)}.</div>}
+        {(song.arrangement?.length ?? 0) > 0 && <div className="small"><span className="muted">Arrangement:</span> {song.arrangement!.join(' → ')}</div>}
+        {audio.map((a) => <RehearsalPlayer key={a.id} name={a.name} url={a.url} />)}
         {(song.attachments?.length ?? 0) > 0 && (
           <div className="row wrap" style={{ gap: 6 }}>
             {song.attachments!.map((a) => <a key={a.id} className="btn sm" href={a.url} target="_blank" rel="noreferrer"><ExternalLink size={13} /> {a.name}</a>)}
           </div>
         )}
-        {hasChart ? <ChordChart text={song.chordChart!} steps={steps} /> : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics || 'No lyrics saved.'}</pre>}
+        {hasChart ? <ChordChart text={song.chordChart!} steps={steps} capo={capo} mode={mode} songKey={song.defaultKey || 'C'} /> : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics || 'No lyrics saved.'}</pre>}
+        {song.lyricsAlt && <details><summary className="small muted">Second language</summary><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyricsAlt}</pre></details>}
         {hasChart && song.lyrics && <details><summary className="small muted">Plain lyrics</summary><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics}</pre></details>}
       </div>
     </Modal>
@@ -312,12 +350,13 @@ function CcliReport() {
 }
 
 function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '', chordChart: song?.chordChart ?? '', attachments: song?.attachments ?? [] });
+  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '', lyricsAlt: song?.lyricsAlt ?? '', chordChart: song?.chordChart ?? '', attachments: song?.attachments ?? [] });
+  const [arrangement, setArrangement] = useState((song?.arrangement ?? []).join(', '));
   const atts = form.attachments ?? [];
   const setAtt = (i: number, patch: Partial<SongAttachment>) => set('attachments', atts.map((a, j) => (j === i ? { ...a, ...patch } : a)));
   const [tags, setTags] = useState((song?.tags ?? []).join(', '));
   const save = useAction(() => {
-    const input = { ...form, tags: tags.split(',').map((t) => t.trim()).filter(Boolean) };
+    const input = { ...form, tags: splitList(tags), arrangement: splitList(arrangement) };
     return song ? AdminApi.services.updateSong(song.id, input) : AdminApi.services.createSong(input);
   });
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
@@ -335,7 +374,9 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
           <Field label="CCLI number"><input className="input" value={form.ccli} onChange={(e) => set('ccli', e.target.value)} /></Field>
           <Field label="Tags" hint="e.g. Telugu, Opening, Communion"><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} /></Field>
         </div>
-        <Field label="Lyrics"><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} /></Field>
+        <Field label="Lyrics" hint="Put each section under a heading such as Verse 1, Chorus or Bridge. The projector makes slides from these."><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} placeholder={'Verse 1\nAmazing grace! How sweet the sound\n\nChorus\n…'} /></Field>
+        <Field label="Lyrics in a second language" hint="Optional. Use the same headings and the projector shows both languages, e.g. English with Telugu or Hindi below."><textarea className="textarea" style={{ minHeight: 100 }} value={form.lyricsAlt ?? ''} onChange={(e) => set('lyricsAlt', e.target.value)} /></Field>
+        <Field label="Arrangement" hint="The usual section order, separated by commas. Each service can change it."><input className="input" value={arrangement} onChange={(e) => setArrangement(e.target.value)} placeholder="Verse 1, Chorus, Verse 2, Chorus, Bridge, Chorus" /></Field>
         <Field label="Chord chart" hint="ChordPro style: put chords in brackets before the syllable, e.g. [G]Amazing [C]grace. Musicians can transpose it to any key."><textarea className="textarea mono" style={{ minHeight: 160 }} value={form.chordChart ?? ''} onChange={(e) => set('chordChart', e.target.value)} placeholder={'[Verse 1]\n[G]Amazing [G7]grace, how [C]sweet the [G]sound'} /></Field>
         <span className="section-title">Attachments</span>
         <p className="small muted" style={{ marginTop: -8 }}>Links to lead sheets, MP3s or videos (Google Drive, Dropbox, YouTube).</p>

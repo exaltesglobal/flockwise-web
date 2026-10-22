@@ -278,3 +278,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
   .sermon-card { grid-template-columns: 220px minmax(0, 1fr); }
   .sermon-card > img, .sermon-art { aspect-ratio: auto; height: 100%; min-height: 140px; }
 }
+
+/* Worship: rehearsal player, song usage bars, toggled buttons */
+.btn.on { background: var(--tint); color: var(--primary); border-color: var(--primary); }
+.rehearsal { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2, var(--tint)); }
+.usage-bar { height: 6px; border-radius: 999px; background: var(--border); margin-top: 6px; overflow: hidden; }
+.usage-bar span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }

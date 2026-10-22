@@ -73,6 +73,9 @@ import type {
   BookingView,
   CalendarItem,
   CcliRow,
+  PresentationTheme,
+  PresentationView,
+  SongStats,
   CustomField,
   FormInput,
   FormResponse,
@@ -304,7 +307,7 @@ export const AdminApi = {
   services: {
     list: (when: 'upcoming' | 'past' = 'upcoming') => a.get<ServiceSummary[]>(`/admin/services${qs({ when })}`),
     get: (eventId: string) => a.get<ServiceDetail>(`/admin/services/${eventId}`),
-    save: (eventId: string, plan: { theme: string; notes: string; items: Partial<PlanItem>[] }) => a.put<Plan>(`/admin/services/${eventId}`, plan),
+    save: (eventId: string, plan: { theme: string; notes: string; items: Partial<PlanItem>[]; rehearsalAt?: string | null; rehearsalNotes?: string }) => a.put<Plan>(`/admin/services/${eventId}`, plan),
     copy: (eventId: string, fromEventId: string) => a.post<Plan>(`/admin/services/${eventId}/copy`, { fromEventId }),
     songs: (q?: string) => a.get<SongView[]>(`/admin/songs${qs({ q })}`),
     createSong: (input: Omit<Song, 'id'>) => a.post<Song>('/admin/songs', input),
@@ -413,6 +416,14 @@ export const AdminApi = {
     get: (eventId: string) => a.get<LiveView>(`/admin/services/${eventId}/live`),
     act: (eventId: string, action: 'start' | 'next' | 'prev' | 'goto' | 'stop' | 'reset', index?: number) => a.post<LiveView>(`/admin/services/${eventId}/live`, { action, index }),
   },
+  presentation: {
+    get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message', extra: { index?: number; message?: string } = {}) =>
+      a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),
+    theme: () => a.get<PresentationTheme>('/admin/presentation-theme'),
+    saveTheme: (input: Partial<PresentationTheme>) => a.put<PresentationTheme>('/admin/presentation-theme', input),
+  },
+  songStats: () => a.get<SongStats>('/admin/songs/stats'),
   ccli: (from?: string, to?: string) => a.get<{ from: string; to: string; rows: CcliRow[] }>(`/admin/songs/ccli-report${qs({ from, to })}`),
   headcounts: {
     record: (eventId: string, area: string, count: number) => a.post<CheckinSummary>(`/admin/checkin/${eventId}/headcounts`, { area, count }),
