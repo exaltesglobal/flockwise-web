@@ -1,11 +1,15 @@
-import { CalendarDays, Pencil, Plus, ScanLine, Trash2, Users } from 'lucide-react';
+import { CalendarDays, Mail, Pencil, Plus, ScanLine, Trash2, Users } from 'lucide-react';
 import { Link } from 'react-router';
 import { useState, type FormEvent } from 'react';
 
 import type { AdminEvent, EventInput } from '@/api/admin-types';
+import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
+import { InvitationModal } from '@/components/invitation';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDay, formatMoney, formatTime, toLocalInput } from '@/lib/format';
+import { churchUrl } from '@/lib/church';
+import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
@@ -16,6 +20,8 @@ export function EventsPage() {
   const [editing, setEditing] = useState<AdminEvent | 'new' | null>(null);
   const [counting, setCounting] = useState<AdminEvent | null>(null);
   const [viewing, setViewing] = useState<AdminEvent | null>(null);
+  const [inviting, setInviting] = useState<AdminEvent | null>(null);
+  const session = useSession(adminSession);
   const toast = useToast();
 
   return (
@@ -74,6 +80,7 @@ export function EventsPage() {
                     <td>{ev.published ? <span className="badge ok">Published</span> : <span className="badge gray">Draft</span>}</td>
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button className="btn ghost icon sm" title="People" onClick={() => setViewing(ev)}><Users size={15} /></button>
+                      {ev.published && <button className="btn ghost icon sm" title="Invitation card" onClick={() => setInviting(ev)}><Mail size={15} /></button>}
                       {ev.checkinEnabled && when === 'upcoming' && <Link className="btn ghost icon sm" title="Open check-in" to={`/admin/checkin?event=${ev.id}`}><ScanLine size={15} /></Link>}
                       <button className="btn ghost icon sm" title="Edit" onClick={() => setEditing(ev)}><Pencil size={15} /></button>
                       <button className="btn ghost icon sm danger" title="Delete" onClick={async () => {
@@ -93,6 +100,15 @@ export function EventsPage() {
 
       {editing && <EventForm event={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); toast('Saved'); }} />}
       {viewing && <AttendeesDrawer event={viewing} onClose={() => setViewing(null)} />}
+      {inviting && session && (
+        <InvitationModal
+          event={inviting}
+          church={session.church}
+          link={churchUrl(`/app/events/${inviting.id}`)}
+          shareText={`You are invited to ${inviting.title} on ${formatDay(inviting.startsAt)}, ${formatTime(inviting.startsAt)}${inviting.location ? ` at ${inviting.location}` : ''}. RSVP: ${churchUrl(`/app/events/${inviting.id}`)}`}
+          onClose={() => setInviting(null)}
+        />
+      )}
       {counting && <AttendanceForm event={counting} onClose={() => setCounting(null)} onSaved={() => { setCounting(null); reload(); toast('Attendance saved'); }} />}
     </>
   );

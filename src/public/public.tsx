@@ -2,7 +2,8 @@ import { CalendarDays, CheckCircle2, Radio, ClipboardList, Clock, Gift, Mail, Ma
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 
-import type { PublicGroup } from '@/api/admin-types';
+import type { BrandKit, PublicGroup } from '@/api/admin-types';
+import { useBrandStyle } from '@/components/brand';
 import { PublicApi } from '@/api/endpoints';
 import { BulletinDoc } from '@/components/bulletin';
 import { LiveWatch } from '@/components/live-player';
@@ -15,9 +16,10 @@ import { SermonList } from '@/member/pages/sermons';
 
 import './public.css';
 
-function Shell({ churchName, logoUrl, children }: { churchName?: string; logoUrl?: string | null; children: ReactNode }) {
+function Shell({ churchName, logoUrl, brand, children }: { churchName?: string; logoUrl?: string | null; brand?: BrandKit | null; children: ReactNode }) {
+  const style = useBrandStyle({ brand: brand ?? null });
   return (
-    <div className="pub">
+    <div className="pub" style={style}>
       <header className="pub-top">
         <div className="pub-wrap row between">
           <Link to="/church" className="row pub-brand" style={{ gap: 10 }}>
@@ -54,7 +56,7 @@ export function PublicChurchPage() {
   const shownGroups = groups.filter((g) => !zone || g.zone === zone);
 
   return (
-    <Shell churchName={church.name} logoUrl={church.logoUrl}>
+    <Shell churchName={church.name} logoUrl={church.logoUrl} brand={church.brand}>
       <section className="pub-hero" style={page.heroImageUrl ? { backgroundImage: `linear-gradient(rgba(10,30,28,.55), rgba(10,30,28,.75)), url("${page.heroImageUrl}")` } : undefined}>
         <span className="eyebrow">{church.city}</span>
         <h1>{church.name}</h1>
@@ -259,7 +261,7 @@ export function PublicLivePage() {
   const church = useApi(() => PublicApi.church().catch(() => null));
   useEffect(() => { document.title = church.data ? `Watch live · ${church.data.church.name}` : 'Watch live'; }, [church.data]);
   return (
-    <Shell churchName={church.data?.church.name} logoUrl={church.data?.church.logoUrl}>
+    <Shell churchName={church.data?.church.name} logoUrl={church.data?.church.logoUrl} brand={church.data?.church.brand}>
       <div className="stack pub-live">
         <h1>Watch live</h1>
         <LiveWatch labels={{ live: 'LIVE', watching: (n) => `${n} watching`, starts: (when) => `Starts ${when}`, openYoutube: 'Open in YouTube', none: 'No live stream right now', noneBody: 'Our Sunday services stream here. Check back at service time.', ended: 'The stream has ended. Thank you for joining us!' }} />

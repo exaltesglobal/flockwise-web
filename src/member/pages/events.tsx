@@ -1,12 +1,14 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Ticket, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Share2, Ticket, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import type { RsvpStatus } from '@/api/types';
 import { MemberApi } from '@/api/endpoints';
+import { InvitationModal } from '@/components/invitation';
 import { ErrorState, FormError, Loading } from '@/components/ui';
 import { useT } from '@/i18n';
+import { churchUrl } from '@/lib/church';
 import { formatDay, formatMoney, formatTime } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
@@ -35,6 +37,7 @@ export function MemberEventPage() {
   const rsvp = useAction(async (status: RsvpStatus) => setData(await MemberApi.events.rsvp(id, status)));
   const session = useSession(memberSession);
   const [paid, setPaid] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const ticket = useAction(async () => {
     const intent = await MemberApi.events.buyTicket(id);
     // Real backend: Razorpay hosted checkout. The demo settles instantly.
@@ -96,7 +99,18 @@ export function MemberEventPage() {
             {t('notGoing')}
           </button>
         </div>}
+        <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setInviting(true)}><Share2 size={16} /> {t('invite')}</button>
       </div>
+      {inviting && session && (
+        <InvitationModal
+          event={ev}
+          church={session.church}
+          locale={locale}
+          link={churchUrl(`/app/events/${ev.id}`)}
+          shareText={t('inviteText', { title: ev.title, date: `${formatDay(ev.startsAt, locale)}, ${formatTime(ev.startsAt, locale)}`, link: churchUrl(`/app/events/${ev.id}`) })}
+          onClose={() => setInviting(false)}
+        />
+      )}
     </>
   );
 }

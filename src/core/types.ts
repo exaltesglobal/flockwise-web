@@ -15,7 +15,23 @@ export type Church = {
   country: string;
   currency: Currency;
   logoUrl?: string | null;
+  /** Colours and type from Settings › Church › Brand kit, so every screen matches the logo. */
+  brand?: BrandKit | null;
   paymentProvider: 'razorpay' | 'stripe';
+};
+
+/** The church's brand kit. The logo (Church.logoUrl) always appears beside the name; these go with it. */
+export type BrandFont = 'modern' | 'classic' | 'rounded' | 'elegant';
+export type BrandKit = {
+  /** Buttons, links and headers, as #rrggbb. */
+  primary: string;
+  /** Highlights and the invitation ribbon, as #rrggbb. */
+  accent: string;
+  font: BrandFont;
+  /** A version of the logo for dark backgrounds (projector, dark mode). Falls back to logoUrl. */
+  logoDarkUrl?: string | null;
+  /** One line under the name on invitations and the public page. */
+  tagline?: string;
 };
 
 export type Member = {
@@ -230,7 +246,7 @@ export type Pledge = { id: string; personId: string; personName: string; fundId:
 export type PledgeView = Pledge & { given: number; currency: Currency; /** The AutoPay paying this pledge, if any. */ autopay?: { id: string; status: RecurringStatus; amount: number } | null };
 
 export type GivingStatement = {
-  church: { name: string; address: string; pan: string | null; registration80g: string | null };
+  church: { name: string; address: string; logoUrl: string | null; pan: string | null; registration80g: string | null };
   donor: { id: string; name: string; pan: string | null; address: string | null };
   financialYear: string;
   currency: Currency;
@@ -467,6 +483,7 @@ export type ChurchSettings = Church & {
   notifications?: Partial<Record<NotificationKind, NotificationRule>>;
   /** How many automatic notifications went out, by kind. */
   notificationCounts?: Partial<Record<NotificationKind, number>>;
+  brand?: BrandKit;
 };
 
 export type Permission =

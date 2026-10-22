@@ -3,7 +3,8 @@
 .admin-side { width: 248px; flex-shrink: 0; background: var(--sidebar); color: var(--sidebar-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
 .admin-brand { padding: 22px 20px 14px; display: flex; align-items: center; justify-content: space-between; }
 .admin-brand .admin-close { display: none; color: #fff; }
-.admin-church { margin: 0 12px 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.06); font-weight: 600; color: #fff; font-size: 14px; }
+.admin-church { margin: 0 12px 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.06); font-weight: 600; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+.admin-church .church-logo { flex: none; border-radius: 8px; background: #fff; object-fit: contain; padding: 2px; }
 .admin-church small { display: block; color: var(--sidebar-text); font-weight: 400; opacity: 0.75; }
 .admin-nav { display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; flex: 1; overflow-y: auto; }
 .admin-nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px; color: var(--sidebar-text); font-weight: 600; font-size: 14.5px; }

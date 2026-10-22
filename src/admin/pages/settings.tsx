@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
 import type { AuditEntry, Campus, ChurchSettings, LanguageCode, Room } from '@/api/admin-types';
+import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import type { StaffRole } from '@/api/types';
 import { ServerSettings } from '@/components/server-settings';
@@ -14,6 +15,7 @@ import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
 import { PlanBilling, RazorpayCard } from './billing';
+import { BrandKitCard } from './brand';
 import { IntegrationsSettings } from './integrations';
 import { NotificationsSettings } from './notifications';
 import { NetworkSettings } from './networks';
@@ -107,6 +109,8 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
     const saved = await save.run(form);
     if (saved) {
       settings.setData(saved);
+      const s = adminSession.get();
+      if (s) adminSession.set({ ...s, church: { ...s.church, name: saved.name, city: saved.city, logoUrl: saved.logoUrl ?? null, brand: saved.brand ?? null } });
       toast('Settings saved');
     }
   }
@@ -160,6 +164,7 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
             </div>
           </div>
         </div>
+        <BrandKitCard form={form} set={set} />
         {saveBar}
       </>
     );

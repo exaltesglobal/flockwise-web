@@ -7,7 +7,7 @@
 .pub-brand img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
 .pub-main { flex: 1; padding-block: 24px 48px; display: flex; flex-direction: column; gap: 36px; }
 .pub-hero { border-radius: var(--radius-lg); padding: clamp(24px, 5vw, 48px); color: #fff; display: flex; flex-direction: column; gap: 14px;
-  background: linear-gradient(135deg, var(--fw-pasture), var(--fw-deep)); background-size: cover; background-position: center; }
+  background: linear-gradient(135deg, var(--brand-primary, var(--fw-pasture)), color-mix(in srgb, var(--brand-primary, var(--fw-pasture)) 62%, #000)); background-size: cover; background-position: center; }
 .pub-hero h1 { color: #fff; font-size: clamp(28px, 5vw, 44px); line-height: 1.1; text-wrap: balance; }
 .pub-hero .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fw-mint); font-weight: 700; }
 .pub-hero .lead { font-size: clamp(16px, 2.2vw, 19px); color: #e4efec; max-width: 60ch; }

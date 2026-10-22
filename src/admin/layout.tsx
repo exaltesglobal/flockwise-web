@@ -6,6 +6,7 @@ import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { OtpSignIn } from '@/components/otp-sign-in';
 import { DemoBanner } from '@/components/server-settings';
+import { ChurchLogo } from '@/components/brand';
 import { Avatar, Logo } from '@/components/ui';
 import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
@@ -79,8 +80,11 @@ export function AdminLayout() {
             </button>
           </div>
           <div className="admin-church">
-            <div className="ellipsis">{session.church.name}</div>
-            <small>{session.church.city}</small>
+            <ChurchLogo church={session.church} size={34} dark fallback={false} />
+            <div style={{ minWidth: 0 }}>
+              <div className="ellipsis">{session.church.name}</div>
+              <small>{session.church.city}</small>
+            </div>
           </div>
           <nav className="admin-nav">
             {NAV.filter((n) => (!n.perm || can(...n.perm)) && (!n.ai || ai)).map(({ to, label, icon: Icon, end }) => (

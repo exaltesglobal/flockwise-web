@@ -6,7 +6,8 @@ import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
 import { OtpSignIn } from '@/components/otp-sign-in';
 import { DemoBanner } from '@/components/server-settings';
-import { Logo, Mark } from '@/components/ui';
+import { ChurchLogo, useBrandStyle } from '@/components/brand';
+import { Logo } from '@/components/ui';
 import { useT } from '@/i18n';
 import { useSession } from '@/lib/session';
 import { LegalFooter } from '@/legal/legal';
@@ -17,6 +18,7 @@ export function MemberLayout() {
   const session = useSession(memberSession);
   const location = useLocation();
   const { t } = useT();
+  const brandStyle = useBrandStyle(session?.church);
   if (!session) return <Navigate to="/app/sign-in" replace state={{ from: location.pathname + location.search }} />;
 
   const tabs = [
@@ -39,13 +41,13 @@ export function MemberLayout() {
   ];
 
   return (
-    <div className="member">
+    <div className="member" style={brandStyle}>
       <DemoBanner text={t('demoBanner')} />
       <header className="member-top">
         <div className="member-top-inner">
-          <div className="row" style={{ gap: 10 }}>
-            <Mark size={30} />
-            <div>
+          <div className="row" style={{ gap: 10, minWidth: 0 }}>
+            <ChurchLogo church={session.church} size={34} />
+            <div style={{ minWidth: 0 }}>
               <div className="member-church">{session.church.name}</div>
               <div className="small muted">{session.church.city}</div>
             </div>

@@ -19,7 +19,7 @@
 }
 @media (min-width: 901px) { .member { padding-bottom: 0; } }
 
-.hero-card { background: linear-gradient(135deg, var(--fw-pasture), var(--fw-deep)); color: #fff; border-radius: var(--radius-lg); padding: 22px; display: flex; flex-direction: column; gap: 10px; border: 0; }
+.hero-card { background: linear-gradient(135deg, var(--brand-primary, var(--fw-pasture)), color-mix(in srgb, var(--brand-primary, var(--fw-pasture)) 62%, #000)); color: #fff; border-radius: var(--radius-lg); padding: 22px; display: flex; flex-direction: column; gap: 10px; border: 0; }
 .hero-card .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fw-mint); font-weight: 600; }
 .hero-card h2 { font-size: 22px; color: #fff; }
 .hero-card .meta { color: #d5e6e1; font-size: 14px; }

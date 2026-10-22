@@ -74,6 +74,8 @@ export const hi: Strings = {
   noUpcoming: 'अभी कुछ आने वाला नहीं है।',
   location: 'स्थान',
   backToEvents: 'सभी कार्यक्रम',
+  invite: 'किसी को आमंत्रित करें',
+  inviteText: 'आप {date} को {title} में आमंत्रित हैं। वहाँ मिलते हैं! RSVP: {link}',
   monthlyNote: "UPI AutoPay, कार्ड या ई-मैंडेट से एक बार मंज़ूरी दें। यहाँ कभी भी रोकें या बंद करें।",
   checkoutNote: 'भुगतान के लिए आपको एक सुरक्षित Razorpay या Stripe पेज पर ले जाया जाएगा।',
   paymentNotCompleted: 'भुगतान पूरा नहीं हुआ। आपसे कोई राशि नहीं ली गई।',

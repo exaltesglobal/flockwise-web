@@ -25,7 +25,7 @@ export function printHtml(title: string, body: string, css = '') {
 export function statementHtml(s: GivingStatement) {
   const m = (v: number) => esc(formatMoney(v, s.currency));
   return `
-    <h1>${esc(s.church.name)}</h1>
+    <div style="display:flex;align-items:center;gap:12px">${s.church.logoUrl ? `<img src="${esc(s.church.logoUrl)}" alt="" style="width:56px;height:56px;object-fit:contain">` : ''}<h1 style="margin:0">${esc(s.church.name)}</h1></div>
     <div class="muted">${esc(s.church.address)}${s.church.pan ? ` · PAN ${esc(s.church.pan)}` : ''}${s.church.registration80g ? ` · 80G ${esc(s.church.registration80g)}` : ''}</div>
     <h2>Statement of donations · FY ${esc(s.financialYear)}</h2>
     <p><b>${esc(s.donor.name)}</b>${s.donor.pan ? ` · PAN ${esc(s.donor.pan)}` : ''}<br><span class="muted">${esc(s.donor.address)}</span></p>

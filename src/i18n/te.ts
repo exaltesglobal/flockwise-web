@@ -74,6 +74,8 @@ export const te: Strings = {
   noUpcoming: 'ప్రస్తుతం రాబోయే కార్యక్రమాలు లేవు.',
   location: 'స్థలం',
   backToEvents: 'అన్ని కార్యక్రమాలు',
+  invite: 'ఎవరినైనా ఆహ్వానించండి',
+  inviteText: '{date} న {title} కు మీకు ఆహ్వానం. అక్కడ కలుద్దాం! RSVP: {link}',
   monthlyNote: "UPI AutoPay, కార్డ్ లేదా ఇ-మాండేట్‌తో ఒక్కసారి ఆమోదించండి. ఇక్కడ ఎప్పుడైనా ఆపవచ్చు.",
   checkoutNote: 'చెల్లింపు కోసం సురక్షితమైన Razorpay లేదా Stripe పేజీకి తీసుకెళ్తాము.',
   paymentNotCompleted: 'చెల్లింపు పూర్తి కాలేదు. మీ నుండి ఎలాంటి మొత్తం తీసుకోలేదు.',

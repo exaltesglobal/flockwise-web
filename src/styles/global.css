@@ -392,3 +392,38 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .live-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
 .live-pill i { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: live-pulse 1.4s ease-in-out infinite; }
 @keyframes live-pulse { 50% { opacity: 0.3; } }
+
+/* Brand kit: the church's logo beside its name, and the settings card */
+.church-logo { display: block; flex: none; border-radius: 8px; object-fit: contain; background: #fff; }
+.church-name { font-family: var(--font-heading); font-weight: 600; }
+.logo-well { width: 72px; height: 72px; border-radius: 12px; border: 1px dashed var(--border); background: var(--card); display: grid; place-items: center; cursor: pointer; overflow: hidden; flex: none; }
+.logo-well.dark { background: #0f3f36; border-color: #0f3f36; }
+.logo-well img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.colour-swatch { width: 44px; height: 40px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); background: none; cursor: pointer; }
+.font-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.font-option { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.font-option.on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--tint); }
+.font-option input { position: absolute; opacity: 0; pointer-events: none; }
+.font-option b { font-size: 16px; }
+.font-option span { font-size: 13px; color: var(--muted); }
+.brand-preview { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; color: #14211f; }
+.brand-preview.dark { background: #101a18; color: #eef4f2; border-color: #2a3d39; }
+.bp-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--primary); color: var(--on-primary); font-family: var(--font-heading); }
+.bp-head img, .bp-logo-blank { width: 34px; height: 34px; border-radius: 8px; background: #fff; object-fit: contain; padding: 2px; flex: none; }
+.bp-logo-blank { opacity: 0.4; }
+.bp-head b { display: block; font-size: 16px; }
+.bp-head small { display: block; opacity: 0.8; font-size: 12px; }
+.bp-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.bp-line { height: 10px; border-radius: 5px; background: var(--tint); }
+.brand-preview.dark .bp-line { background: #203a35; }
+
+/* Invitation card maker */
+.invite-layout { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.invite-preview { position: sticky; top: 0; }
+.invite-preview img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); box-shadow: var(--shadow); display: block; }
+.invite-blank { aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--border); border-radius: var(--radius); }
+@media (max-width: 720px) {
+  .invite-layout { grid-template-columns: 1fr; }
+  .invite-preview { position: static; max-width: 300px; margin: 0 auto; }
+  .font-options { grid-template-columns: 1fr; }
+}
