@@ -527,3 +527,11 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .int-grid > section.int-wide { grid-column: 1 / -1; height: auto; }
 .obs-steps { margin: 0; padding-left: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 6px 28px; }
 .obs-scenes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px 16px; }
+
+/* Sermon notes under a message */
+.sermon-notes summary { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: var(--primary); list-style: none; }
+.sermon-notes summary::-webkit-details-marker { display: none; }
+.notes-md { display: flex; flex-direction: column; gap: 6px; line-height: 1.55; margin-top: 8px; font-size: 14.5px; }
+.notes-md h4 { margin: 8px 0 0; font-size: 14px; }
+.notes-md p, .notes-md ul { margin: 0; }
+.notes-md ul { padding-left: 20px; }

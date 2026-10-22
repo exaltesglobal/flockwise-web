@@ -1,7 +1,7 @@
 // Import songs from files: PDFs (chord sheets from websites, SongSelect, a songbook page, or a
 // Flockwise PDF), ChordPro and OnSong files, or text pasted from WhatsApp. Each one is shown for a
 // quick check before it is added to the library.
-import { AlertTriangle, CheckCircle2, FileUp, Upload } from 'lucide-react';
+import { AlertTriangle, Camera, CheckCircle2, FileUp, Sparkles, Upload, X } from 'lucide-react';
 import { useRef, useState, type DragEvent } from 'react';
 
 import type { SongView } from '@/api/admin-types';
@@ -12,11 +12,34 @@ import { ChordChart } from '@/lib/chords';
 import { readSongFile } from '@/lib/pdf-songs';
 import { parseSongText, type ParsedSong } from '@/lib/songfile';
 
+import { useAi } from '../ai';
+
+/** Shrinks a photo to a JPEG the model reads well (longest side 1600 px) and returns it base64. */
+async function shrinkPhoto(file: File): Promise<{ mediaType: string; data: string; preview: string }> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('bad image')); i.src = url; });
+    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+    const preview = c.toDataURL('image/jpeg', 0.82);
+    return { mediaType: 'image/jpeg', data: preview.slice(preview.indexOf(',') + 1), preview };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 type Row = ParsedSong & { id: string; file: string; pick: boolean; duplicate: boolean; open: boolean };
 const ACCEPT = '.pdf,.cho,.chopro,.chordpro,.crd,.pro,.onsong,.txt,text/plain,application/pdf';
 
 export function ImportSongsModal({ existing, onClose, onDone }: { existing: SongView[]; onClose: () => void; onDone: (n: number) => void }) {
-  const [tab, setTab] = useState<'files' | 'paste'>('files');
+  const [tab, setTab] = useState<'files' | 'paste' | 'camera'>('files');
+  const [photos, setPhotos] = useState<{ mediaType: string; data: string; preview: string; name: string }[]>([]);
+  const [hint, setHint] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const camera = useRef<HTMLInputElement>(null);
+  const ai = useAi();
   const [rows, setRows] = useState<Row[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
   const [reading, setReading] = useState(false);
@@ -59,6 +82,29 @@ export function ImportSongsModal({ existing, onClose, onDone }: { existing: Song
     if (e.dataTransfer.files.length) void readFiles(e.dataTransfer.files);
   };
   const set = (id: string, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+
+  async function addPhotos(files: FileList | File[]) {
+    const next: typeof photos = [];
+    for (const f of [...files].slice(0, 4 - photos.length)) {
+      try { next.push({ ...(await shrinkPhoto(f)), name: f.name || 'Photo' }); } catch { setProblems((p) => [...p, `${f.name}: could not be read as a photo.`]); }
+    }
+    setPhotos((p) => [...p, ...next]);
+  }
+  async function scan() {
+    setScanning(true);
+    setError(null);
+    try {
+      const out = await AdminApi.ai.songScan(photos.map(({ mediaType, data }) => ({ mediaType, data })), hint.trim() || undefined);
+      if (!out.songs.length) setProblems((p) => [...p, 'No song could be read from these photos. Try a closer, straighter photo in good light.']);
+      addParsed(out.songs.map((s) => ({ title: s.title, author: s.author, key: s.key, bpm: null, ccli: '', chordChart: s.chordChart, lyrics: s.lyrics, warnings: s.warnings })), `Photo · ${s(out.pages)}`);
+      setPhotos([]);
+    } catch (e) {
+      setError(e as ApiError);
+    } finally {
+      setScanning(false);
+    }
+  }
+  const s = (n: number) => `${n} page${n === 1 ? '' : 's'}`;
   const picked = rows.filter((r) => r.pick && r.title.trim());
 
   async function save() {
@@ -84,8 +130,29 @@ export function ImportSongsModal({ existing, onClose, onDone }: { existing: Song
     <Modal wide title="Import songs" onClose={onClose}
       footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={!picked.length || saving} onClick={save}>{saving ? 'Adding…' : picked.length ? `Add ${picked.length} ${picked.length === 1 ? 'song' : 'songs'}` : 'Add songs'}</button></>}>
       <div className="stack">
-        <Segmented value={tab} onChange={setTab} options={[{ value: 'files', label: 'From files' }, { value: 'paste', label: 'Paste text' }]} />
-        {tab === 'files' ? (
+        <Segmented value={tab} onChange={setTab} options={[{ value: 'files', label: 'From files' }, { value: 'paste', label: 'Paste text' }, { value: 'camera', label: 'Photo of a page' }]} />
+        {tab === 'camera' ? (
+          <div className="stack">
+            {!ai && <div className="alert warn small"><AlertTriangle size={15} /> Reading photos needs the AI assistant, which is not switched on for this server yet.</div>}
+            <div className="drop" onClick={() => camera.current?.click()} role="button" tabIndex={0}>
+              <Camera size={26} />
+              <b>Photograph a songbook page, a handwritten chord sheet or a slide</b>
+              <span className="small muted">Up to four pages at a time. Telugu, Hindi, Tamil and other scripts stay as printed; chords above the words are kept. Each read uses one AI request.</span>
+              <input ref={camera} type="file" accept="image/*" capture="environment" multiple hidden onChange={(e) => { if (e.target.files?.length) void addPhotos(e.target.files); e.target.value = ''; }} />
+            </div>
+            {photos.length > 0 && (
+              <div className="scan-photos">
+                {photos.map((p, i) => (
+                  <figure key={i}><img src={p.preview} alt={p.name} /><button type="button" className="btn ghost icon sm" aria-label="Remove photo" onClick={() => setPhotos(photos.filter((_, j) => j !== i))}><X size={14} /></button></figure>
+                ))}
+              </div>
+            )}
+            <div className="row wrap" style={{ gap: 8 }}>
+              <input className="input grow" style={{ minWidth: 200 }} value={hint} onChange={(e) => setHint(e.target.value)} placeholder="Anything that helps: “Telugu chorus book, chords are above the words”" />
+              <button className="btn primary" disabled={!ai || !photos.length || scanning} onClick={scan}><Sparkles size={15} /> {scanning ? 'Reading…' : `Read ${photos.length ? s(photos.length) : 'the page'}`}</button>
+            </div>
+          </div>
+        ) : tab === 'files' ? (
           <div className={`drop ${over ? 'over' : ''}`} onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={onDrop} onClick={() => input.current?.click()} role="button" tabIndex={0}>
             <Upload size={26} />
             <b>{reading ? 'Reading…' : 'Drop song files here, or choose them'}</b>

@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, BookOpen, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ArrowDown, ArrowUp, BookOpen, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Sparkles, Trash2, Wand2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { CustomField, CustomFieldType, PublicPage, Sermon } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
@@ -8,13 +8,14 @@ import { formatDate } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { SermonAiModal, useAi } from '../ai';
+import { DictateButton } from '../components/dictate';
 import { PageHeader } from '../layout';
 
 // ---------- sermon library ----------
 
 const blankSermon = (): Partial<Sermon> => ({
   title: '', speaker: '', date: new Date().toISOString().slice(0, 10), series: '', scripture: '', description: '',
-  videoUrl: '', audioUrl: '', notesUrl: '', imageUrl: '', published: true, eventId: null,
+  videoUrl: '', audioUrl: '', notesUrl: '', imageUrl: '', notes: '', published: true, eventId: null,
 });
 
 /** Sermon library: every message with its video, audio and notes, shown to members and on the public church page. */
@@ -85,6 +86,11 @@ function SermonForm({ sermon, series, onClose, onSaved }: { sermon: Sermon | nul
   const [form, setForm] = useState<Partial<Sermon>>(sermon ?? blankSermon());
   const set = (patch: Partial<Sermon>) => setForm((f) => ({ ...f, ...patch }));
   const save = useAction(() => (sermon ? AdminApi.sermons.update(sermon.id, form) : AdminApi.sermons.create(form)));
+  const ai = useAi();
+  const [speak, setSpeak] = useState('en-IN');
+  const tidy = useAction(() => AdminApi.ai.sermon({ kind: 'notes', title: form.title, passage: form.scripture, notes: form.notes ?? '', language: speak.startsWith('en') ? 'en' : speak.slice(0, 2) }));
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+  const append = (t: string) => setForm((f) => ({ ...f, notes: `${f.notes ?? ''}${f.notes && !/\s$/.test(f.notes) ? ' ' : ''}${t}` }));
   return (
     <Modal wide title={sermon ? 'Edit sermon' : 'New sermon'} onClose={onClose}
       footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy || !form.title?.trim()} onClick={async () => { if (await save.run()) onSaved(); }}>Save</button></>}>
@@ -101,6 +107,14 @@ function SermonForm({ sermon, series, onClose, onSaved }: { sermon: Sermon | nul
           <datalist id="sermon-series">{series.map((s) => <option key={s} value={s} />)}</datalist>
         </Field>
         <Field label="Summary"><textarea className="input" rows={3} value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
+        <Field label="Sermon notes" hint="Shown to members under the sermon. Dictate them straight after preaching, then let the assistant tidy headings, fillers and verse references.">
+          <textarea ref={notesRef} className="textarea" rows={8} value={form.notes ?? ''} onChange={(e) => set({ notes: e.target.value })} placeholder={'Peace with God, Romans 5 verse 1. Justified by faith so we have peace, not a truce…'} />
+        </Field>
+        <div className="row wrap" style={{ gap: 8, marginTop: -6 }}>
+          <DictateButton lang={speak} onLang={setSpeak} onText={append} />
+          {ai && <button type="button" className="btn sm" disabled={tidy.busy || !form.notes?.trim()} onClick={async () => { const r = await tidy.run(); if (r) set({ notes: r.text }); }}><Wand2 size={14} /> {tidy.busy ? 'Tidying…' : 'Tidy with AI'}</button>}
+          <FormError error={tidy.error} />
+        </div>
         <div className="grid cols-2">
           <Field label="Video link" hint="YouTube, Facebook or Vimeo"><input className="input" value={form.videoUrl} onChange={(e) => set({ videoUrl: e.target.value })} placeholder="https://youtube.com/watch?v=…" /></Field>
           <Field label="Audio link"><input className="input" value={form.audioUrl} onChange={(e) => set({ audioUrl: e.target.value })} placeholder="https://…mp3" /></Field>

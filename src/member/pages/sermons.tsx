@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import type { Sermon } from '@/api/admin-types';
 import { MemberApi } from '@/api/endpoints';
+import { LightMarkdown } from '@/components/markdown';
 import { ErrorState, Loading } from '@/components/ui';
 import { useT } from '@/i18n';
 import { formatDate } from '@/lib/format';
@@ -51,6 +52,12 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
               {s.audioUrl && <a className="btn sm" href={s.audioUrl} target="_blank" rel="noreferrer"><Headphones size={15} /> {t('listen')}</a>}
               {s.notesUrl && <a className="btn sm" href={s.notesUrl} target="_blank" rel="noreferrer"><FileText size={15} /> {t('notes')}</a>}
             </div>
+            {s.notes && (
+              <details className="sermon-notes">
+                <summary><FileText size={14} /> {t('notes')}</summary>
+                <LightMarkdown text={s.notes} className="notes-md" />
+              </details>
+            )}
           </div>
         </article>
       ))}

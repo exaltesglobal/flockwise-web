@@ -284,7 +284,7 @@ function Songs() {
       <div className="toolbar">
         <div className="search"><Search size={16} /><input className="input" placeholder="Search title, author or tag" value={q} onChange={(e) => setQ(e.target.value)} /></div>
         <div className="grow" />
-        {can('services') && <button className="btn" onClick={() => setImporting(true)}><FileUp size={16} /> Import PDF or file</button>}
+        {can('services') && <button className="btn" onClick={() => setImporting(true)}><FileUp size={16} /> Import or photograph</button>}
         {can('services') && <button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> Add song</button>}
       </div>
       {importing && <ImportSongsModal existing={list.data ?? []} onClose={() => setImporting(false)} onDone={() => { setImporting(false); list.reload(); }} />}

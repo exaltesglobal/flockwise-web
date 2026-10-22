@@ -23,6 +23,7 @@ import type {
   AiPurpose,
   AiSermonKind,
   AiSetlist,
+  AiSongScan,
   AiStatus,
   ApiKeyView,
   ChitthiStatus,
@@ -711,6 +712,7 @@ export const AdminApi = {
     briefing: () => a.post<AiAnswer>('/admin/ai/briefing', {}),
     sermon: (input: { kind: AiSermonKind; title?: string; passage?: string; notes?: string; language?: string }) => a.post<{ text: string }>('/admin/ai/sermon', input),
     setlist: (theme: string, count: number) => a.post<AiSetlist>('/admin/ai/setlist', { theme, count }),
+    songScan: (images: { mediaType: string; data: string }[], hint?: string) => a.post<AiSongScan>('/admin/ai/song-scan', { images, hint }),
   },
   integrations: {
     get: () => a.get<ConnectionsStatus>('/admin/integrations'),
