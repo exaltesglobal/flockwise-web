@@ -1,11 +1,12 @@
 // Settings › Integrations: Zoom (meeting links on events), Google Cloud Storage (the church's own
-// bucket for photos and videos) and Canva (designs with the brand kit).
-import { Cloud, ExternalLink, Palette, Plus, Unplug, Video } from 'lucide-react';
+// bucket for photos and videos), Canva (designs with the brand kit) and OBS Studio (the stream).
+import { Clapperboard, Cloud, ExternalLink, Palette, Plus, Unplug, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 
 import type { CanvaStatus, ConnectionsStatus, GcsStatus, ZoomStatus } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import { OBS_MOMENTS } from '@/core/types';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
@@ -32,6 +33,7 @@ export function ConnectionCards() {
       <ZoomCard status={data.zoom} onChange={(zoom) => patch({ zoom })} />
       <GcsCard status={data.gcs} onChange={(gcs) => patch({ gcs })} />
       <CanvaCard status={data.canva} onChange={(canva) => patch({ canva })} />
+      <ObsCard />
     </>
   );
 }
@@ -214,6 +216,54 @@ function CanvaCard({ status: c, onChange }: { status: CanvaStatus; onChange: (s:
           <div className="row wrap" style={{ gap: 8 }}>
             <span className="grow" />
             <Disconnect note="Designs stay in Canva." onConfirm={async () => { onChange(await AdminApi.integrations.disconnectCanva()); toast('Canva disconnected'); }} />
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------- OBS Studio
+
+/** OBS runs on the church's own streaming computer; the presenter's browser talks to it. The scene plan is shared here. */
+function ObsCard() {
+  const { data, error, reload, setData } = useApi(() => AdminApi.presentation.obs(), []);
+  const toast = useToast();
+  const save = useAction(async () => { if (!data) return; setData(await AdminApi.presentation.saveObs(data)); toast('OBS scene plan saved'); });
+  const mapped = data ? Object.values(data.scenes).filter(Boolean).length : 0;
+  return (
+    <section className="card card-pad stack">
+      <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+        <div className="int-logo obs"><Clapperboard size={22} /></div>
+        <div className="grow" style={{ minWidth: 0 }}>
+          <div className="row between wrap" style={{ gap: 8 }}>
+            <h3 style={{ margin: 0 }}>OBS Studio</h3>
+            {mapped ? <span className="badge ok">{mapped} scene{mapped === 1 ? '' : 's'} planned</span> : <span className="badge">Overlay only</span>}
+          </div>
+          <p className="muted small" style={{ margin: '4px 0 0' }}>Stream with the free OBS Studio: a transparent lyrics bar and name straps over your camera, and scenes that change as the presenter moves through the plan. Nothing passes through Flockwise’s servers; the presenter’s browser talks to OBS on the streaming computer.</p>
+        </div>
+      </div>
+      <ol className="small stack" style={{ margin: 0, paddingLeft: 18, gap: 4 }}>
+        <li><b>Lyrics and names on the stream.</b> In OBS add a <i>Browser Source</i>, 1920 × 1080, and paste the “OBS overlay” link from the presenter’s <i>Links</i> button for that service. Turn the lyrics bar on from the presenter’s Media panel.</li>
+        <li><b>Scenes from the presenter.</b> In OBS open <i>Tools › WebSocket Server Settings</i>, turn the server on and set a password. In the presenter’s OBS panel connect to <code>ws://localhost:4455</code> with that password (OBS and the presenter browser on the same computer).</li>
+        <li><b>Scene plan.</b> Type the scene names below exactly as they appear in OBS. Leave a row blank to keep whatever scene is showing.</li>
+      </ol>
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
+        <>
+          <div className="grid cols-2">
+            {OBS_MOMENTS.map((m) => (
+              <Field key={m.id} label={m.label}>
+                <input className="input" value={data.scenes[m.id] ?? ''} placeholder={m.hint || 'Scene name in OBS'} maxLength={100}
+                  onChange={(e) => setData({ ...data, scenes: { ...data.scenes, [m.id]: e.target.value } })} />
+              </Field>
+            ))}
+          </div>
+          <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={data.autoSwitch} onChange={(e) => setData({ ...data, autoSwitch: e.target.checked })} /> Switch scenes automatically as the plan moves (the media desk can pause this during a service)</label>
+          <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={data.lyricsOnSongs} onChange={(e) => setData({ ...data, lyricsOnSongs: e.target.checked })} /> Put the lyrics bar on the stream during songs and take it off after</label>
+          <div className="row wrap" style={{ gap: 8 }}>
+            <FormError error={save.error} />
+            <span className="grow" />
+            <button className="btn primary" disabled={save.busy} onClick={() => save.run()}>Save scene plan</button>
           </div>
         </>
       )}

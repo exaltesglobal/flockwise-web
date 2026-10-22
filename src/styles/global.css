@@ -293,6 +293,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .int-logo.zoom { background: #2d8cff; }
 .int-logo.gcs { background: #4285f4; }
 .int-logo.canva { background: #7d2ae8; }
+.int-logo.obs { background: #302e31; }
 .danger-text { color: var(--danger); }
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 4px 16px 16px; }
 .media-tile { display: flex; flex-direction: column; gap: 6px; min-width: 0; }

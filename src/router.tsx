@@ -39,6 +39,7 @@ import { SignupPage } from '@/platform/signup';
 import { NetworkPanel } from '@/platform/network';
 import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
+import { BandPage } from '@/present/band';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
@@ -116,6 +117,7 @@ const routes = [
   { path: '/present/:eventId', element: <PresenterPage /> },
   { path: '/present/:eventId/screen', element: <ScreenPage /> },
   { path: '/present/:eventId/stage', element: <StagePage /> },
+  { path: '/present/:eventId/band', element: <BandPage /> },
   { path: '/present/:eventId/overlay', element: <OverlayPage /> },
   { path: '/present/:eventId/studio', element: <StudioPage /> },
   { path: '/app/sign-in', element: <MemberSignIn /> },

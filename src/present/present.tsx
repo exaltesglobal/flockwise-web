@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff,
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
-import type { LowerThird, PresentationTheme, PresentationView, Slide } from '@/api/admin-types';
+import type { LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
@@ -30,14 +30,14 @@ export function usePresentation(eventId: string, everyMs: number, key?: string |
   return api;
 }
 
-function useNow(ms = 1000) {
+export function useNow(ms = 1000) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), ms); return () => clearInterval(t); }, [ms]);
   return now;
 }
 
 /** Keeps the projector from sleeping, where the browser allows it. */
-function useWakeLock() {
+export function useWakeLock() {
   useEffect(() => {
     let lock: { release: () => Promise<void> } | null = null;
     const nav = navigator as Navigator & { wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> } };
@@ -67,7 +67,7 @@ export function RequireStaff({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const useScreenKey = () => new URLSearchParams(useLocation().search).get('key');
+export const useScreenKey = () => new URLSearchParams(useLocation().search).get('key');
 
 /** Countdown to the service with announcements rotating underneath. */
 function CountdownFace({ until, announcements }: { until: string; announcements: { title: string; body: string }[] }) {
@@ -207,7 +207,7 @@ function Presenter() {
           )}
           <p className="small muted">Keys: → or space next, ← back, B blank, L logo.</p>
           {control && <MediaPanel view={data} act={act} />}
-          {control && <ObsPanel />}
+          {control && <ObsPanel view={data} act={act} />}
         </aside>
       </div>
 
@@ -271,6 +271,7 @@ function LinksModal({ eventId, screenKey, canReset, onClose, onReset }: { eventI
   const links = [
     { path: 'screen', label: 'Projector', hint: 'Open on the computer connected to the projector, then double-click for full screen.' },
     { path: 'stage', label: 'Stage display', hint: 'For a TV facing the platform: current and next lines, chords and the clock.' },
+    { path: 'band', label: 'Musician view', hint: 'For the band’s phones and tablets: the whole chart in today’s key, turning pages with the leader. Each player can transpose, add a capo or switch to numbers for themselves.' },
     { path: 'overlay', label: 'OBS overlay', hint: 'In OBS add a Browser Source, paste this link, set 1920 × 1080. The background is transparent: lyrics bar and name straps appear over your camera.' },
   ];
   const copy = async (text: string) => {
@@ -304,14 +305,44 @@ function LinksModal({ eventId, screenKey, canReset, onClose, onReset }: { eventI
   );
 }
 
-/** Switch OBS scenes and start or stop the stream from the presentation desk. */
-function ObsPanel() {
+/** Which moment of the service the screens are in, for the OBS scene plan. */
+function momentOf(view: PresentationView): ObsMoment | null {
+  const { state, slides, charts } = view;
+  if (state.mode === 'countdown') return 'countdown';
+  if (state.mode === 'blank') return 'blank';
+  if (state.mode !== 'live') return null;
+  const slide = slides[state.index];
+  return slide ? charts.find((c) => c.itemIndex === slide.itemIndex)?.kind ?? null : null;
+}
+
+/** Switch OBS scenes and start or stop the stream from the presentation desk. Follows the church's scene plan (Settings › Integrations › OBS). */
+function ObsPanel({ view, act }: { view: PresentationView; act: (a: Action, extra?: ActExtra) => Promise<void> }) {
   const obs = useObs();
   const toast = useToast();
   const [url, setUrl] = useState(obs.host);
   const [password, setPassword] = useState('');
+  const [auto, setAuto] = useState(view.obs.autoSwitch);
   const { state } = obs;
   const run = (p: Promise<unknown>) => void p.catch((e) => toast((e as Error).message, 'error'));
+  const moment = momentOf(view);
+  const planned = moment ? view.obs.scenes[moment] : undefined;
+  const missing = state.status === 'connected' ? Object.values(view.obs.scenes).filter((sc): sc is string => !!sc && !state.scenes.includes(sc)) : [];
+  // Scenes follow the plan: when the moment changes (or OBS connects), go to its scene. Manual picks stay until the next moment.
+  const current = useRef(state.current);
+  current.current = state.current;
+  useEffect(() => {
+    if (!auto || state.status !== 'connected' || !planned || !state.scenes.includes(planned) || planned === current.current) return;
+    run(obs.setScene(planned));
+  }, [moment, planned, auto, state.status, state.scenes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Lyrics bar on for songs, off after, if the church wants that. Works without OBS connected (it is the overlay link).
+  const last = useRef<ObsMoment | null | undefined>(undefined);
+  useEffect(() => {
+    if (!view.obs.lyricsOnSongs || last.current === moment) return;
+    const was = last.current;
+    last.current = moment;
+    if (moment === 'song' && !view.state.overlayLyrics) void act('overlay', { on: true });
+    else if (was === 'song' && moment !== 'song' && view.state.overlayLyrics) void act('overlay', { on: false });
+  }, [moment]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="card media-card">
       <div className="row between"><b>OBS</b>{state.status === 'connected' && <button className="btn sm ghost" onClick={obs.disconnect}>Disconnect</button>}</div>
@@ -334,6 +365,10 @@ function ObsPanel() {
           <div className="scene-grid">
             {state.scenes.map((sc) => <button key={sc} className={`btn sm ${sc === state.current ? 'on' : ''}`} onClick={() => run(obs.setScene(sc))}>{sc}</button>)}
           </div>
+          {Object.values(view.obs.scenes).some(Boolean) ? (
+            <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> Scenes follow the plan{planned ? <span className="muted"> · now: {planned}</span> : null}</label>
+          ) : <p className="small muted" style={{ margin: 0 }}>Plan a scene for songs, sermon and the rest in <Link to="/admin/settings#integrations">Settings › Integrations › OBS</Link> and they will switch on their own.</p>}
+          {missing.length > 0 && <div className="small" style={{ color: 'var(--warn, #b7791f)' }}>Not found in OBS: {missing.join(', ')}. Check the spelling in Settings › Integrations.</div>}
         </>
       )}
     </div>
