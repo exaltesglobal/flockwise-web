@@ -1,13 +1,13 @@
 // The Flockwise team panel (/platform): every church, revenue, plans, trials and support access.
 // Separate from any church office; team members sign in with their Flockwise email.
-import { Activity, ArrowLeft, BookOpen, BadgeCheck, Building2, Download, IndianRupee, LayoutDashboard, LogOut, Search, ShieldCheck, Users } from 'lucide-react';
+import { Activity, ArrowLeft, BookOpen, BadgeCheck, Building2, Download, IndianRupee, LayoutDashboard, LogOut, MessageCircle, Search, ShieldCheck, Users } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 
 import { adminSession, memberSession, platformSession, type PlatformSession } from '@/api/client';
-import { TeamApi, type TeamChurch, type TeamChurchDetail, type TeamOverview, type TeamSetupRow } from '@/api/endpoints';
+import { TeamApi, type TeamChitthiRow, type TeamChurch, type TeamChurchDetail, type TeamOverview, type TeamSetupRow } from '@/api/endpoints';
 import { DOC_KINDS, ORG_TYPES } from '@/core/modules/razorpay-setup';
-import type { RazorpaySetupStatus } from '@/core/types';
+import type { ChitthiSetupStatus, RazorpaySetupStatus } from '@/core/types';
 import type { OtpRequest } from '@/api/types';
 import { DemoBanner } from '@/components/server-settings';
 import { BarChart, Empty, ErrorState, Field, FormError, Loading, Logo, Modal, useToast } from '@/components/ui';
@@ -91,7 +91,7 @@ function TeamSignIn() {
 
 function TeamShell({ session }: { session: PlatformSession }) {
   const { pathname } = useLocation();
-  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : pathname.startsWith('/platform/razorpay') ? 'razorpay' : pathname.startsWith('/platform/songs') ? 'songs' : 'overview';
+  const view = pathname.startsWith('/platform/churches') ? 'churches' : pathname.startsWith('/platform/activity') ? 'activity' : pathname.startsWith('/platform/razorpay') ? 'razorpay' : pathname.startsWith('/platform/whatsapp') ? 'whatsapp' : pathname.startsWith('/platform/songs') ? 'songs' : 'overview';
   async function signOut() {
     await TeamApi.signOut().catch(() => undefined);
     platformSession.set(null);
@@ -107,6 +107,7 @@ function TeamShell({ session }: { session: PlatformSession }) {
             <NavLink to="/platform" end><LayoutDashboard size={18} /> Overview</NavLink>
             <NavLink to="/platform/churches"><Building2 size={18} /> Churches</NavLink>
             <NavLink to="/platform/razorpay"><BadgeCheck size={18} /> Razorpay setups</NavLink>
+            <NavLink to="/platform/whatsapp"><MessageCircle size={18} /> WhatsApp setups</NavLink>
             <NavLink to="/platform/songs"><BookOpen size={18} /> Song database</NavLink>
             <NavLink to="/platform/activity"><Activity size={18} /> Team activity</NavLink>
           </nav>
@@ -128,6 +129,7 @@ function TeamShell({ session }: { session: PlatformSession }) {
           {view === 'churches' && <Churches />}
           {view === 'activity' && <TeamActivity />}
           {view === 'razorpay' && <RazorpaySetups />}
+          {view === 'whatsapp' && <ChitthiSetups />}
           {view === 'songs' && <TeamSongs />}
         </main>
       </div>
@@ -148,6 +150,7 @@ function Overview() {
         <div className="card kpi"><span className="label"><IndianRupee size={15} /> Monthly revenue</span><span className="value">{inr(o.mrr.INR)}</span><span className="delta muted">{o.mrr.USD ? `+ ${usd(o.mrr.USD)} · ` : ''}{inr(o.arr.INR)} a year</span></div>
         <div className="card kpi"><span className="label"><ShieldCheck size={15} /> Paying</span><span className="value">{o.paying}</span><span className="delta muted">{o.trials} on trial</span></div>
         <Link to="/platform/razorpay" className="card kpi" style={{ color: 'inherit', textDecoration: 'none' }}><span className="label"><BadgeCheck size={15} /> Razorpay setups</span><span className="value">{o.razorpaySetupsOpen}</span><span className="delta muted">to work on</span></Link>
+        <Link to="/platform/whatsapp" className="card kpi" style={{ color: 'inherit', textDecoration: 'none' }}><span className="label"><MessageCircle size={15} /> WhatsApp setups</span><span className="value">{o.chitthiSetupsOpen ?? 0}</span><span className="delta muted">Chitthi workspaces to make</span></Link>
         <div className="card kpi"><span className="label"><Users size={15} /> People</span><span className="value">{o.people.toLocaleString('en-IN')}</span><span className="delta muted">{o.messages.toLocaleString('en-IN')} messages · {o.aiCredits} AI credits this month</span></div>
       </div>
       <div className="grid cols-2">
@@ -399,6 +402,63 @@ const SETUP_LABEL: Record<RazorpaySetupStatus, [string, string]> = {
   done: ['ok', 'Done'],
   refunded: ['', 'Refunded'],
 };
+
+const WA_LABEL: Record<ChitthiSetupStatus, [string, string]> = { requested: ['danger', 'Requested'], in_progress: ['warn', 'In progress'], ready: ['ok', 'Ready'], cancelled: ['', 'Cancelled'] };
+
+/** WhatsApp by Chitthi: churches that bought it with their plan; make the workspace, verify the number, paste the key. */
+function ChitthiSetups() {
+  const q = useApi(TeamApi.chitthiSetups);
+  return (
+    <>
+      <div className="page-head">
+        <div>
+          <h1>WhatsApp setups</h1>
+          <p className="muted">{q.data ? `${q.data.open} to work on · ` : ''}For each church: make a Chitthi workspace (app.chitthi.live), register the number with Meta, get the four starter templates approved, then paste the workspace API key here. That connects WhatsApp for the church.</p>
+        </div>
+      </div>
+      {q.error ? <ErrorState error={q.error} onRetry={q.reload} /> : !q.data ? <Loading /> : q.data.rows.length === 0 ? (
+        <div className="card"><Empty icon={<MessageCircle size={28} />} title="No WhatsApp setups yet" body="Churches add WhatsApp by Chitthi from Settings › Plan." /></div>
+      ) : (
+        <div className="stack">{q.data.rows.map((r) => <ChitthiCard key={r.churchId} r={r} onChanged={q.reload} />)}</div>
+      )}
+    </>
+  );
+}
+
+function ChitthiCard({ r, onChanged }: { r: TeamChitthiRow; onChanged: () => void }) {
+  const toast = useToast();
+  const [status, setStatus] = useState(r.status);
+  const [note, setNote] = useState(r.teamNote);
+  const [key, setKey] = useState('');
+  const save = useAction(() => TeamApi.updateChitthi(r.churchId, { status, teamNote: note, ...(key.trim() ? { apiKey: key.trim() } : {}) }));
+  const late = r.status === 'requested' && Date.now() - new Date(r.requestedAt).getTime() > 24 * 3600_000;
+  return (
+    <div className="card card-body stack-sm">
+      <div className="row wrap" style={{ gap: 8 }}>
+        <div className="grow" style={{ minWidth: 0 }}>
+          <Link to={`/platform/churches?open=${r.churchId}`}><strong>{r.churchName}</strong></Link>
+          <div className="small muted">{[r.city, PLANS[r.plan]?.name, r.requestedBy, r.requestedByEmail].filter(Boolean).join(' · ')}</div>
+        </div>
+        <span className={`badge ${WA_LABEL[r.status][0]}`}>{WA_LABEL[r.status][1]}</span>
+        {late && <span className="badge danger">Over 24h</span>}
+        {r.connected && <span className="badge ok">Connected</span>}
+      </div>
+      <div className="small">Number <strong>{r.phone}</strong> · shown as <strong>{r.businessName}</strong> · asked {formatRelative(r.requestedAt)}{r.readyAt ? ` · ready ${formatRelative(r.readyAt)}` : ''}</div>
+      <div className="row wrap" style={{ gap: 8 }}>
+        <select className="select" style={{ width: 'auto' }} value={status} onChange={(e) => setStatus(e.target.value as ChitthiSetupStatus)}>
+          <option value="requested">Requested</option>
+          <option value="in_progress">In progress</option>
+          <option value="ready">Ready</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <input className="input grow" style={{ minWidth: 160 }} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note the church sees, e.g. Meta is verifying the number" />
+        {!r.connected && <input className="input grow" style={{ minWidth: 200 }} value={key} onChange={(e) => setKey(e.target.value)} placeholder="Workspace API key chk_live_… (connects and marks ready)" />}
+        <button className="btn sm primary" disabled={save.busy} onClick={async () => { if (await save.run()) { toast(key.trim() ? 'Connected' : 'Saved'); setKey(''); onChanged(); } }}>Save</button>
+      </div>
+      <FormError error={save.error} />
+    </div>
+  );
+}
 
 /** The assisted Razorpay KYC queue: churches that paid for setup, their papers, and progress. */
 function RazorpaySetups() {

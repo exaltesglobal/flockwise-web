@@ -1,5 +1,5 @@
 // Settings › Plan and billing, and the church's own Razorpay keys for online giving.
-import { Check, CreditCard, ExternalLink, Landmark, Minus, Sparkles } from 'lucide-react';
+import { Check, CreditCard, ExternalLink, Landmark, MessageCircle, Minus, Sparkles } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -34,6 +34,11 @@ export function PlanBilling() {
   const [interval, setInterval] = useState<BillingInterval>('yearly');
   const [confirm, setConfirm] = useState<PlanId | null>(null);
   const [aiConfirm, setAiConfirm] = useState(false);
+  const [withChitthi, setWithChitthi] = useState<boolean | null>(null);
+  const [waModal, setWaModal] = useState(false);
+  const [waPhone, setWaPhone] = useState('');
+  const [waName, setWaName] = useState('');
+  const chitthi = useAction(AdminApi.billing.chitthi);
   const checkout = useAction(AdminApi.billing.checkout);
   const cancel = useAction(AdminApi.billing.cancel);
   const aiPack = useAction(AdminApi.billing.buyAiPack);
@@ -47,7 +52,7 @@ export function PlanBilling() {
   const currentPlan = b.plans.find((p) => p.id === current)!;
 
   async function choose(plan: PlanId) {
-    const r = await checkout.run(plan, interval);
+    const r = await checkout.run(plan, interval, withChitthi ?? !!s.chitthi);
     if (!r) return;
     setConfirm(null);
     if (r.checkoutUrl) {
@@ -59,6 +64,14 @@ export function PlanBilling() {
       refreshPlan(r.billing);
     }
     toast(plan === 'seed' ? 'Moved to the free Seed plan' : 'Plan changed');
+  }
+  async function setChitthi(on: boolean) {
+    const r = await chitthi.run(on ? { on, phone: waPhone, businessName: waName } : { on });
+    if (!r) return;
+    setWaModal(false);
+    if (r.checkoutUrl) { window.location.href = r.checkoutUrl; return; }
+    if (r.billing) { q.setData(r.billing); refreshPlan(r.billing); }
+    toast(on ? 'Asked our team to set up WhatsApp' : 'WhatsApp by Chitthi removed');
   }
   async function buyAi() {
     const r = await aiPack.run();
@@ -83,6 +96,8 @@ export function PlanBilling() {
               ? `Cancelled. Your features stay on until ${date(s.currentPeriodEnd)}.`
               : `Free forever, up to ${currentPlan.limits.people} people.`;
   const rank = (p: PlanId) => PLAN_ORDER.indexOf(p);
+  const wa = b.addons.chitthi;
+  const waLabel = wa.connected ? 'Connected: WhatsApp goes out through your own Chitthi workspace.' : wa.setup?.status === 'ready' ? 'Ready: our team has connected your workspace.' : wa.setup?.status === 'in_progress' ? `Our team is setting up ${wa.setup.phone}.${wa.setup.teamNote ? ` ${wa.setup.teamNote}` : ''}` : wa.setup?.status === 'requested' ? `Requested for ${wa.setup.phone}. We message within one working day.${wa.setup.teamNote ? ` ${wa.setup.teamNote}` : ''}` : null;
   const setupStatus = b.addons.razorpaySetup.status;
   const setupLabel = setupStatus === 'done' ? 'Done: your Razorpay account is live' : setupStatus === 'in_progress' ? 'In progress: our team is on it' : setupStatus === 'paid' ? 'Paid: send us your papers' : setupStatus === 'pending_payment' ? 'Payment pending' : null;
 
@@ -184,6 +199,22 @@ export function PlanBilling() {
           <p className="small" style={{ margin: 0 }}>This month: {b.usage.aiCredits.toLocaleString('en-IN')} used of {(b.limits.aiCredits + b.addons.ai.extraThisMonth).toLocaleString('en-IN')}{b.addons.ai.packsThisMonth ? ` (${b.addons.ai.packsThisMonth} pack${b.addons.ai.packsThisMonth === 1 ? '' : 's'} bought)` : ''}.</p>
           <button className="btn block" disabled={aiPack.busy} onClick={() => setAiConfirm(true)}>Buy {b.addons.ai.credits} credits</button>
         </div>
+        <div className={`plan-card ${wa.on ? 'current' : ''}`}>
+          <div className="row" style={{ gap: 8 }}><MessageCircle size={18} /><h3 style={{ margin: 0 }}>WhatsApp by Chitthi</h3>{wa.on && <span className="badge ok">On</span>}</div>
+          <p className="small muted" style={{ margin: 0 }}>Your own WhatsApp Business workspace on the same invoice. Our team registers the number with Meta, gets the first templates approved (service reminder, birthday, giving receipt, prayer chain) and connects it, so reminders, receipts and the WhatsApp assistant work on day one. Nothing to set up yourself.</p>
+          <div className="plan-price">{wa.included ? 'Included' : money(wa.price, b.currency)}<span className="small muted">{wa.included ? ` in ${b.plans.find((p) => p.id === current)?.name}` : ' / month'}</span></div>
+          {!wa.included && <p className="small muted" style={{ margin: 0 }}>Included in {b.plans.find((p) => p.id === wa.includedFrom)?.name}. Chitthi's own plan starts at about the same price, so the bundle costs the church nothing extra over using Chitthi alone.</p>}
+          {waLabel && <p className="small" style={{ margin: 0 }}>{waLabel}</p>}
+          {wa.on && wa.setup?.status !== 'cancelled' && wa.setup ? (
+            <div className="row wrap" style={{ gap: 8 }}>
+              {!wa.included && !s.founding && <button className="btn block" disabled={chitthi.busy} onClick={() => { if (window.confirm('Remove WhatsApp by Chitthi from your plan? The workspace stays connected until you disconnect it in Settings › Integrations.')) void setChitthi(false); }}>Remove from plan</button>}
+            </div>
+          ) : (
+            <button className="btn block primary" disabled={chitthi.busy || (current === 'seed' && !s.founding)} onClick={() => setWaModal(true)}>{wa.on ? 'Ask us to set it up' : 'Add to plan'}</button>
+          )}
+          {current === 'seed' && !s.founding && <p className="small muted" style={{ margin: 0 }}>Comes with Grow and above.</p>}
+          <FormError error={chitthi.error} />
+        </div>
         {b.addons.razorpaySetup.available && (
           <div className="plan-card">
             <div className="row" style={{ gap: 8 }}><Landmark size={18} /><h3 style={{ margin: 0 }}>Razorpay account opening with KYC</h3></div>
@@ -209,7 +240,21 @@ export function PlanBilling() {
                 {b.online ? ' You will approve the payment on Razorpay with UPI AutoPay, a card or netbanking, and come back here.' : ''}
               </p>
             )}
+            {confirm !== 'seed' && confirm !== wa.includedFrom && PLAN_ORDER.indexOf(confirm) < PLAN_ORDER.indexOf(wa.includedFrom) && (
+              <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={withChitthi ?? !!s.chitthi} onChange={(e) => setWithChitthi(e.target.checked)} /> Add WhatsApp by Chitthi for {money(interval === 'yearly' ? wa.price * 10 : wa.price, b.currency)} a {interval === 'yearly' ? 'year' : 'month'} on the same invoice</label>
+            )}
             <FormError error={checkout.error} />
+          </div>
+        </Modal>
+      )}
+      {waModal && (
+        <Modal title="WhatsApp by Chitthi" onClose={() => setWaModal(false)}
+          footer={<><button className="btn ghost" onClick={() => setWaModal(false)}>Not now</button><button className="btn primary" disabled={chitthi.busy || !waPhone.trim() || !waName.trim()} onClick={() => void setChitthi(true)}>{chitthi.busy ? '…' : wa.included || s.founding ? 'Ask us to set it up' : b.online ? 'Continue to payment' : 'Add to plan'}</button></>}>
+          <div className="stack">
+            <p className="small muted">{wa.included || s.founding ? 'Included in your plan.' : `${money(wa.price, b.currency)} a month on your ${b.plans.find((p) => p.id === current)?.name} invoice${b.online ? '; you will approve the new amount on Razorpay' : ''}.`} Our team opens the Chitthi workspace, registers the number with Meta and connects it here. Use a number that is not already on WhatsApp, or one you are ready to move.</p>
+            <Field label="WhatsApp number, with country code" hint="A number the church owns, e.g. the office SIM."><input className="input" value={waPhone} onChange={(e) => setWaPhone(e.target.value)} placeholder="+91 98765 43210" /></Field>
+            <Field label="Name people see on WhatsApp"><input className="input" value={waName} onChange={(e) => setWaName(e.target.value)} placeholder="Grace Community Church" /></Field>
+            <FormError error={chitthi.error} />
           </div>
         </Modal>
       )}

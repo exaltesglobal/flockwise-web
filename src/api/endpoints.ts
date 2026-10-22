@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
+import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
@@ -316,7 +316,9 @@ export type TeamOverview = {
   messages: number;
   signups: { weekStart: string; signups: number }[];
   razorpaySetupsOpen: number;
+  chitthiSetupsOpen: number;
 };
+export type TeamChitthiRow = ChitthiSetup & { connected: boolean; churchId: string; churchName: string; city: string; ownerEmail: string; plan: PlanId };
 export type SubscriptionChange = { plan?: PlanId; status?: Subscription['status']; trialDays?: number; peopleLimit?: number | null; founding?: boolean };
 
 export const ChurchesApi = {
@@ -356,6 +358,8 @@ export const TeamApi = {
   open: (id: string, reason: string) => platformApi.post<{ church: { id: string; slug: string; name: string }; session: Session }>(`/platform/churches/${id}/open`, { reason }),
   audit: () => platformApi.get<AuditEntry[]>('/platform/audit'),
   setups: () => platformApi.get<TeamSetups>('/platform/razorpay-setups'),
+  chitthiSetups: () => platformApi.get<{ open: number; rows: TeamChitthiRow[] }>('/platform/chitthi-setups'),
+  updateChitthi: (churchId: string, patch: { status?: ChitthiSetupStatus; teamNote?: string; apiKey?: string }) => platformApi.patch<TeamChitthiRow>(`/platform/chitthi-setups/${churchId}`, patch),
   setupDoc: (churchId: string, docId: string) => platformApi.get<{ fileName: string; mime: string; data: string }>(`/platform/razorpay-setups/${churchId}/docs/${docId}`),
   updateSetup: (churchId: string, patch: { status?: RazorpaySetup['status']; teamNote?: string }) => platformApi.patch<TeamSetupRow>(`/platform/razorpay-setups/${churchId}`, patch),
   // The shared song database: public-domain songs the team adds or corrects.
@@ -670,7 +674,9 @@ export const AdminApi = {
   },
   billing: {
     get: () => a.get<BillingView>('/admin/billing'),
-    checkout: (plan: PlanId, interval: BillingInterval) => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/checkout', { plan, interval }),
+    checkout: (plan: PlanId, interval: BillingInterval, chitthi?: boolean) => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/checkout', { plan, interval, chitthi }),
+    /** WhatsApp by Chitthi on the plan: on asks our team to set it up (and bills it unless included), off removes it. */
+    chitthi: (input: { on: boolean; phone?: string; businessName?: string }) => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/chitthi', input),
     cancel: () => a.post<BillingView>('/admin/billing/cancel'),
     buyAiPack: () => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/ai-pack'),
   },
