@@ -1,4 +1,7 @@
 // ChordPro-style charts: chords in [brackets] before the syllable, {directives} and [Section] lines.
+import type { SongColours } from '@/core/types';
+import { colourVars, hasColours } from './song-colours';
+
 const SHARPS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const FLATS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const SECTION = /^(verse|chorus|refrain|bridge|pre-?chorus|post-?chorus|intro|outro|tag|interlude|ending|instrumental|vamp|coda|turnaround|hook|breakdown|stanza|pallavi|anupallavi|charanam)/i;
@@ -58,10 +61,10 @@ export type ChartMode = 'chords' | 'numbers';
  * steps transposes the song; capo shows the shapes a guitarist plays with a capo on that fret
  * (the song still sounds in the transposed key); "numbers" shows the Nashville number system.
  */
-export function ChordChart({ text, steps = 0, capo = 0, mode = 'chords', songKey = 'C' }: { text: string; steps?: number; capo?: number; mode?: ChartMode; songKey?: string }) {
+export function ChordChart({ text, steps = 0, capo = 0, mode = 'chords', songKey = 'C', colours }: { text: string; steps?: number; capo?: number; mode?: ChartMode; songKey?: string; colours?: SongColours }) {
   const lines = text.split('\n');
   return (
-    <div className="chart">
+    <div className={`chart ${hasColours(colours) ? 'coloured' : ''}`} style={colourVars(colours)}>
       {lines.map((line, i) => {
         const directive = /^\{(\w+):?\s*(.*)\}$/.exec(line.trim());
         if (directive) return directive[1] === 'title' || directive[1] === 'key' ? null : <span key={i} className="section">{directive[2] || directive[1]}</span>;

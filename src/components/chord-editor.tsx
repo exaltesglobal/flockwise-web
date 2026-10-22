@@ -4,6 +4,8 @@
 import { ArrowDown, ArrowUp, Eraser, MousePointerClick, Type } from 'lucide-react';
 import { useMemo, useRef, useState, type ClipboardEvent } from 'react';
 
+import type { SongColours } from '@/core/types';
+import { colourVars } from '@/lib/song-colours';
 import { isChord, isChordLine, keyChords, looksLikeChordPro, toChart, transposeChart, transposeKey } from '@/lib/songfile';
 
 const KEYS = ['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'Cm', 'C#m', 'Dm', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'Bbm', 'Bm'];
@@ -27,7 +29,7 @@ function segments(line: string): Seg[] {
   return out.filter((s, i) => s.chord || s.text || i === 0);
 }
 
-export function ChordEditor({ value, onChange, songKey, onKeyChange }: { value: string; onChange: (v: string) => void; songKey: string; onKeyChange: (k: string) => void }) {
+export function ChordEditor({ value, onChange, songKey, onKeyChange, colours }: { value: string; onChange: (v: string) => void; songKey: string; onKeyChange: (k: string) => void; colours?: SongColours }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [brush, setBrush] = useState<string | null>(null);
   const [custom, setCustom] = useState('');
@@ -137,7 +139,7 @@ export function ChordEditor({ value, onChange, songKey, onKeyChange }: { value: 
         </div>
         <div className="ce-pane">
           <div className="ce-pane-head"><MousePointerClick size={14} /> Tap to place chords · tap a chord to remove it</div>
-          <div className="ce-preview">
+          <div className="ce-preview" style={colourVars(colours)}>
             {!value.trim() && <p className="small muted">Your chart appears here as musicians will see it.</p>}
             {lines.map((line, n) => {
               const sec = /^\s*\[([^\]]+)\]\s*$/.exec(line);

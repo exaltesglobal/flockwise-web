@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongAttachment, SongView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import type { SongColours } from '@/core/types';
 import { ChordEditor } from '@/components/chord-editor';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format';
 import { type ChartMode, ChordChart, transposeKey } from '@/lib/chords';
 import { fileSafe, readSongFile, saveBlob, songsToPdf } from '@/lib/pdf-songs';
 import { useCan } from '@/lib/perms';
+import { COLOUR_PARTS, COLOUR_PRESETS, DEFAULT_COLOURS, hasColours } from '@/lib/song-colours';
 import { chartToLyrics, stepsBetween, toChordPro, toChordsOverLyrics } from '@/lib/songfile';
 import { printHtml } from '@/lib/print';
 import { useAction, useApi } from '@/lib/use-api';
@@ -355,7 +357,7 @@ function SongSheet({ song, onClose }: { song: SongView; onClose: () => void }) {
             {song.attachments!.map((a) => <a key={a.id} className="btn sm" href={a.url} target="_blank" rel="noreferrer"><ExternalLink size={13} /> {a.name}</a>)}
           </div>
         )}
-        {hasChart ? <ChordChart text={song.chordChart!} steps={steps} capo={capo} mode={mode} songKey={song.defaultKey || 'C'} /> : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics || 'No lyrics saved.'}</pre>}
+        {hasChart ? <ChordChart text={song.chordChart!} steps={steps} capo={capo} mode={mode} songKey={song.defaultKey || 'C'} colours={song.colours} /> : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics || 'No lyrics saved.'}</pre>}
         {song.lyricsAlt && <details><summary className="small muted">Second language</summary><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyricsAlt}</pre></details>}
         {hasChart && song.lyrics && <details><summary className="small muted">Plain lyrics</summary><pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15 }}>{song.lyrics}</pre></details>}
       </div>
@@ -389,8 +391,32 @@ function CcliReport() {
   );
 }
 
+function SongColourPicker({ value, onChange }: { value: SongColours; onChange: (c: SongColours) => void }) {
+  return (
+    <div className="song-colours">
+      <span className="small"><b>Chart colours</b> <span className="muted">for the song sheet, PDF and musicians view</span></span>
+      <div className="row wrap" style={{ gap: 12 }}>
+        {COLOUR_PARTS.map((p) => (
+          <label key={p.key} className="row small" style={{ gap: 6 }}>
+            <input type="color" value={value[p.key] ?? DEFAULT_COLOURS[p.key]} onChange={(e) => onChange({ ...value, [p.key]: e.target.value })} aria-label={p.label} />
+            {p.label}
+          </label>
+        ))}
+      </div>
+      <div className="colour-presets">
+        {COLOUR_PRESETS.map((p) => (
+          <button key={p.name} type="button" className="colour-preset" onClick={() => onChange({ ...p.colours })}>
+            <i style={{ background: p.colours.background, color: p.colours.chords, borderColor: p.colours.lyrics }}>A</i>{p.name}
+          </button>
+        ))}
+        {hasColours(value) && <button type="button" className="btn sm ghost" onClick={() => onChange({})}>Reset</button>}
+      </div>
+    </div>
+  );
+}
+
 function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '', lyricsAlt: song?.lyricsAlt ?? '', chordChart: song?.chordChart ?? '', attachments: song?.attachments ?? [] });
+  const [form, setForm] = useState<Omit<Song, 'id'>>({ title: song?.title ?? '', author: song?.author ?? '', defaultKey: song?.defaultKey ?? '', bpm: song?.bpm ?? null, ccli: song?.ccli ?? '', tags: song?.tags ?? [], lyrics: song?.lyrics ?? '', lyricsAlt: song?.lyricsAlt ?? '', chordChart: song?.chordChart ?? '', attachments: song?.attachments ?? [], colours: song?.colours ?? {} });
   const [arrangement, setArrangement] = useState((song?.arrangement ?? []).join(', '));
   const atts = form.attachments ?? [];
   const setAtt = (i: number, patch: Partial<SongAttachment>) => set('attachments', atts.map((a, j) => (j === i ? { ...a, ...patch } : a)));
@@ -434,7 +460,8 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
         </div>
         <div className="stack" style={{ gap: 6 }}>
           <span className="section-title" style={{ margin: 0 }}>Chords and lyrics</span>
-          <ChordEditor value={form.chordChart ?? ''} onChange={(v) => set('chordChart', v)} songKey={form.defaultKey} onKeyChange={(k) => set('defaultKey', k)} />
+          <ChordEditor value={form.chordChart ?? ''} onChange={(v) => set('chordChart', v)} songKey={form.defaultKey} onKeyChange={(k) => set('defaultKey', k)} colours={form.colours} />
+          <SongColourPicker value={form.colours ?? {}} onChange={(c) => set('colours', c)} />
           {!!form.chordChart?.trim() && (
             <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => { if (form.lyrics.trim() && !confirm('Replace the projector lyrics below with the words from the chord chart?')) return; set('lyrics', chartToLyrics(form.chordChart ?? '')); }}><Wand2 size={14} /> Make projector lyrics from the chart</button>
           )}

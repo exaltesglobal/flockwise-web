@@ -6,8 +6,10 @@
 //    so importing a Flockwise PDF gives back the exact song.
 import { flatKey, transposeChord, toNashville, transposeKey } from './chords';
 import { isChord, parseSongText, sectionName, type ParsedSong } from './songfile';
+import type { SongColours } from '@/core/types';
+import { DEFAULT_COLOURS, hasColours } from './song-colours';
 
-export type SheetSong = { title: string; author?: string; defaultKey?: string; bpm?: number | null; ccli?: string; chordChart?: string; lyrics?: string; lyricsAlt?: string };
+export type SheetSong = { title: string; author?: string; defaultKey?: string; bpm?: number | null; ccli?: string; chordChart?: string; lyrics?: string; lyricsAlt?: string; colours?: SongColours };
 export type SheetOptions = { steps?: number; capo?: number; mode?: 'chords' | 'numbers' | 'lyrics'; church?: string };
 export type SheetItem = { song: SheetSong; options?: SheetOptions; label?: string };
 
@@ -107,10 +109,24 @@ const PAGE_W = 1240; // A4 at 150 dpi
 const PAGE_H = 1754;
 const MARGIN = 96;
 const FONT = '"Noto Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif';
-const INK = '#14211f';
-const MUTED = '#5b6b68';
-const ACCENT = '#1f6b5c';
-const CHORD = '#b5650d';
+// The song's own chart colours, set by drawSong before a song's pages are drawn.
+let PAPER = '#ffffff';
+let INK = '#14211f';
+let MUTED = '#5b6b68';
+let ACCENT = '#1f6b5c';
+let CHORD = '#b5650d';
+let TINT = '#e3efec';
+let RULE = '#dde5e3';
+function usePalette(c?: SongColours) {
+  const has = hasColours(c);
+  PAPER = c?.background || DEFAULT_COLOURS.background;
+  INK = c?.lyrics || DEFAULT_COLOURS.lyrics;
+  ACCENT = c?.headings || DEFAULT_COLOURS.headings;
+  CHORD = c?.chords || DEFAULT_COLOURS.chords;
+  MUTED = has ? `${INK}b3` : '#5b6b68';
+  TINT = has ? `${ACCENT}26` : '#e3efec';
+  RULE = has ? `${INK}33` : '#dde5e3';
+}
 
 type Seg = { chord: string | null; text: string };
 type Row = { kind: 'section'; text: string } | { kind: 'line'; segs: Seg[]; chords: boolean } | { kind: 'gap' };
@@ -256,7 +272,7 @@ function header(c: CanvasRenderingContext2D, song: SheetSong, o: SheetOptions, l
     const text = o.capo ? `Key ${key} · Capo ${o.capo}` : `Key ${key}`;
     c.font = `700 26px ${FONT}`;
     const w = c.measureText(text).width + 32;
-    c.fillStyle = '#e3efec';
+    c.fillStyle = TINT;
     c.beginPath();
     c.roundRect(PAGE_W - MARGIN - w, y + 10, w, 48, 10);
     c.fill();
@@ -271,7 +287,7 @@ function header(c: CanvasRenderingContext2D, song: SheetSong, o: SheetOptions, l
     c.fillText(sub, MARGIN, y + 22);
     y += 36;
   }
-  c.fillStyle = '#dde5e3';
+  c.fillStyle = RULE;
   c.fillRect(MARGIN, y + 12, PAGE_W - MARGIN * 2, 2);
   return y + 40;
 }
@@ -288,6 +304,7 @@ function footer(c: CanvasRenderingContext2D, song: SheetSong, o: SheetOptions, p
 /** Draws one song onto as few A4 pages as it fits, shrinking the text a little before adding a page. */
 function drawSong(item: SheetItem): HTMLCanvasElement[] {
   const o = item.options ?? {};
+  usePalette(item.song.colours);
   const probe = document.createElement('canvas').getContext('2d')!;
   const rows = rowsFor(item.song, o);
   const top = MARGIN + (item.label ? 34 : 0) + 70 + 36 + 40;
@@ -317,7 +334,7 @@ function drawSong(item: SheetItem): HTMLCanvasElement[] {
     canvas.width = PAGE_W;
     canvas.height = PAGE_H;
     const c = canvas.getContext('2d')!;
-    c.fillStyle = '#ffffff';
+    c.fillStyle = PAPER;
     c.fillRect(0, 0, PAGE_W, PAGE_H);
     let y = header(c, item.song, o, item.label, i === 0);
     if (!rows.length) {

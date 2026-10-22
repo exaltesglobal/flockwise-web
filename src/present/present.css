@@ -201,3 +201,9 @@ html.pres-transparent, html.pres-transparent body, html.pres-transparent #root {
 .band-set .grow { display: flex; flex-direction: column; }
 .band-set .key { font-weight: 700; color: var(--band-chord); }
 .band .muted { opacity: 0.65; }
+
+/* A song's own chart colours, when the church picked them in the song editor */
+.band-body.coloured { background: var(--sc-bg, transparent); color: var(--sc-lyrics, inherit); }
+.band-body.coloured .band-line.chorded .ch { color: var(--sc-chords, var(--band-chord)); }
+.band-body.coloured .band-sec h3 { color: var(--sc-head, inherit); opacity: 1; }
+.band-body.coloured .band-sec.on { background: color-mix(in srgb, var(--sc-chords, var(--band-chord)) 14%, transparent); border-left-color: var(--sc-chords, var(--band-chord)); }
