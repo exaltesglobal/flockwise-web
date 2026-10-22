@@ -9,6 +9,7 @@ import type { LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide 
 import { adminSession } from '@/api/client';
 import { AdminApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
+import { transliterateLines } from '@/core/transliterate';
 import { useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
@@ -106,7 +107,7 @@ export function SlideFrame({ view, slide, mode = 'live', message, className = ''
         <div className="pres-title"><div className="main">{slide.lines[0]}</div>{slide.lines[1] && <div className="sub">{slide.lines[1]}</div>}</div>
       ) : (
         <div className={`pres-lines ${slide.kind}`}>
-          {slide.lines.map((l, i) => <div key={i} className="line">{l}</div>)}
+          {slide.lines.map((l, i) => <div key={i} className="line">{l}{slide.roman?.[i] && slide.roman[i] !== l && <div className="roman">{slide.roman[i]}</div>}</div>)}
           {t.showAlt && slide.alt.length > 0 && <div className="alt">{slide.alt.map((l, i) => <div key={i}>{l}</div>)}</div>}
         </div>
       )}
@@ -379,7 +380,8 @@ function ThemeModal({ theme, onClose, onSaved }: { theme: PresentationTheme; onC
   const [t, setT] = useState(theme);
   const set = <K extends keyof PresentationTheme>(k: K, v: PresentationTheme[K]) => setT((x) => ({ ...x, [k]: v }));
   const save = useAction(() => AdminApi.presentation.saveTheme(t));
-  const sample: Slide = { id: 'x', itemIndex: 0, itemTitle: 'Amazing Grace', kind: 'lyrics', label: 'Verse 1', lines: ['Amazing grace! How sweet the sound', 'That saved a wretch like me!'], alt: ['अद्भुत अनुग्रह, कैसी मधुर ध्वनि'], chords: [] };
+  const lines = ['Amazing grace! How sweet the sound', 'యేసు నన్ను ప్రేమించెను'];
+  const sample: Slide = { id: 'x', itemIndex: 0, itemTitle: 'Amazing Grace', kind: 'lyrics', label: 'Verse 1', lines, alt: ['अद्भुत अनुग्रह, कैसी मधुर ध्वनि'], chords: [], roman: t.transliterate ? transliterateLines(lines) : [] };
   return (
     <Modal title="Slide style" onClose={onClose}
       footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={save.busy} onClick={async () => { if (await save.run()) onSaved(); }}>Save</button></>}>
@@ -394,6 +396,7 @@ function ThemeModal({ theme, onClose, onSaved }: { theme: PresentationTheme; onC
         </div>
         <Field label="Background image" hint="Optional link to a JPG or PNG. The text gets a dark overlay so it stays readable."><input className="input" value={t.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} placeholder="https://" /></Field>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={t.showAlt} onChange={(e) => set('showAlt', e.target.checked)} /> Show second-language lyrics under the main lyrics</label>
+        <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={!!t.transliterate} onChange={(e) => set('transliterate', e.target.checked)} /> Telugu, Hindi, Tamil and other Indian-script words also in English letters, so everyone can sing along</label>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={t.titleSlides} onChange={(e) => set('titleSlides', e.target.checked)} /> Title slide before each song and item</label>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={t.uppercase} onChange={(e) => set('uppercase', e.target.checked)} /> Capital letters</label>
       </div>
@@ -501,6 +504,7 @@ function Overlay({ screenKey }: { screenKey?: string }) {
       {lyrics && (
         <div key={lyrics.id} className="ov-lyrics">
           {lyrics.lines.map((l, i) => <div key={i}>{l}</div>)}
+          {lyrics.roman?.length > 0 && <div className="alt">{lyrics.roman.join(' / ')}</div>}
           {data.theme.showAlt && lyrics.alt.length > 0 && <div className="alt">{lyrics.alt.join(' / ')}</div>}
         </div>
       )}

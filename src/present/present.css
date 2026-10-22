@@ -24,6 +24,7 @@
 .pres-lines { padding: 6cqh 7cqw; display: flex; flex-direction: column; gap: 1.2cqh; }
 .pres-lines .line { font-size: calc(7.4cqh * var(--pres-scale)); font-weight: 700; line-height: 1.18; text-wrap: balance; text-shadow: 0 0.3cqh 1.2cqh rgba(0, 0, 0, 0.35); }
 .pres-lines.text .line { font-size: calc(5.6cqh * var(--pres-scale)); font-weight: 600; }
+.pres-lines .line .roman { opacity: 0.8; font-size: 0.62em; font-weight: 500; line-height: 1.2; letter-spacing: 0.01em; }
 .pres-lines .alt { margin-top: 2.4cqh; opacity: 0.82; font-size: calc(5.2cqh * var(--pres-scale)); font-weight: 500; line-height: 1.25; }
 .pres-title .main { font-size: calc(10cqh * var(--pres-scale)); font-weight: 800; padding: 0 6cqw; text-wrap: balance; line-height: 1.1; }
 .pres-title .sub { margin-top: 2.5cqh; font-size: calc(4.6cqh * var(--pres-scale)); opacity: 0.75; }

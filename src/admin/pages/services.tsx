@@ -1,9 +1,10 @@
-import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, FileDown, FileText, FileUp, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, Wand2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, FileDown, FileText, FileUp, Languages, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, Wand2, X } from 'lucide-react';
 import { Link } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 
 import type { PlanItem, PlanItemKind, ServiceDetail, Song, SongAttachment, SongView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import { hasIndic, scriptOf, transliterate, type IndicScript } from '@/core/transliterate';
 import type { SongColours } from '@/core/types';
 import { ChordEditor } from '@/components/chord-editor';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -11,6 +12,8 @@ import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format
 import { type ChartMode, ChordChart, transposeKey } from '@/lib/chords';
 import { fileSafe, readSongFile, saveBlob, songsToPdf } from '@/lib/pdf-songs';
 import { useCan } from '@/lib/perms';
+
+const SCRIPT_NAMES: Record<IndicScript, string> = { devanagari: 'Hindi', bengali: 'Bengali', gurmukhi: 'Punjabi', gujarati: 'Gujarati', odia: 'Odia', tamil: 'Tamil', telugu: 'Telugu', kannada: 'Kannada', malayalam: 'Malayalam' };
 import { COLOUR_PARTS, COLOUR_PRESETS, DEFAULT_COLOURS, hasColours } from '@/lib/song-colours';
 import { chartToLyrics, stepsBetween, toChordPro, toChordsOverLyrics } from '@/lib/songfile';
 import { printHtml } from '@/lib/print';
@@ -468,6 +471,9 @@ function SongForm({ song, onClose, onSaved }: { song: Song | null; onClose: () =
         </div>
         <Field label="Lyrics for the projector" hint="Put each section under a heading such as Verse 1, Chorus or Bridge. The projector makes slides from these."><textarea className="textarea" style={{ minHeight: 140 }} value={form.lyrics} onChange={(e) => set('lyrics', e.target.value)} placeholder={'Verse 1\nAmazing grace! How sweet the sound\n\nChorus\n…'} /></Field>
         <Field label="Lyrics in a second language" hint="Optional. Use the same headings and the projector shows both languages, e.g. English with Telugu or Hindi below."><textarea className="textarea" style={{ minHeight: 100 }} value={form.lyricsAlt ?? ''} onChange={(e) => set('lyricsAlt', e.target.value)} /></Field>
+        {hasIndic(form.lyrics) && (
+          <button className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => { if (form.lyricsAlt?.trim() && !confirm('Replace the second-language lyrics with the main lyrics in English letters?')) return; set('lyricsAlt', transliterate(form.lyrics)); }}><Languages size={14} /> Write the {SCRIPT_NAMES[scriptOf(form.lyrics)!] ?? 'Indian-script'} words in English letters</button>
+        )}
         <Field label="Arrangement" hint="The usual section order, separated by commas. Each service can change it."><input className="input" value={arrangement} onChange={(e) => setArrangement(e.target.value)} placeholder="Verse 1, Chorus, Verse 2, Chorus, Bridge, Chorus" /></Field>
         <span className="section-title">Attachments</span>
         <p className="small muted" style={{ marginTop: -8 }}>Links to lead sheets, MP3s or videos (Google Drive, Dropbox, YouTube).</p>
