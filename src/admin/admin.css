@@ -18,7 +18,7 @@
 .admin-main { flex: 1; min-width: 0; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 22px; }
 .admin-mobilebar { display: none; }
 .admin-scrim { display: none; }
-.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .page-head p { margin-top: 4px; }
 .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .toolbar .search { flex: 1; min-width: 220px; max-width: 380px; }

@@ -7,6 +7,7 @@ import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import type { StaffRole } from '@/api/types';
 import { ServerSettings } from '@/components/server-settings';
+import { canOverrideServer } from '@/lib/config';
 import { AppearancePanel } from '@/components/theme-picker';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { languages } from '@/i18n';
@@ -54,7 +55,7 @@ export function SettingsPage() {
     { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit'), icon: ShieldCheck, group: 'Access' },
     { value: 'audit', label: 'Activity log', show: can('settings'), icon: History, group: 'Access' },
     { value: 'appearance', label: 'Appearance', show: true, icon: Palette, group: 'This browser' },
-    { value: 'server', label: 'Server', show: true, icon: Server, group: 'This browser' },
+    { value: 'server', label: 'Server', show: canOverrideServer(), icon: Server, group: 'This browser' },
   ];
   const visible = tabs.filter((t) => t.show);
   const [tab, setTab] = useState<Tab>(() => {

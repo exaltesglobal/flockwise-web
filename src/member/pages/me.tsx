@@ -8,6 +8,7 @@ import type { Consent, DataRequestKind, DataRequestStatus } from '@/api/admin-ty
 import type { LanguageCode } from '@/api/types';
 import { QrCode } from '@/components/qr';
 import { ServerSettings } from '@/components/server-settings';
+import { canOverrideServer } from '@/lib/config';
 import { AppearancePanel } from '@/components/theme-picker';
 import { Avatar, FormError, Loading, useToast } from '@/components/ui';
 import { languages, useT, type StringKey } from '@/i18n';
@@ -120,9 +121,9 @@ export function MemberMePage() {
         </div>
       )}
 
-      <div className="card card-pad">
+      {canOverrideServer() && <div className="card card-pad">
         <ServerSettings labels={{ title: t('server'), body: t('serverBody'), url: t('serverUrl'), save: t('save'), reset: t('resetToDefault'), demo: t('usingDemoData') }} />
-      </div>
+      </div>}
 
       <button className="btn danger lg" onClick={signOut}><LogOut size={17} /> {t('signOut')}</button>
       </div>
