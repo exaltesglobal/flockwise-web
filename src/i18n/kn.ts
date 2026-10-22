@@ -193,6 +193,12 @@ export const kn: Strings = {
 
   tabForms: 'ನೋಂದಣಿಗಳು',
   tabSermons: 'ಪ್ರಸಂಗಗಳು',
+  tabBulletin: 'ಬುಲೆಟಿನ್',
+  bulletinThisSunday: 'ಈ ಭಾನುವಾರದ ಬುಲೆಟಿನ್',
+  bulletinRead: 'ಬುಲೆಟಿನ್ ಓದಿ',
+  bulletinNone: 'ಇನ್ನೂ ಯಾವುದೇ ಬುಲೆಟಿನ್ ಪ್ರಕಟವಾಗಿಲ್ಲ.',
+  bulletinPast: 'ಹಿಂದಿನ ಬುಲೆಟಿನ್\u200cಗಳು',
+  shareWhatsApp: 'WhatsApp ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ',
   formsBody: 'ಶಿಬಿರಗಳು, ತರಗತಿಗಳು ಮತ್ತು ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ನೋಂದಾಯಿಸಿ.',
   noForms: 'ಈಗ ನೋಂದಣಿಗೆ ಯಾವುದೂ ತೆರೆದಿಲ್ಲ.',
   register: 'ನೋಂದಾಯಿಸಿ',

@@ -193,6 +193,12 @@ export const te: Strings = {
 
   tabForms: 'నమోదులు',
   tabSermons: 'ప్రసంగాలు',
+  tabBulletin: 'బులెటిన్',
+  bulletinThisSunday: 'ఈ ఆదివారం బులెటిన్',
+  bulletinRead: 'బులెటిన్ చదవండి',
+  bulletinNone: 'ఇంకా బులెటిన్ ప్రచురించబడలేదు.',
+  bulletinPast: 'గత బులెటిన్లు',
+  shareWhatsApp: 'WhatsAppలో పంచుకోండి',
   formsBody: 'క్యాంపులు, తరగతులు మరియు కార్యక్రమాలకు నమోదు చేసుకోండి.',
   noForms: 'ప్రస్తుతం నమోదు కోసం ఏదీ తెరిచి లేదు.',
   register: 'నమోదు చేసుకోండి',

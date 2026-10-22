@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView } from '@/core/types';
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
@@ -211,6 +211,11 @@ export const MemberApi = {
     removeResource: (id: string, resId: string) => m.del<void>(`/groups/${id}/resources/${resId}`),
   },
   sermons: () => m.get<Sermon[]>('/sermons'),
+  bulletins: {
+    list: () => m.get<{ id: string; title: string; date: string }[]>('/bulletins'),
+    latest: () => m.get<BulletinView | null>('/bulletins/latest'),
+    get: (id: string) => m.get<BulletinView>(`/bulletins/${id}`),
+  },
   celebrations: {
     list: () => m.get<MemberCelebrations>('/celebrations'),
     wish: (personId: string, kind: CelebrationKind, message?: string) => m.post<Greeting>(`/celebrations/${personId}/wish`, { kind, message }),
@@ -231,6 +236,7 @@ export const PublicApi = {
   groupInterest: (id: string, input: { name: string; email: string; phone?: string; message?: string }) => m.post<{ ok: boolean; message: string }>(`/public/groups/${id}/interest`, input),
   form: (id: string) => m.get<PublicForm>(`/public/forms/${id}`),
   screen: (eventId: string, key: string) => m.get<PresentationView>(`/screens/${eventId}${qs({ key })}`),
+  bulletin: (id: string, k: string) => m.get<BulletinView>(`/public/bulletins/${id}${qs({ k })}`),
   submitForm: (id: string, input: FormSubmission) => m.post<FormSubmitResult>(`/public/forms/${id}/responses`, input),
 };
 
@@ -368,6 +374,13 @@ export const AdminApi = {
     erase: (id: string) => a.post<DataRequest>(`/admin/privacy/requests/${id}/erase`),
     exportPerson: (personId: string) => a.get<Record<string, unknown>>(`/admin/people/${personId}/export`),
     consentLog: (personId: string) => a.get<ConsentEvent[]>(`/admin/people/${personId}/consent`),
+  },
+  bulletins: {
+    list: () => a.get<Bulletin[]>('/admin/bulletins'),
+    create: (input: { eventId?: string | null; date?: string; title?: string } = {}) => a.post<BulletinView>('/admin/bulletins', input),
+    get: (id: string) => a.get<BulletinView>(`/admin/bulletins/${id}`),
+    update: (id: string, input: Partial<Pick<Bulletin, 'title' | 'intro' | 'verse' | 'date' | 'eventId' | 'status'>> & { sections?: BulletinSection[] }) => a.patch<BulletinView>(`/admin/bulletins/${id}`, input),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/bulletins/${id}`),
   },
   offerings: {
     list: () => a.get<CampaignView[]>('/admin/offerings'),

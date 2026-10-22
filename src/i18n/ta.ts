@@ -193,6 +193,12 @@ export const ta: Strings = {
 
   tabForms: 'பதிவுகள்',
   tabSermons: 'பிரசங்கங்கள்',
+  tabBulletin: 'அறிவிப்பு மடல்',
+  bulletinThisSunday: 'இந்த ஞாயிறு அறிவிப்பு மடல்',
+  bulletinRead: 'மடலைப் படிக்கவும்',
+  bulletinNone: 'இதுவரை எந்த மடலும் வெளியிடப்படவில்லை.',
+  bulletinPast: 'முந்தைய மடல்கள்',
+  shareWhatsApp: 'WhatsApp இல் பகிரவும்',
   formsBody: 'முகாம்கள், வகுப்புகள் மற்றும் நிகழ்வுகளுக்குப் பதிவு செய்யுங்கள்.',
   noForms: 'இப்போது பதிவுக்கு எதுவும் திறந்திருக்கவில்லை.',
   register: 'பதிவு செய்',

@@ -193,6 +193,12 @@ export const hi: Strings = {
 
   tabForms: 'पंजीकरण',
   tabSermons: 'प्रवचन',
+  tabBulletin: 'बुलेटिन',
+  bulletinThisSunday: 'इस रविवार का बुलेटिन',
+  bulletinRead: 'बुलेटिन पढ़ें',
+  bulletinNone: 'अभी तक कोई बुलेटिन प्रकाशित नहीं हुआ है।',
+  bulletinPast: 'पिछले बुलेटिन',
+  shareWhatsApp: 'WhatsApp पर साझा करें',
   formsBody: 'कैंप, कक्षाओं और कार्यक्रमों के लिए पंजीकरण करें।',
   noForms: 'अभी कोई पंजीकरण खुला नहीं है।',
   register: 'पंजीकरण करें',

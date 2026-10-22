@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, ScanLine, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -39,6 +39,7 @@ const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?
   { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark },
   { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },
   { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'] },
+  { to: '/admin/bulletin', label: 'Bulletin', icon: Newspaper, perm: ['comms'] },
   { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
   { to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'] },
   { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'] },

@@ -193,6 +193,12 @@ export const ml: Strings = {
 
   tabForms: 'രജിസ്ട്രേഷൻ',
   tabSermons: 'പ്രസംഗങ്ങൾ',
+  tabBulletin: 'ബുള്ളറ്റിൻ',
+  bulletinThisSunday: 'ഈ ഞായറാഴ്ചത്തെ ബുള്ളറ്റിൻ',
+  bulletinRead: 'ബുള്ളറ്റിൻ വായിക്കുക',
+  bulletinNone: 'ഇതുവരെ ബുള്ളറ്റിൻ പ്രസിദ്ധീകരിച്ചിട്ടില്ല.',
+  bulletinPast: 'മുൻ ബുള്ളറ്റിനുകൾ',
+  shareWhatsApp: 'WhatsApp-ൽ പങ്കിടുക',
   formsBody: 'ക്യാമ്പുകൾ, ക്ലാസുകൾ, പരിപാടികൾ എന്നിവയ്ക്ക് രജിസ്റ്റർ ചെയ്യുക.',
   noForms: 'ഇപ്പോൾ രജിസ്ട്രേഷന് ഒന്നും തുറന്നിട്ടില്ല.',
   register: 'രജിസ്റ്റർ ചെയ്യുക',

@@ -3,6 +3,7 @@ import { createBrowserRouter, createMemoryRouter, Navigate } from 'react-router'
 import { AdminLayout, AdminSignIn } from '@/admin/layout';
 import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
+import { BulletinPage } from '@/admin/pages/bulletin';
 import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CelebrationsPage } from '@/admin/pages/celebrations';
@@ -32,10 +33,11 @@ import { Landing } from '@/landing';
 import { ChurchRoute } from '@/platform/church';
 import { SignupPage } from '@/platform/signup';
 import { TeamPanel } from '@/platform/team';
-import { FormReturnPage, PublicChurchPage, PublicFormPage } from '@/public/public';
+import { FormReturnPage, PublicBulletinPage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
+import { MemberBulletinPage } from '@/member/pages/bulletin';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
 import { MemberGroupPage } from '@/member/pages/group';
@@ -84,6 +86,8 @@ const routes = [
       { path: 'giving', element: <GivingPage /> },
       { path: 'messages', element: <MessagesPage /> },
       { path: 'announcements', element: <AnnouncementsPage /> },
+      { path: 'bulletin', element: <BulletinPage /> },
+      { path: 'bulletin/:id', element: <BulletinPage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
@@ -98,6 +102,7 @@ const routes = [
   { path: '/app/sign-in', element: <MemberSignIn /> },
   { path: '/legal/:slug', element: <LegalPage /> },
   { path: '/church', element: <PublicChurchPage /> },
+  { path: '/bulletin/:id', element: <PublicBulletinPage /> },
   { path: '/forms/return', element: <FormReturnPage /> },
   { path: '/forms/:id', element: <PublicFormPage /> },
   {
@@ -112,6 +117,8 @@ const routes = [
       { path: 'forms', element: <MemberFormsPage /> },
       { path: 'forms/:id', element: <MemberFormPage /> },
       { path: 'sermons', element: <MemberSermonsPage /> },
+      { path: 'bulletin', element: <MemberBulletinPage /> },
+      { path: 'bulletin/:id', element: <MemberBulletinPage /> },
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },

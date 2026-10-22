@@ -1,4 +1,4 @@
-import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, QrCode, Sparkles } from 'lucide-react';
+import { BookOpen, BookUser, Cake, ClipboardList, HandHeart, Heart, Newspaper, QrCode, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -49,6 +49,8 @@ export function MemberHomePage() {
             </div>
           )}
 
+          <BulletinCard />
+
           <Celebrations />
 
           {data.announcements.length > 0 && (
@@ -74,6 +76,23 @@ export function MemberHomePage() {
         </>
       )}
     </>
+  );
+}
+
+/** This Sunday's bulletin, once the office has published it. */
+function BulletinCard() {
+  const { t } = useT();
+  const { data } = useApi(MemberApi.bulletins.latest);
+  if (!data) return null;
+  return (
+    <Link to="/app/bulletin" className="card card-pad row" style={{ gap: 12 }}>
+      <Newspaper size={22} className="muted" />
+      <div className="grow" style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600 }}>{t('bulletinThisSunday')}</div>
+        <div className="small muted">{data.verse || data.title}</div>
+      </div>
+      <span className="small">{t('bulletinRead')}</span>
+    </Link>
   );
 }
 

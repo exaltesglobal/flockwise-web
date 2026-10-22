@@ -190,6 +190,12 @@ export const en = {
 
   tabForms: 'Sign-ups',
   tabSermons: 'Sermons',
+  tabBulletin: 'Bulletin',
+  bulletinThisSunday: "This Sunday's bulletin",
+  bulletinRead: 'Read the bulletin',
+  bulletinNone: 'No bulletin has been published yet.',
+  bulletinPast: 'Past bulletins',
+  shareWhatsApp: 'Share on WhatsApp',
   formsBody: 'Register for camps, classes and events.',
   noForms: 'Nothing is open for registration right now.',
   register: 'Register',

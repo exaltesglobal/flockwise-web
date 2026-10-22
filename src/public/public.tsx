@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 
 import type { PublicGroup } from '@/api/admin-types';
 import { PublicApi } from '@/api/endpoints';
+import { BulletinDoc } from '@/components/bulletin';
 import { RegistrationForm } from '@/components/registration';
 import { ErrorState, Field, FormError, Loading, Logo, Modal } from '@/components/ui';
 import { useT } from '@/i18n';
@@ -230,6 +231,22 @@ export function PublicFormPage() {
         </div>
         <RegistrationForm form={form} askContact submit={(input) => PublicApi.submitForm(form.id, input)} />
       </article>
+    </Shell>
+  );
+}
+
+/** The Sunday bulletin from the WhatsApp link. The key in the link stands in for signing in. */
+export function PublicBulletinPage() {
+  const { id = '' } = useParams();
+  const [params] = useSearchParams();
+  const { data, error, reload } = useApi(() => PublicApi.bulletin(id, params.get('k') ?? ''), [id]);
+  useEffect(() => { if (data) document.title = `${data.title} · ${data.church.name}`; }, [data]);
+
+  if (error) return <Shell><ErrorState error={error} onRetry={reload} /></Shell>;
+  if (!data) return <Shell><Loading /></Shell>;
+  return (
+    <Shell churchName={data.church.name} logoUrl={data.church.logoUrl}>
+      <div className="card bulletin-card"><BulletinDoc b={data} /></div>
     </Shell>
   );
 }

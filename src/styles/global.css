@@ -300,3 +300,42 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .int-preview { padding: 8px 10px; border-radius: 8px; background: var(--tint); white-space: pre-wrap; }
 .int-mcp code { font-size: 12px; overflow-wrap: anywhere; }
 .input.secret { letter-spacing: 0.02em; }
+
+/* Digital bulletin: reads like the folded paper one, in the app, from the WhatsApp link and in print */
+.bulletin-card { padding: clamp(20px, 5vw, 44px); }
+.bulletin { max-width: 640px; margin: 0 auto; display: grid; gap: 22px; line-height: 1.55; overflow-wrap: break-word; }
+.bulletin-head { text-align: center; display: grid; gap: 6px; justify-items: center; padding-bottom: 18px; border-bottom: 2px solid var(--accent); }
+.bulletin-logo { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; }
+.bulletin-church { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--primary); }
+.bulletin-head h1 { font-size: clamp(24px, 5vw, 32px); text-wrap: balance; }
+.bulletin-date { color: var(--muted); font-size: 14px; }
+.bulletin-theme { font-family: var(--font-heading); font-weight: 500; color: var(--primary); }
+.bulletin-verse { margin: 0; padding: 4px 0 4px 16px; border-left: 3px solid var(--accent); font-family: var(--font-heading); font-size: 18px; line-height: 1.5; text-wrap: pretty; }
+.bulletin-intro { margin: 0; white-space: pre-wrap; }
+.bulletin section { display: grid; gap: 10px; }
+.bulletin h2 { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.bulletin h3 { font-size: 16px; }
+.bulletin-order { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bulletin-order li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.bulletin-kind { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.bulletin-person { color: var(--muted); }
+.bulletin-notice { display: grid; gap: 2px; }
+.bulletin-notice p { margin: 0; }
+.bulletin-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.bulletin-campaign { display: grid; gap: 6px; padding: 12px; border-radius: var(--radius-sm); background: var(--tint); }
+.bulletin-campaign span { font-size: 14px; color: var(--muted); }
+.bulletin-campaign .progress { background: var(--card); }
+.bulletin-foot { text-align: center; font-size: 13px; color: var(--muted); padding-top: 14px; border-top: 1px solid var(--border); }
+.bulletin-editor { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.bulletin-preview { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: clamp(18px, 4vw, 36px); box-shadow: var(--shadow); min-width: 0; }
+@media (min-width: 1100px) {
+  .bulletin-editor { grid-template-columns: minmax(0, 380px) minmax(0, 1fr); }
+  .bulletin-editor > .stack { position: sticky; top: 16px; }
+}
+@media (max-width: 420px) { .bulletin-order li { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+@media print {
+  .admin-nav, .admin-sidebar, .member-tabs, header.app-bar, .section-head .btn, .pub-header { display: none !important; }
+  body { background: #fff; }
+  .bulletin-card { box-shadow: none; border: 0; padding: 0; }
+  .bulletin { max-width: none; color: #000; }
+}
