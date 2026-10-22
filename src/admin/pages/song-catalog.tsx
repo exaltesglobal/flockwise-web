@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import type { CatalogSongRow, SongLicenceStatus } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
+import { ChordChart } from '@/lib/chords';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
@@ -71,7 +72,7 @@ export function SongDatabase({ onAdded }: { onAdded?: () => void }) {
                       <b>{s.title}</b>
                       <div className="small muted">{s.writers}{s.year ? ` · ${s.year}` : ''}{s.language !== 'en' ? ` · ${langs.find((l) => l.id === s.language)?.label ?? s.language}` : ''}</div>
                     </td>
-                    <td className="mono">{s.defaultKey}</td>
+                    <td className="mono">{s.defaultKey}{s.hasChords && <div className="small muted" style={{ fontFamily: 'inherit' }}>Chords</div>}</td>
                     <td className="small">{s.tune ?? '—'}</td>
                     <td className="small">{s.themes.filter((t) => t !== 'Hymn').map((t) => <span key={t} className="badge gray" style={{ marginRight: 4 }}>{t}</span>)}</td>
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
@@ -101,6 +102,7 @@ function CatalogSongModal({ id, onClose, onAdded }: { id: string; onClose: () =>
   const toast = useToast();
   const can = useCan();
   const s = song.data;
+  const [view, setView] = useState<'words' | 'chords'>('chords');
   async function onAdd() {
     const r = await add.run(id);
     if (!r) return;
@@ -125,7 +127,15 @@ function CatalogSongModal({ id, onClose, onAdded }: { id: string; onClose: () =>
           </div>
           <FormError error={add.error} />
           {(s.arrangement?.length ?? 0) > 0 && <div className="small"><span className="muted">Order:</span> {s.arrangement!.join(' → ')}</div>}
-          {s.lyrics ? <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15, margin: 0 }}>{s.lyrics}</pre>
+          {s.chordChart && s.lyrics && (
+            <div className="row" style={{ gap: 6 }}>
+              <button className={`btn sm ${view === 'chords' ? 'primary' : ''}`} onClick={() => setView('chords')}>Chords</button>
+              <button className={`btn sm ${view === 'words' ? 'primary' : ''}`} onClick={() => setView('words')}>Words only</button>
+              <span className="small muted">Chords follow the hymnal's four-part harmony.</span>
+            </div>
+          )}
+          {s.chordChart && view === 'chords' ? <ChordChart text={s.chordChart} songKey={s.defaultKey} />
+            : s.lyrics ? <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 15, margin: 0 }}>{s.lyrics}</pre>
             : <p className="muted">{s.licensedAvailable ? 'Adding it fetches the words from your licensed lyrics service.' : 'The words for this song are not in the database yet.'}</p>}
         </div>
       )}
