@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { DemoBanner } from '@/components/server-settings';
 import { Logo } from '@/components/ui';
+import { LegalFooter } from '@/legal/legal';
 
 import './landing.css';
 
@@ -45,7 +46,7 @@ export function Landing() {
           </Link>
         </div>
       </main>
-      <footer className="landing-foot small muted">© {new Date().getFullYear()} Flockwise · flockwise.church</footer>
+      <LegalFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter, createMemoryRouter, Navigate } from 'react-router';
 
 import { AdminLayout, AdminSignIn } from '@/admin/layout';
+import { LegalPage } from '@/legal/legal';
 import { AnnouncementsPage } from '@/admin/pages/announcements';
 import { CarePage } from '@/admin/pages/care';
 import { CheckinPage } from '@/admin/pages/checkin';
@@ -51,6 +52,7 @@ const routes = [
     ],
   },
   { path: '/app/sign-in', element: <MemberSignIn /> },
+  { path: '/legal/:slug', element: <LegalPage /> },
   {
     path: '/app',
     element: <MemberLayout />,

@@ -8,6 +8,7 @@ import { DemoBanner } from '@/components/server-settings';
 import { Logo, Mark } from '@/components/ui';
 import { useT } from '@/i18n';
 import { useSession } from '@/lib/session';
+import { LegalFooter } from '@/legal/legal';
 
 import './member.css';
 
@@ -57,6 +58,7 @@ export function MemberLayout() {
       </header>
       <main className="member-main">
         <Outlet />
+        <LegalFooter />
       </main>
       <nav className="member-tabs">
         {tabs.map(({ to, label, icon: Icon, end }) => (
@@ -102,6 +104,7 @@ export function MemberSignIn() {
         </div>
         <Link to="/admin" className="small">{t('officeAdmin')}</Link>
       </div>
+      <LegalFooter />
     </div>
   );
 }

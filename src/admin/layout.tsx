@@ -10,6 +10,7 @@ import { Avatar, Logo } from '@/components/ui';
 import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import type { Permission } from '@/api/admin-types';
+import { LegalFooter } from '@/legal/legal';
 
 import './admin.css';
 
@@ -139,6 +140,7 @@ export function AdminSignIn() {
           Looking for the member portal?
         </Link>
       </div>
+      <LegalFooter />
     </div>
   );
 }
