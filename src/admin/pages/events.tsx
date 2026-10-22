@@ -1,4 +1,4 @@
-import { CalendarDays, Mail, Pencil, Plus, ScanLine, Trash2, Users } from 'lucide-react';
+import { CalendarDays, Mail, Pencil, Plus, ScanLine, Trash2, Users, Video, VideoOff } from 'lucide-react';
 import { Link } from 'react-router';
 import { useState, type FormEvent } from 'react';
 
@@ -23,6 +23,8 @@ export function EventsPage() {
   const [inviting, setInviting] = useState<AdminEvent | null>(null);
   const session = useSession(adminSession);
   const toast = useToast();
+  // Which outside services are connected (Zoom for meetings, Canva for the invitation). Errors are ignored: the page works without them.
+  const connections = useApi(() => AdminApi.integrations.get().catch(() => null), []);
 
   return (
     <>
@@ -98,7 +100,7 @@ export function EventsPage() {
         )}
       </div>
 
-      {editing && <EventForm event={editing === 'new' ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); toast('Saved'); }} />}
+      {editing && <EventForm event={editing === 'new' ? null : editing} zoom={!!connections.data?.zoom.connected} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); toast('Saved'); }} />}
       {viewing && <AttendeesDrawer event={viewing} onClose={() => setViewing(null)} />}
       {inviting && session && (
         <InvitationModal
@@ -106,6 +108,7 @@ export function EventsPage() {
           church={session.church}
           link={churchUrl(`/app/events/${inviting.id}`)}
           shareText={`You are invited to ${inviting.title} on ${formatDay(inviting.startsAt)}, ${formatTime(inviting.startsAt)}${inviting.location ? ` at ${inviting.location}` : ''}. RSVP: ${churchUrl(`/app/events/${inviting.id}`)}`}
+          onCanva={connections.data?.canva.connected ? async (imageDataUrl, title) => (await AdminApi.canva.open({ kind: 'invitation', title, imageDataUrl })).editUrl : undefined}
           onClose={() => setInviting(null)}
         />
       )}
@@ -120,9 +123,11 @@ function defaultTimes() {
   return { startsAt: s.toISOString(), endsAt: new Date(s.getTime() + 2 * 3600000).toISOString() };
 }
 
-function EventForm({ event, onClose, onSaved }: { event: AdminEvent | null; onClose: () => void; onSaved: () => void }) {
+function EventForm({ event, zoom, onClose, onSaved }: { event: AdminEvent | null; zoom: boolean; onClose: () => void; onSaved: () => void }) {
   const campuses = useApi(AdminApi.campuses.list);
   const [repeatWeeks, setRepeatWeeks] = useState(0);
+  const [meeting, setMeeting] = useState(event?.zoom ?? null);
+  const toast = useToast();
   const [form, setForm] = useState<EventInput>(() => ({
     kind: event?.kind ?? 'event',
     campusId: event?.campusId ?? null,
@@ -131,6 +136,7 @@ function EventForm({ event, onClose, onSaved }: { event: AdminEvent | null; onCl
     title: event?.title ?? '',
     description: event?.description ?? '',
     location: event?.location ?? '',
+    meetingUrl: event?.meetingUrl ?? null,
     capacity: event?.capacity ?? null,
     imageUrl: event?.imageUrl ?? null,
     published: event?.published ?? true,
@@ -140,6 +146,15 @@ function EventForm({ event, onClose, onSaved }: { event: AdminEvent | null; onCl
   const set = <K extends keyof EventInput>(k: K, v: EventInput[K]) => setForm((f) => ({ ...f, [k]: v }));
   const fe = save.error?.fields ?? {};
   const badRange = new Date(form.endsAt) <= new Date(form.startsAt);
+  // A Zoom meeting is made on the saved event straight away (its times and title are what Zoom gets).
+  const zoomMeeting = useAction(async (on: boolean) => {
+    if (!event) return null;
+    const saved = on ? await AdminApi.events.createZoom(event.id) : await AdminApi.events.removeZoom(event.id);
+    setMeeting(saved.zoom ?? null);
+    set('meetingUrl', saved.meetingUrl ?? null);
+    toast(on ? 'Zoom meeting created' : 'Zoom meeting removed');
+    return saved;
+  });
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -182,6 +197,17 @@ function EventForm({ event, onClose, onSaved }: { event: AdminEvent | null; onCl
             </Field>
           )}
         </div>
+        <Field label="Online meeting link" hint={event && zoom ? 'Paste a link, or let Flockwise make a Zoom meeting for this event.' : 'Zoom, Google Meet or YouTube link. Members see a "Join online" button.'} error={fe.meetingUrl}>
+          <div className="row wrap" style={{ gap: 8 }}>
+            <input className="input" style={{ flex: 1, minWidth: 200 }} type="url" value={form.meetingUrl ?? ''} onChange={(e) => set('meetingUrl', e.target.value || null)} placeholder="https://" disabled={!!meeting} />
+            {event && zoom && (meeting
+              ? <button type="button" className="btn" disabled={zoomMeeting.busy} onClick={() => void zoomMeeting.run(false)}><VideoOff size={15} /> Remove Zoom meeting</button>
+              : <button type="button" className="btn" disabled={zoomMeeting.busy} onClick={() => void zoomMeeting.run(true)}><Video size={15} /> Create Zoom meeting</button>)}
+          </div>
+          {meeting && <div className="small muted" style={{ marginTop: 6 }}>Zoom meeting {meeting.meetingId}{meeting.passcode ? ` · passcode ${meeting.passcode}` : ''} · <a href={meeting.startUrl} target="_blank" rel="noreferrer">Start as host</a></div>}
+          {event && !zoom && <div className="small muted" style={{ marginTop: 6 }}>Connect Zoom in <Link to="/admin/settings#integrations">Settings › Integrations</Link> to make meetings from here.</div>}
+          <FormError error={zoomMeeting.error} />
+        </Field>
         <Field label="Description"><textarea className="textarea" value={form.description} onChange={(e) => set('description', e.target.value)} /></Field>
         <label className="check">
           <input type="checkbox" checked={form.checkinEnabled} onChange={(e) => set('checkinEnabled', e.target.checked)} />

@@ -290,6 +290,15 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .int-logo.chitthi { background: #1f9d55; }
 .int-logo.api { background: var(--primary); }
 .int-logo.email { background: #c2410c; }
+.int-logo.zoom { background: #2d8cff; }
+.int-logo.gcs { background: #4285f4; }
+.int-logo.canva { background: #7d2ae8; }
+.danger-text { color: var(--danger); }
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 4px 16px 16px; }
+.media-tile { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.media-thumb { display: grid; place-items: center; aspect-ratio: 1; max-width: 100%; border-radius: var(--radius-sm); background: var(--tint); overflow: hidden; color: var(--muted); }
+.media-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-meta { min-width: 0; }
 /* On/off switch */
 .switch { position: relative; display: inline-block; width: 38px; height: 22px; vertical-align: middle; }
 .switch input { opacity: 0; width: 0; height: 0; }

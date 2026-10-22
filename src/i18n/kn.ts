@@ -77,6 +77,7 @@ export const kn: Strings = {
   backToEvents: 'ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು',
   invite: 'ಯಾರನ್ನಾದರೂ ಆಹ್ವಾನಿಸಿ',
   inviteText: '{date} ರಂದು {title} ಗೆ ನಿಮಗೆ ಆಹ್ವಾನ. ಅಲ್ಲಿ ಸಿಗೋಣ! RSVP: {link}',
+  joinOnline: 'ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಸೇರಿ',
   monthlyNote: "UPI AutoPay, ಕಾರ್ಡ್ ಅಥವಾ ಇ-ಮ್ಯಾಂಡೇಟ್ ಮೂಲಕ ಒಮ್ಮೆ ಅನುಮೋದಿಸಿ. ಇಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ನಿಲ್ಲಿಸಬಹುದು.",
   checkoutNote: 'ಪಾವತಿಗಾಗಿ ಸುರಕ್ಷಿತ Razorpay ಅಥವಾ Stripe ಪುಟಕ್ಕೆ ಕರೆದೊಯ್ಯಲಾಗುತ್ತದೆ.',
   paymentNotCompleted: 'ಪಾವತಿ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ. ನಿಮ್ಮಿಂದ ಯಾವುದೇ ಹಣ ಕಡಿತವಾಗಿಲ್ಲ.',

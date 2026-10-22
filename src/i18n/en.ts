@@ -74,6 +74,7 @@ export const en = {
   backToEvents: 'All events',
   invite: 'Invite someone',
   inviteText: 'You are invited to {title} on {date}. See you there! RSVP: {link}',
+  joinOnline: 'Join online',
   monthlyNote: "You approve once with UPI AutoPay, a card or an e-mandate. Pause or stop it here anytime.",
   checkoutNote: 'You will be taken to a secure Razorpay or Stripe page to pay.',
   paymentNotCompleted: 'The payment was not completed. You have not been charged.',

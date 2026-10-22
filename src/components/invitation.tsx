@@ -1,6 +1,6 @@
 // "Invite someone": an invitation card in the church's branding for an event, with a QR code to
 // the event page, shared to WhatsApp or saved as a picture. Used by the office and by members.
-import { Copy, Download, MessageCircle, Share2 } from 'lucide-react';
+import { Copy, Download, ExternalLink, MessageCircle, Share2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import type { BrandKit } from '@/api/admin-types';
@@ -21,8 +21,25 @@ function guessStyle(title: string): InvitationStyle {
   return 'event';
 }
 
-export function InvitationModal({ event, church, link, shareText, locale = 'en-IN', onClose }: { event: InvitationEvent; church: InvitationChurch; link: string; shareText: string; locale?: string; onClose: () => void }) {
+export function InvitationModal({ event, church, link, shareText, locale = 'en-IN', onCanva, onClose }: { event: InvitationEvent; church: InvitationChurch; link: string; shareText: string; locale?: string; onCanva?: (imageDataUrl: string, title: string) => Promise<string>; onClose: () => void }) {
   const toast = useToast();
+  const [opening, setOpening] = useState(false);
+  // The card goes to the church's Canva as a new design, with this picture on it, for finer editing.
+  async function openInCanva() {
+    if (!canvas.current || !onCanva) return;
+    setOpening(true);
+    const tab = window.open('', '_blank');
+    try {
+      const editUrl = await onCanva(canvas.current.toDataURL('image/png'), title);
+      if (tab) tab.location.href = editUrl; else window.open(editUrl, '_blank');
+      toast('Opened in Canva');
+    } catch (e) {
+      tab?.close();
+      toast((e as Error).message || 'Could not open Canva');
+    } finally {
+      setOpening(false);
+    }
+  }
   const [style, setStyle] = useState<InvitationStyle>(() => guessStyle(event.title));
   const [headline, setHeadline] = useState(() => INVITATION_STYLES.find((s) => s.id === guessStyle(event.title))!.headline);
   const [title, setTitle] = useState(event.title);
@@ -82,6 +99,7 @@ export function InvitationModal({ event, church, link, shareText, locale = 'en-I
         <button className="btn" onClick={() => void navigator.clipboard?.writeText(link).then(() => toast('Link copied'))}><Copy size={15} /> Copy link</button>
         <a className="btn" href={whatsappLink(shareText)} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp text</a>
         <button className="btn" onClick={download} disabled={!preview}><Download size={15} /> Save picture</button>
+        {onCanva && <button className="btn" onClick={openInCanva} disabled={!preview || opening}><ExternalLink size={15} /> {opening ? 'Opening…' : 'Open in Canva'}</button>}
         <button className="btn primary" onClick={share} disabled={!preview || busy}><Share2 size={15} /> Share card</button>
       </>}
     >

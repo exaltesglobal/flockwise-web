@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Share2, Ticket, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, MapPin, ScanLine, Share2, Ticket, Users, Video } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
@@ -71,6 +71,7 @@ export function MemberEventPage() {
           </span>
         </div>
         {ev.description && <p style={{ whiteSpace: 'pre-wrap' }}>{ev.description}</p>}
+        {ev.meetingUrl && <a className="btn lg primary" style={{ alignSelf: 'flex-start' }} href={ev.meetingUrl} target="_blank" rel="noreferrer"><Video size={17} /> {t('joinOnline')}</a>}
         <FormError error={rsvp.error ?? ticket.error ?? checkIn.error} />
         {priced ? (
           hasTicket ? (

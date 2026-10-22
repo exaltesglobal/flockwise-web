@@ -25,6 +25,7 @@ import { ImportPage } from '@/admin/pages/import';
 import { InsightsPage } from '@/admin/pages/insights';
 import { ListsPage, WorkflowsPage } from '@/admin/pages/lists';
 import { LiveServicePage } from '@/admin/pages/live';
+import { MediaPage } from '@/admin/pages/media';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
@@ -105,6 +106,7 @@ const routes = [
       { path: 'announcements', element: <AnnouncementsPage /> },
       { path: 'bulletin', element: <BulletinPage /> },
       { path: 'bulletin/:id', element: <BulletinPage /> },
+      { path: 'media', element: <MediaPage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },

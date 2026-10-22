@@ -9,6 +9,8 @@ import { getApiUrl } from '@/lib/config';
 import { formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { ConnectionCards } from './connections';
+
 /** Copies text, falling back to selecting it when the browser refuses. */
 function CopyField({ value, label, secret = false }: { value: string; label: string; secret?: boolean }) {
   const [done, setDone] = useState(false);
@@ -30,6 +32,7 @@ export function IntegrationsSettings() {
     <div className="stack">
       <EmailCard />
       <ChitthiCard onChange={setChitthiOn} />
+      <ConnectionCards />
       <WhatsAppBotCard key={String(chitthiOn)} />
       <ApiKeysCard />
     </div>
