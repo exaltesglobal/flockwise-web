@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus } from '@/core/types';
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
@@ -18,6 +18,7 @@ import type {
   AiStatus,
   ApiKeyView,
   ChitthiStatus,
+  BotIntent,
   ChitthiTemplate,
   AdminDonation,
   AdminEvent,
@@ -462,6 +463,10 @@ export const AdminApi = {
     disconnectChitthi: () => a.del<ChitthiStatus>('/admin/integrations/chitthi'),
     chitthiTemplates: () => a.get<{ available: boolean; data: ChitthiTemplate[] }>('/admin/integrations/chitthi/templates'),
     testChitthi: (phone: string) => a.post<{ ok: true }>('/admin/integrations/chitthi/test', { phone }),
+    bot: () => a.get<WaBotStatus>('/admin/integrations/whatsapp-bot'),
+    enableBot: (input: { welcome?: string }) => a.post<WaBotStatus>('/admin/integrations/whatsapp-bot', input),
+    disableBot: () => a.del<WaBotStatus>('/admin/integrations/whatsapp-bot'),
+    tryBot: (text: string) => a.post<{ intent: BotIntent; reply: string }>('/admin/integrations/whatsapp-bot/try', { text }),
     apiKeys: () => a.get<ApiKeyView[]>('/admin/api-keys'),
     createKey: (input: { name: string; access: 'read' | 'full' }) => a.post<{ key: ApiKeyView; secret: string }>('/admin/api-keys', input),
     revokeKey: (id: string) => a.del<void>(`/admin/api-keys/${id}`),

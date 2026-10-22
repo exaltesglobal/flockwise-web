@@ -10,6 +10,7 @@ import { seedDemo } from '@/core/seed';
 import { newPerson } from '@/core/util';
 
 import type { Session } from './types';
+import type { BotIntent } from '@/core/types';
 
 export { DEMO_CODE as DEMO_OTP } from '@/core';
 
@@ -125,6 +126,18 @@ function sampleChurches() {
 function freshSeed() {
   db.load({});
   seedDemo(db, env);
+  // A few WhatsApp assistant conversations, shown once the office turns the assistant on.
+  const chats: [number, string, string, string, BotIntent][] = [
+    [0.1, '+919848011122', 'Anil Thomas', '1', 'services'],
+    [0.4, '+919848011122', 'Anil Thomas', 'Please pray for my job interview on Monday', 'prayer'],
+    [1.2, '+919701255501', 'Kavya R', 'Hi, I’m new here', 'new'],
+    [2.5, '+919440098765', 'Joseph M', 'give', 'give'],
+    [3.1, '+919000312345', 'Sarah', 'can pastor call me', 'talk'],
+    [4.0, '+919848011122', 'Anil Thomas', 'hello', 'menu'],
+  ];
+  for (const [days, phone, name, text, intent] of chats) {
+    db.put('botMessages', { id: `bm_demo_${Math.round(days * 10)}`, at: new Date(Date.now() - days * DAY).toISOString(), phone, name, personId: null, text, intent, reply: '', sent: true });
+  }
   db.put('meta', { id: 'seededAt', value: String(Date.now()) });
 }
 

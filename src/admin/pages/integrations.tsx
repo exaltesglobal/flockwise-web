@@ -1,8 +1,8 @@
-// Settings › Integrations: WhatsApp through Chitthi, API keys, and connecting AI assistants (MCP).
-import { Bot, Check, Copy, KeyRound, MessageCircle, Plus, Send, Trash2, Unplug } from 'lucide-react';
+// Settings › Integrations: WhatsApp through Chitthi, the WhatsApp assistant, API keys, and connecting AI assistants (MCP).
+import { Bot, Check, Copy, KeyRound, MessageCircle, MessagesSquare, Plus, Power, Send, Trash2, Unplug } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import type { ApiKeyView, ChitthiStatus, ChitthiTemplate } from '@/api/admin-types';
+import type { ApiKeyView, BotIntent, ChitthiStatus, ChitthiTemplate, WaBotStatus } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { getApiUrl } from '@/lib/config';
@@ -25,9 +25,11 @@ function CopyField({ value, label, secret = false }: { value: string; label: str
 }
 
 export function IntegrationsSettings() {
+  const [chitthiOn, setChitthiOn] = useState<boolean | null>(null);
   return (
     <div className="stack">
-      <ChitthiCard />
+      <ChitthiCard onChange={setChitthiOn} />
+      <WhatsAppBotCard key={String(chitthiOn)} />
       <ApiKeysCard />
     </div>
   );
@@ -35,7 +37,7 @@ export function IntegrationsSettings() {
 
 // ---------------------------------------------------------------- Chitthi
 
-function ChitthiCard() {
+function ChitthiCard({ onChange }: { onChange: (connected: boolean) => void }) {
   const { data, error, reload, setData } = useApi(() => AdminApi.integrations.get(), []);
   const [connecting, setConnecting] = useState(false);
   const [confirmOff, setConfirmOff] = useState(false);
@@ -43,7 +45,7 @@ function ChitthiCard() {
   if (error) return <div className="card card-pad"><ErrorState error={error} onRetry={reload} /></div>;
   if (!data) return <div className="card card-pad"><Loading /></div>;
   const c = data.chitthi;
-  const set = (chitthi: ChitthiStatus) => setData({ chitthi });
+  const set = (chitthi: ChitthiStatus) => { setData({ chitthi }); onChange(chitthi.connected); };
   return (
     <section className="card card-pad stack">
       <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
@@ -161,6 +163,123 @@ function TestSend() {
       </div>
       <FormError error={send.error} />
     </form>
+  );
+}
+
+// ---------------------------------------------------------------- WhatsApp assistant
+
+const INTENT_LABEL: Record<BotIntent, string> = {
+  menu: 'Menu', services: 'Service times', events: 'Events', prayer_ask: 'Prayer', prayer: 'Prayer request', give: 'Give',
+  sermon: 'Sermon', new: 'New here', talk: 'Talk to someone', stop: 'Stopped', start: 'Started again', unknown: 'Not understood',
+};
+
+function WhatsAppBotCard() {
+  const { data, error, reload, setData } = useApi(() => AdminApi.integrations.bot(), []);
+  const [welcome, setWelcome] = useState<string | null>(null);
+  const [confirmOff, setConfirmOff] = useState(false);
+  const toast = useToast();
+  const save = useAction(() => AdminApi.integrations.enableBot({ welcome: welcome ?? data?.welcome }));
+  if (error) return <div className="card card-pad"><ErrorState error={error} onRetry={reload} /></div>;
+  if (!data) return <div className="card card-pad"><Loading /></div>;
+  const b: WaBotStatus = data;
+  const edited = welcome !== null && welcome.trim() !== b.welcome;
+  return (
+    <section className="card card-pad stack">
+      <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+        <div className="int-logo chitthi"><MessagesSquare size={22} /></div>
+        <div className="grow" style={{ minWidth: 0 }}>
+          <div className="row between wrap" style={{ gap: 8 }}>
+            <h3 style={{ margin: 0 }}>WhatsApp assistant</h3>
+            {b.enabled ? <span className="badge ok">On</span> : <span className="badge">Off</span>}
+          </div>
+          <p className="muted small" style={{ margin: '4px 0 0' }}>When someone messages your church’s WhatsApp number, the assistant replies straight away with service times, this week’s events, your giving link or the latest sermon. It also takes prayer requests for your pastors, adds newcomers as visitors with a follow-up, and opens a care case when someone asks to talk.</p>
+        </div>
+      </div>
+
+      {!b.chitthiConnected ? (
+        <div className="alert">Connect Chitthi above first. The assistant answers on your Chitthi WhatsApp number, and needs Chitthi’s Growth plan for webhooks.</div>
+      ) : (
+        <>
+          {b.enabled && (
+            <div className="stat-row">
+              <div className="mini-stat"><b>{b.last30.messages}</b><span>messages, 30 days</span></div>
+              <div className="mini-stat"><b>{b.last30.people}</b><span>people</span></div>
+              <div className="mini-stat"><b>{b.last30.prayers}</b><span>prayer requests</span></div>
+              <div className="mini-stat"><b>{b.last30.newcomers}</b><span>newcomers</span></div>
+              <div className="mini-stat"><b>{b.last30.talk}</b><span>asked to talk</span></div>
+            </div>
+          )}
+          {b.lastError && <div className="alert warn">The last reply could not be sent: {b.lastError}</div>}
+          <Field label="Welcome line" hint="The first line of the menu people see when they say hi.">
+            <input className="input" value={welcome ?? b.welcome} maxLength={300} onChange={(e) => setWelcome(e.target.value)} />
+          </Field>
+          <FormError error={save.error} />
+          <div className="row wrap" style={{ gap: 8 }}>
+            {!b.enabled ? (
+              <button className="btn primary" disabled={save.busy} onClick={async () => { const s = await save.run(); if (s) { setData(s); setWelcome(null); toast('The WhatsApp assistant is on'); } }}><Power size={15} /> {save.busy ? 'Turning on…' : 'Turn on'}</button>
+            ) : (
+              <>
+                {edited && <button className="btn primary sm" disabled={save.busy} onClick={async () => { const s = await save.run(); if (s) { setData(s); setWelcome(null); toast('Welcome line saved'); } }}>Save</button>}
+                {confirmOff ? (
+                  <>
+                    <span className="small">People will stop getting automatic replies.</span>
+                    <button className="btn sm danger" onClick={async () => { setData(await AdminApi.integrations.disableBot()); setConfirmOff(false); toast('The WhatsApp assistant is off'); }}>Turn off</button>
+                    <button className="btn sm ghost" onClick={() => setConfirmOff(false)}>Cancel</button>
+                  </>
+                ) : <button className="btn sm ghost" onClick={() => setConfirmOff(true)}><Power size={14} /> Turn off</button>}
+              </>
+            )}
+          </div>
+          <TryBot />
+          {b.enabled && (
+            <div className="stack" style={{ gap: 6 }}>
+              <div className="small" style={{ fontWeight: 600 }}>Recent conversations</div>
+              {b.recent.length === 0 ? <p className="muted small" style={{ margin: 0 }}>No messages yet. Say hi to your church’s WhatsApp number to see it work.</p> : (
+                <div className="table-wrap">
+                  <table className="table small">
+                    <thead><tr><th>When</th><th>From</th><th>Message</th><th>Answered</th></tr></thead>
+                    <tbody>
+                      {b.recent.slice(0, 15).map((m) => (
+                        <tr key={m.id}>
+                          <td className="nowrap muted">{formatRelative(m.at)}</td>
+                          <td>{m.name || m.phone}</td>
+                          <td className="bot-msg">{m.text}</td>
+                          <td><span className={`badge ${m.intent === 'unknown' ? 'warn' : m.intent === 'prayer' || m.intent === 'new' || m.intent === 'talk' ? 'ok' : 'gray'}`}>{INTENT_LABEL[m.intent]}</span>{!m.sent && <span className="badge danger" style={{ marginLeft: 4 }}>Not sent</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Lets the office see what the assistant would say, without WhatsApp. */
+function TryBot() {
+  const [text, setText] = useState('');
+  const [out, setOut] = useState<{ q: string; reply: string } | null>(null);
+  const ask = useAction(() => AdminApi.integrations.tryBot(text));
+  const send = async (q: string) => { const r = await ask.run(); if (r) { setOut({ q, reply: r.reply }); setText(''); } };
+  return (
+    <div className="stack" style={{ gap: 6 }}>
+      <div className="small" style={{ fontWeight: 600 }}>Try it</div>
+      <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); if (text.trim()) void send(text.trim()); }}>
+        <input className="input grow" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type hi, 1, prayer, give…" aria-label="Message to try" />
+        <button className="btn sm" type="submit" disabled={ask.busy || !text.trim()}><Send size={14} /> Try</button>
+      </form>
+      <FormError error={ask.error} />
+      {out && (
+        <div className="bot-chat">
+          <div className="bot-bubble me">{out.q}</div>
+          <div className="bot-bubble">{out.reply}</div>
+        </div>
+      )}
+    </div>
   );
 }
 
