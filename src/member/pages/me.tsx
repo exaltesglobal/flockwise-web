@@ -8,6 +8,7 @@ import type { Consent, DataRequestKind, DataRequestStatus } from '@/api/admin-ty
 import type { LanguageCode } from '@/api/types';
 import { QrCode } from '@/components/qr';
 import { ServerSettings } from '@/components/server-settings';
+import { AppearancePanel } from '@/components/theme-picker';
 import { Avatar, FormError, Loading, useToast } from '@/components/ui';
 import { languages, useT, type StringKey } from '@/i18n';
 import { downloadJson, formatDate } from '@/lib/format';
@@ -50,6 +51,8 @@ export function MemberMePage() {
   return (
     <>
       <h1>{t('tabMe')}</h1>
+      <div className="cols-auto">
+      <div className="col-stack">
       <div className="card card-pad row">
         <Avatar name={`${m.firstName} ${m.lastName}`} size="lg" />
         <div className="grow">
@@ -78,6 +81,24 @@ export function MemberMePage() {
       </div>
 
       <div className="card card-pad stack">
+        <h3>{t('language')}</h3>
+        <div className="row wrap">
+          {(Object.keys(languages) as LanguageCode[]).map((lc) => (
+            <button key={lc} className={`btn ${m.language === lc ? 'primary' : ''}`} onClick={() => setLanguage(lc)}>
+              {languages[lc].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card card-pad stack appearance-card">
+        <h3>{t('appearance')}</h3>
+        <AppearancePanel />
+      </div>
+      </div>
+
+      <div className="col-stack">
+      <div className="card card-pad stack">
         <h3>{t('privacy')}</h3>
         {!prefs.data ? <Loading /> : consentRows.map((r) => (
           <label key={r.key} className="toggle-row">
@@ -99,22 +120,13 @@ export function MemberMePage() {
         </div>
       )}
 
-      <div className="card card-pad stack">
-        <h3>{t('language')}</h3>
-        <div className="row wrap">
-          {(Object.keys(languages) as LanguageCode[]).map((lc) => (
-            <button key={lc} className={`btn ${m.language === lc ? 'primary' : ''}`} onClick={() => setLanguage(lc)}>
-              {languages[lc].label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="card card-pad">
         <ServerSettings labels={{ title: t('server'), body: t('serverBody'), url: t('serverUrl'), save: t('save'), reset: t('resetToDefault'), demo: t('usingDemoData') }} />
       </div>
 
       <button className="btn danger lg" onClick={signOut}><LogOut size={17} /> {t('signOut')}</button>
+      </div>
+      </div>
       <p className="small muted" style={{ textAlign: 'center' }}>{t('version', { version: '1.0.0 (web)' })}</p>
     </>
   );

@@ -25,7 +25,7 @@ export function MemberGroupsPage() {
     <>
       <h1>{t('tabGroups')}</h1>
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
-        <div className="stack">
+        <div className="tiles">
           {data.data.map((g) => (
             <div key={g.id} className="card card-pad stack" style={{ gap: 10 }}>
               <div className="row between" style={{ alignItems: 'flex-start' }}>

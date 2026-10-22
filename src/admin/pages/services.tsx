@@ -169,7 +169,7 @@ function PlanEditor({ eventId, onSaved }: { eventId: string; onSaved: () => void
         </div>
       </div>
       <FormError error={save.error} />
-      <div className="plan-grid">
+      <div className="service-plan-grid">
         <div className="stack">
           <div className="card card-pad grid cols-2">
             <Field label="Theme or sermon series"><input className="input" disabled={!editable} value={theme} onChange={(e) => { setTheme(e.target.value); setDirty(true); }} placeholder="The Good Shepherd · John 10" /></Field>

@@ -1,13 +1,13 @@
 @import '../admin/admin.css';
 .member { min-height: 100%; display: flex; flex-direction: column; padding-bottom: 72px; }
 .member-top { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-.member-top-inner { max-width: 1180px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.member-top-inner { max-width: none; margin: 0 auto; padding: 12px clamp(16px, 3vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .member-church { font-family: var(--font-heading); font-weight: 600; font-size: 16px; line-height: 1.2; }
 .member-nav { display: flex; gap: 4px; }
 .member-nav a { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 600; font-size: 14.5px; }
 .member-nav a:hover { background: var(--tint); text-decoration: none; color: var(--text); }
 .member-nav a.active { color: var(--primary); background: var(--tint); }
-.member-main { width: 100%; max-width: 760px; margin: 0 auto; padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 22px; }
+.member-main { width: 100%; max-width: none; margin: 0 auto; padding: 28px clamp(16px, 3vw, 40px) 40px; display: flex; flex-direction: column; gap: 22px; }
 .member-tabs { display: none; }
 @media (max-width: 900px) {
   .member-nav { display: none; }
@@ -58,3 +58,14 @@
 .fam-checkin { border-color: var(--primary); }
 .fam-code { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px; border-radius: var(--radius-sm); background: var(--tint); }
 .fam-code-value { font-family: ui-monospace, Menlo, monospace; font-size: 48px; font-weight: 800; letter-spacing: 0.15em; line-height: 1.1; }
+
+/* Full-width layouts: cards flow into as many columns as fit */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; align-items: start; }
+.tiles.wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); }
+@media (min-width: 900px) { .quick-links { grid-template-columns: repeat(6, 1fr); } }
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
+.home-grid > div { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+@media (min-width: 1100px) { .home-grid { grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr); } }
+.cols-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 22px; align-items: start; }
+.cols-auto > * { min-width: 0; }
+.col-stack { display: flex; flex-direction: column; gap: 22px; min-width: 0; }

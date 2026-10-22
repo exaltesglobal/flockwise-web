@@ -25,10 +25,11 @@ export function Spinner() {
   return <div className="spinner" role="status" aria-label="Loading" />;
 }
 
+/** The Flockwise mark turning slowly: the saffron dot circles the ring while a page loads. */
 export function Loading() {
   return (
-    <div className="center-pad">
-      <Spinner />
+    <div className="center-pad" role="status" aria-label="Loading">
+      <span className="brand-loader"><Mark size={34} /></span>
     </div>
   );
 }
@@ -63,7 +64,7 @@ export function FormError({ error }: { error: ApiError | null }) {
 export function Empty({ icon, title, body, action }: { icon?: ReactNode; title: string; body?: string; action?: ReactNode }) {
   return (
     <div className="empty">
-      {icon}
+      {icon ?? <span className="empty-mark"><Mark size={40} /></span>}
       <div>
         <h3 style={{ color: 'var(--text)' }}>{title}</h3>
         {body && <p className="small">{body}</p>}

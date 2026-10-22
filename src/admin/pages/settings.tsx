@@ -1,4 +1,4 @@
-import { Building2, History, Landmark, Pencil, Plus, ReceiptText, Search, Trash2, UserPlus } from 'lucide-react';
+import { Baby, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, MapPinned, Palette, Pencil, Plug, Plus, ReceiptText, Search, Server, ShieldCheck, Trash2, UserPlus, UsersRound, Network } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
@@ -7,6 +7,7 @@ import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import type { StaffRole } from '@/api/types';
 import { ServerSettings } from '@/components/server-settings';
+import { AppearancePanel } from '@/components/theme-picker';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { languages } from '@/i18n';
 import { formatRelative } from '@/lib/format';
@@ -33,25 +34,27 @@ const ROLE_HELP: Record<StaffRole, string> = {
 };
 const INVITABLE: StaffRole[] = ['admin', 'pastor', 'finance', 'leader', 'coordinator', 'checkin'];
 
-type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'server';
+type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'appearance' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
-  const tabs: { value: Tab; label: string; show: boolean }[] = [
-    { value: 'church', label: 'Church', show: can('settings') },
-    { value: 'billing', label: 'Plan & billing', show: can('settings') },
-    { value: 'giving', label: 'Giving & compliance', show: can('settings') },
-    { value: 'campuses', label: 'Campuses', show: can('settings') },
-    { value: 'kids', label: 'Kids check-in', show: can('settings') },
-    { value: 'fields', label: 'Custom fields', show: can('settings') },
-    { value: 'page', label: 'Public page', show: can('settings') },
-    { value: 'integrations', label: 'Integrations', show: can('settings') },
-    { value: 'notifications', label: 'Notifications', show: can('settings') },
-    { value: 'networks', label: 'Networks', show: can('settings') },
-    { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit') },
-    { value: 'team', label: 'Team & roles', show: can('staff') },
-    { value: 'audit', label: 'Activity log', show: can('settings') },
-    { value: 'server', label: 'Server', show: true },
+  // Grouped so fourteen sections read as a short menu, not a scrolling strip of tabs.
+  const tabs: { value: Tab; label: string; show: boolean; icon: typeof Building2; group: string }[] = [
+    { value: 'church', label: 'Church', show: can('settings'), icon: Building2, group: 'Your church' },
+    { value: 'campuses', label: 'Campuses', show: can('settings'), icon: MapPinned, group: 'Your church' },
+    { value: 'page', label: 'Public page', show: can('settings'), icon: Globe, group: 'Your church' },
+    { value: 'fields', label: 'Custom fields', show: can('settings'), icon: ListPlus, group: 'Your church' },
+    { value: 'kids', label: 'Kids check-in', show: can('settings'), icon: Baby, group: 'Your church' },
+    { value: 'billing', label: 'Plan & billing', show: can('settings'), icon: CreditCard, group: 'Money' },
+    { value: 'giving', label: 'Giving & compliance', show: can('settings'), icon: ReceiptText, group: 'Money' },
+    { value: 'integrations', label: 'Integrations', show: can('settings'), icon: Plug, group: 'Connections' },
+    { value: 'notifications', label: 'Notifications', show: can('settings'), icon: Bell, group: 'Connections' },
+    { value: 'networks', label: 'Networks', show: can('settings'), icon: Network, group: 'Connections' },
+    { value: 'team', label: 'Team & roles', show: can('staff'), icon: UsersRound, group: 'Access' },
+    { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit'), icon: ShieldCheck, group: 'Access' },
+    { value: 'audit', label: 'Activity log', show: can('settings'), icon: History, group: 'Access' },
+    { value: 'appearance', label: 'Appearance', show: true, icon: Palette, group: 'This browser' },
+    { value: 'server', label: 'Server', show: true, icon: Server, group: 'This browser' },
   ];
   const visible = tabs.filter((t) => t.show);
   const [tab, setTab] = useState<Tab>(() => {
@@ -68,9 +71,23 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" />
-      <div className="tabs">
-        {visible.map((t) => <button key={t.value} className={tab === t.value ? 'on' : ''} onClick={() => setTab(t.value)}>{t.label}</button>)}
-      </div>
+      <div className="settings-layout">
+      <nav className="settings-nav" aria-label="Settings sections">
+        <select className="select settings-select" value={tab} onChange={(e) => { setTab(e.target.value as Tab); history.replaceState(null, '', `#${e.target.value}`); }} aria-label="Settings section">
+          {visible.map((t) => <option key={t.value} value={t.value}>{t.group} · {t.label}</option>)}
+        </select>
+        {[...new Set(visible.map((t) => t.group))].map((g) => (
+          <div key={g} className="settings-group">
+            <div className="settings-group-title">{g}</div>
+            {visible.filter((t) => t.group === g).map(({ value, label, icon: Icon }) => (
+              <a key={value} href={`#${value}`} className={tab === value ? 'on' : ''} aria-current={tab === value ? 'page' : undefined} onClick={(e) => { e.preventDefault(); setTab(value); history.replaceState(null, '', `#${value}`); }}>
+                <Icon size={16} /> {label}
+              </a>
+            ))}
+          </div>
+        ))}
+      </nav>
+      <div className="settings-body">
       {tab === 'billing' && <PlanBilling />}
       {(tab === 'church' || tab === 'giving' || tab === 'kids') && <ChurchSettingsForm section={tab} />}
       {tab === 'campuses' && <Campuses />}
@@ -83,7 +100,18 @@ export function SettingsPage() {
       {tab === 'privacy' && <PrivacySettings />}
       {tab === 'team' && <Team />}
       {tab === 'audit' && <Audit />}
+      {tab === 'appearance' && (
+        <div className="card card-pad stack appearance-card">
+          <div>
+            <h2>Appearance</h2>
+            <p className="muted small">Light or dark, and which brand colours the menu and buttons use. Saved in this browser only.</p>
+          </div>
+          <AppearancePanel />
+        </div>
+      )}
       {tab === 'server' && <div className="card card-pad" id="server"><ServerSettings /></div>}
+      </div>
+      </div>
     </>
   );
 }

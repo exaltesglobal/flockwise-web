@@ -8,6 +8,7 @@ import { OtpSignIn } from '@/components/otp-sign-in';
 import { DemoBanner } from '@/components/server-settings';
 import { ChurchLogo, useBrandStyle } from '@/components/brand';
 import { Logo } from '@/components/ui';
+import { ThemeButton } from '@/components/theme-picker';
 import { useT } from '@/i18n';
 import { useSession } from '@/lib/session';
 import { LegalFooter } from '@/legal/legal';
@@ -59,6 +60,7 @@ export function MemberLayout() {
               </NavLink>
             ))}
           </nav>
+          <ThemeButton placement="down" />
         </div>
       </header>
       <main className="member-main">

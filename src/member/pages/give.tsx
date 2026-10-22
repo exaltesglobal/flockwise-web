@@ -73,6 +73,8 @@ export function MemberGivePage() {
       <MissionsLink />
       <Campaigns onPick={(id) => { setDone(false); setFundId(id); document.getElementById('give-form')?.scrollIntoView({ behavior: 'smooth' }); }} />
 
+      <div className="cols-auto">
+      <div className="col-stack">
       {done ? (
         <div className="card card-pad stack" style={{ alignItems: 'center', textAlign: 'center' }}>
           <CheckCircle2 size={40} color="var(--ok)" />
@@ -135,7 +137,9 @@ export function MemberGivePage() {
           <p className="small muted" style={{ textAlign: 'center' }}>{t('checkoutNote')}</p>
         </div>
       )}
+      </div>
 
+      <div className="col-stack">
       <section className="stack">
         <h2>{t('givingHistory')}</h2>
         {history.data?.data.length ? (
@@ -156,6 +160,8 @@ export function MemberGivePage() {
       <MonthlyGifts tick={tick} />
       <Pledges india={india} />
       {india && <Statement />}
+      </div>
+      </div>
     </>
   );
 }

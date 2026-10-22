@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -8,6 +8,7 @@ import { OtpSignIn } from '@/components/otp-sign-in';
 import { DemoBanner } from '@/components/server-settings';
 import { ChurchLogo } from '@/components/brand';
 import { Avatar, Logo } from '@/components/ui';
+import { ThemeButton } from '@/components/theme-picker';
 import { ROLE_LABELS, useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import type { Permission } from '@/api/admin-types';
@@ -18,42 +19,141 @@ import { missingPlan, PlanBanner, PlanGate, PlanLock, usePlan } from './plan';
 import { ChurchLine } from '@/platform/church';
 import './admin.css';
 
-const NAV: { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[]; ai?: boolean }[] = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/assistant', label: 'Assistant', icon: Sparkles, ai: true },
-  { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
-  { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
-  { to: '/admin/workflows', label: 'Follow-up workflows', icon: GitBranch, perm: ['people.view', 'care'] },
-  { to: '/admin/celebrations', label: 'Celebrations', icon: Cake, perm: ['people.view'] },
-  { to: '/admin/registers', label: 'Registers', icon: BookMarked, perm: ['people.view'] },
-  { to: '/admin/zones', label: 'Zones & visits', icon: MapPin, perm: ['people.view'] },
-  { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
-  { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
-  { to: '/admin/forms', label: 'Forms & registrations', icon: FileText, perm: ['events', 'people.edit'] },
-  { to: '/admin/checkin', label: 'Check-in', icon: ScanLine, perm: ['checkin'] },
-  { to: '/admin/sunday-school', label: 'Sunday school', icon: School, perm: ['checkin'] },
-  { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
-  { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
-  { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },
-  { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'] },
-  { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
-  { to: '/admin/giving', label: 'Giving', icon: Gift, perm: ['giving.view'] },
-  { to: '/admin/offerings', label: 'Special offerings', icon: Wheat, perm: ['giving.view'] },
-  { to: '/admin/missions', label: 'Missions', icon: Globe, perm: ['giving.view'] },
-  { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark },
-  { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },
-  { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'] },
-  { to: '/admin/bulletin', label: 'Bulletin', icon: Newspaper, perm: ['comms'] },
-  { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
-  { to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'] },
-  { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'] },
-  { to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] },
+type NavItem = { to: string; label: string; icon: typeof Users; end?: boolean; perm?: Permission[]; ai?: boolean };
+
+// The office menu, grouped the way a church week runs. Groups fold away; the one you're in stays open.
+const NAV: { title: string | null; items: NavItem[] }[] = [
+  {
+    title: null,
+    items: [
+      { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+      { to: '/admin/assistant', label: 'Assistant', icon: Sparkles, ai: true },
+    ],
+  },
+  {
+    title: 'People',
+    items: [
+      { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
+      { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
+      { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
+      { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'] },
+      { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
+      { to: '/admin/zones', label: 'Zones & visits', icon: MapPin, perm: ['people.view'] },
+      { to: '/admin/celebrations', label: 'Celebrations', icon: Cake, perm: ['people.view'] },
+      { to: '/admin/registers', label: 'Registers', icon: BookMarked, perm: ['people.view'] },
+    ],
+  },
+  {
+    title: 'Sundays & events',
+    items: [
+      { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
+      { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
+      { to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'] },
+      { to: '/admin/checkin', label: 'Check-in', icon: ScanLine, perm: ['checkin'] },
+      { to: '/admin/sunday-school', label: 'Sunday school', icon: School, perm: ['checkin'] },
+      { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
+      { to: '/admin/forms', label: 'Forms & sign-ups', icon: FileText, perm: ['events', 'people.edit'] },
+      { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },
+      { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'] },
+    ],
+  },
+  {
+    title: 'Giving & finance',
+    items: [
+      { to: '/admin/giving', label: 'Giving', icon: Gift, perm: ['giving.view'] },
+      { to: '/admin/offerings', label: 'Special offerings', icon: Wheat, perm: ['giving.view'] },
+      { to: '/admin/missions', label: 'Missions', icon: Globe, perm: ['giving.view'] },
+      { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark },
+    ],
+  },
+  {
+    title: 'Communication',
+    items: [
+      { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },
+      { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'] },
+      { to: '/admin/bulletin', label: 'Bulletin', icon: Newspaper, perm: ['comms'] },
+    ],
+  },
+  {
+    title: 'Office',
+    items: [
+      { to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'] },
+      { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'] },
+      { to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] },
+    ],
+  },
 ];
+
+const FOLD_KEY = 'fw.nav.folded';
+function readFolded(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(FOLD_KEY) ?? '[]') as string[];
+  } catch {
+    return [];
+  }
+}
+
+function isActive(item: NavItem, path: string) {
+  return item.end ? path === item.to : path === item.to || path.startsWith(item.to + '/');
+}
+
+function AdminNav({ path }: { path: string }) {
+  const can = useCan();
+  const ai = useAi();
+  const plan = usePlan();
+  const [folded, setFolded] = useState<string[]>(readFolded);
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+
+  function toggle(title: string) {
+    const next = folded.includes(title) ? folded.filter((t) => t !== title) : [...folded, title];
+    setFolded(next);
+    try {
+      localStorage.setItem(FOLD_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const groups = NAV.map((g) => ({
+    ...g,
+    items: g.items.filter((n) => (!n.perm || can(...n.perm)) && (!n.ai || ai) && (!q || n.label.toLowerCase().includes(q) || (g.title ?? '').toLowerCase().includes(q))),
+  })).filter((g) => g.items.length);
+
+  return (
+    <nav className="admin-nav" aria-label="Office menu">
+      <label className="nav-find">
+        <Search size={15} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a page" aria-label="Find a page" />
+      </label>
+      {groups.map((g) => {
+        const here = g.items.some((n) => isActive(n, path));
+        const open = !g.title || !!q || here || !folded.includes(g.title);
+        return (
+          <div key={g.title ?? 'top'} className="nav-group">
+            {g.title && (
+              <button className="nav-group-head" onClick={() => toggle(g.title!)} aria-expanded={open}>
+                <span>{g.title}</span>
+                <ChevronDown size={14} className={open ? '' : 'folded'} />
+              </button>
+            )}
+            {open &&
+              g.items.map(({ to, label, icon: Icon, end }) => (
+                <NavLink key={to} to={to} end={end}>
+                  <Icon size={18} /> <span className="grow ellipsis">{label}</span>
+                  {missingPlan(plan, to) && <PlanLock />}
+                </NavLink>
+              ))}
+          </div>
+        );
+      })}
+      {!groups.length && <p className="nav-none">No page called “{query}”.</p>}
+    </nav>
+  );
+}
 
 export function AdminLayout() {
   const session = useSession(adminSession);
-  const can = useCan();
-  const ai = useAi();
   const plan = usePlan();
   const [open, setOpen] = useState(false);
   const location = useLocation();
@@ -74,7 +174,10 @@ export function AdminLayout() {
       <div className="admin-shell">
         <aside className={`admin-side ${open ? 'open' : ''}`}>
           <div className="admin-brand">
-            <Logo reverse height={26} />
+            <Link to="/admin" className="side-logo" aria-label="Flockwise dashboard">
+              <span className="on-dark"><Logo reverse height={26} /></span>
+              <span className="on-light"><Logo height={26} /></span>
+            </Link>
             <button className="btn ghost icon sm admin-close" onClick={() => setOpen(false)} aria-label="Close menu">
               <X size={18} />
             </button>
@@ -86,20 +189,14 @@ export function AdminLayout() {
               <small>{session.church.city}</small>
             </div>
           </div>
-          <nav className="admin-nav">
-            {NAV.filter((n) => (!n.perm || can(...n.perm)) && (!n.ai || ai)).map(({ to, label, icon: Icon, end }) => (
-              <NavLink key={to} to={to} end={end}>
-                <Icon size={18} /> {label}
-                {missingPlan(plan, to) && <PlanLock />}
-              </NavLink>
-            ))}
-          </nav>
+          <AdminNav path={location.pathname} />
           <div className="admin-user">
             <Avatar name={name} />
             <div className="grow">
               <div className="ellipsis">{name}</div>
               <small>{ROLE_LABELS[session.staff.role]}</small>
             </div>
+            <ThemeButton />
             <button className="btn ghost icon sm" onClick={signOut} title="Sign out" aria-label="Sign out">
               <LogOut size={17} />
             </button>

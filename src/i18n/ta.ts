@@ -65,6 +65,7 @@ export const ta: Strings = {
   resetToDefault: 'இயல்புநிலைக்குத் திரும்பு',
   usingDemoData: 'டெமோ தரவு பயன்படுத்தப்படுகிறது',
   signOut: 'வெளியேறு',
+  appearance: 'தோற்றம்',
   version: 'பதிப்பு {version}',
 
   retry: 'மீண்டும் முயல்க',
