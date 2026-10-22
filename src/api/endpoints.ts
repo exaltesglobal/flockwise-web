@@ -73,6 +73,7 @@ import type {
   BookingView,
   CalendarItem,
   CcliRow,
+  LowerThird,
   PresentationTheme,
   PresentationView,
   SongStats,
@@ -204,6 +205,7 @@ export const PublicApi = {
   groups: () => m.get<PublicGroup[]>('/public/groups'),
   groupInterest: (id: string, input: { name: string; email: string; phone?: string; message?: string }) => m.post<{ ok: boolean; message: string }>(`/public/groups/${id}/interest`, input),
   form: (id: string) => m.get<PublicForm>(`/public/forms/${id}`),
+  screen: (eventId: string, key: string) => m.get<PresentationView>(`/screens/${eventId}${qs({ key })}`),
   submitForm: (id: string, input: FormSubmission) => m.post<FormSubmitResult>(`/public/forms/${id}/responses`, input),
 };
 
@@ -418,10 +420,12 @@ export const AdminApi = {
   },
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
-    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message', extra: { index?: number; message?: string } = {}) =>
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay',
+      extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean } = {}) =>
       a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),
     theme: () => a.get<PresentationTheme>('/admin/presentation-theme'),
     saveTheme: (input: Partial<PresentationTheme>) => a.put<PresentationTheme>('/admin/presentation-theme', input),
+    resetKey: () => a.post<{ screenKey: string }>('/admin/presentation-key/reset'),
   },
   songStats: () => a.get<SongStats>('/admin/songs/stats'),
   ccli: (from?: string, to?: string) => a.get<{ from: string; to: string; rows: CcliRow[] }>(`/admin/songs/ccli-report${qs({ from, to })}`),

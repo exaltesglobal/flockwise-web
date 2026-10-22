@@ -24,7 +24,7 @@ import { SettingsPage } from '@/admin/pages/settings';
 import { VolunteersPage } from '@/admin/pages/volunteers';
 import { Landing } from '@/landing';
 import { FormReturnPage, PublicChurchPage, PublicFormPage } from '@/public/public';
-import { PresenterPage, ScreenPage, StagePage } from '@/present/present';
+import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberEventPage, MemberEventsPage } from '@/member/pages/events';
 import { MemberFormPage, MemberFormsPage } from '@/member/pages/forms';
@@ -72,6 +72,7 @@ const routes = [
   { path: '/present/:eventId', element: <PresenterPage /> },
   { path: '/present/:eventId/screen', element: <ScreenPage /> },
   { path: '/present/:eventId/stage', element: <StagePage /> },
+  { path: '/present/:eventId/overlay', element: <OverlayPage /> },
   { path: '/app/sign-in', element: <MemberSignIn /> },
   { path: '/legal/:slug', element: <LegalPage /> },
   { path: '/church', element: <PublicChurchPage /> },

@@ -51,7 +51,7 @@
 .pres-thumb.on { border-color: var(--fw-saffron); box-shadow: 0 0 0 3px rgba(242, 169, 59, 0.25); }
 .pres-thumb.muted-out .pres-frame { opacity: 0.4; }
 .pres-thumb .cap { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pres-side { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 74px; }
+.pres-side { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 74px; max-height: calc(100vh - 74px - 84px); overflow-y: auto; padding-right: 2px; }
 .pres-remote { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; gap: 10px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--card); border-top: 1px solid var(--border); }
 .pres-remote .btn.big { min-width: 96px; justify-content: center; padding-block: 12px; }
 
@@ -62,7 +62,7 @@
 /* Phone remote: big controls, what's on screen and what's next. */
 @media (max-width: 720px) {
   .pres-main { grid-template-columns: minmax(0, 1fr); }
-  .pres-side { order: -1; top: 61px; z-index: 4; display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; row-gap: 4px; background: var(--bg); padding-bottom: 8px; }
+  .pres-side { order: -1; top: 61px; max-height: none; overflow: visible; z-index: 4; display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; row-gap: 4px; background: var(--bg); padding-bottom: 8px; }
   .pres-side > .lbl-now { grid-column: 1; grid-row: 1; }
   .pres-side > .lbl-next { grid-column: 2; grid-row: 1; }
   .pres-side > form, .pres-side > p { grid-column: 1 / -1; }
@@ -93,3 +93,33 @@
 .stage-now .seg { display: inline-flex; flex-direction: column; white-space: pre; }
 .stage-now .ch { color: #f2a93b; font-size: 0.62em; font-weight: 800; line-height: 1.1; }
 .stage-next { border-top: 1px solid #2a3d39; padding-top: 1.4vh; font-size: clamp(16px, 3.2vh, 44px); opacity: 0.75; }
+
+/* Countdown screen */
+.pres-countdown { display: grid; gap: 3cqh; justify-items: center; padding: 0 8cqw; }
+.pres-countdown .lbl { font-size: 4.4cqh; opacity: 0.75; letter-spacing: 0.08em; text-transform: uppercase; }
+.pres-countdown .clock { font-size: calc(22cqh * var(--pres-scale)); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.pres-countdown .ann { margin-top: 3cqh; max-width: 70cqw; animation: pres-fade 0.6s ease; }
+.pres-countdown .ann .t { font-size: 5.2cqh; font-weight: 700; }
+.pres-countdown .ann .b { margin-top: 1cqh; font-size: 3.4cqh; opacity: 0.8; line-height: 1.35; }
+@keyframes pres-fade { from { opacity: 0; transform: translateY(1cqh); } to { opacity: 1; transform: none; } }
+
+/* Media panels in the console */
+.media-card { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.lt-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); }
+.lt-row.on { border-color: var(--fw-saffron); background: rgba(242, 169, 59, 0.12); }
+.scene-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.scene-grid .btn { justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The phone is the slide remote; livestream graphics and OBS stay on the media desk computer. */
+@media (max-width: 720px) { .pres-side > .media-card { display: none; } }
+
+/* OBS Browser Source overlay: transparent, broadcast-safe margins (5%). */
+html.pres-transparent, html.pres-transparent body, html.pres-transparent #root { background: transparent !important; }
+.pres-overlay { position: fixed; inset: 0; padding: 0 5vw 5vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 2vh; font-family: 'Inter', system-ui, sans-serif; color: #fff; pointer-events: none; }
+.pres-overlay.upper { text-transform: uppercase; }
+.ov-lower { align-self: flex-start; padding: 1.4vh 2vw 1.6vh; background: rgba(15, 31, 28, 0.88); border-left: 0.6vw solid #f2a93b; border-radius: 0.6vw; max-width: 60vw; animation: ov-in 0.45s cubic-bezier(.2,.8,.2,1); }
+.ov-lower .t { font-size: 4.2vh; font-weight: 800; line-height: 1.15; }
+.ov-lower .s { margin-top: 0.4vh; font-size: 2.6vh; opacity: 0.85; }
+.ov-lyrics { padding: 1.6vh 2vw; background: rgba(0, 0, 0, 0.62); border-radius: 0.8vw; text-align: center; font-size: 3.8vh; font-weight: 700; line-height: 1.25; text-shadow: 0 0.2vh 0.6vh rgba(0, 0, 0, 0.5); animation: ov-fade 0.3s ease; }
+.ov-lyrics .alt { margin-top: 0.6vh; font-size: 2.8vh; font-weight: 500; opacity: 0.85; }
+@keyframes ov-in { from { opacity: 0; transform: translateX(-3vw); } to { opacity: 1; transform: none; } }
+@keyframes ov-fade { from { opacity: 0; } to { opacity: 1; } }
