@@ -232,7 +232,7 @@ function ObsCard() {
   const save = useAction(async () => { if (!data) return; setData(await AdminApi.presentation.saveObs(data)); toast('OBS scene plan saved'); });
   const mapped = data ? Object.values(data.scenes).filter(Boolean).length : 0;
   return (
-    <section className="card card-pad stack">
+    <section className="card card-pad stack int-wide">
       <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
         <div className="int-logo obs"><Clapperboard size={22} /></div>
         <div className="grow" style={{ minWidth: 0 }}>
@@ -243,14 +243,14 @@ function ObsCard() {
           <p className="muted small" style={{ margin: '4px 0 0' }}>Stream with the free OBS Studio: a transparent lyrics bar and name straps over your camera, and scenes that change as the presenter moves through the plan. Nothing passes through Flockwise’s servers; the presenter’s browser talks to OBS on the streaming computer.</p>
         </div>
       </div>
-      <ol className="small stack" style={{ margin: 0, paddingLeft: 18, gap: 4 }}>
+      <ol className="small obs-steps">
         <li><b>Lyrics and names on the stream.</b> In OBS add a <i>Browser Source</i>, 1920 × 1080, and paste the “OBS overlay” link from the presenter’s <i>Links</i> button for that service. Turn the lyrics bar on from the presenter’s Media panel.</li>
         <li><b>Scenes from the presenter.</b> In OBS open <i>Tools › WebSocket Server Settings</i>, turn the server on and set a password. In the presenter’s OBS panel connect to <code>ws://localhost:4455</code> with that password (OBS and the presenter browser on the same computer).</li>
         <li><b>Scene plan.</b> Type the scene names below exactly as they appear in OBS. Leave a row blank to keep whatever scene is showing.</li>
       </ol>
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
         <>
-          <div className="grid cols-2">
+          <div className="obs-scenes">
             {OBS_MOMENTS.map((m) => (
               <Field key={m.id} label={m.label}>
                 <input className="input" value={data.scenes[m.id] ?? ''} placeholder={m.hint || 'Scene name in OBS'} maxLength={100}
