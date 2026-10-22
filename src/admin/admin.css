@@ -275,3 +275,15 @@ button.chip.on { background: var(--primary); color: #fff; }
 .setup-price small { font-size: 14px; color: var(--muted); font-family: inherit; letter-spacing: 0; }
 .setup-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
 .setup-files { margin: 0; padding: 0; list-style: none; }
+
+/* Special offerings */
+.offer-card { color: inherit; text-decoration: none; transition: border-color .15s; }
+.offer-card:hover { border-color: var(--primary); }
+.offer-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--muted) 16%, transparent); }
+.offer-bar.big { height: 20px; }
+.offer-bar i { display: block; height: 100%; }
+.offer-bar .g1, .offer-dot.g1 { background: var(--primary); }
+.offer-bar .g2, .offer-dot.g2 { background: #4a8fd4; }
+.offer-bar .g3, .offer-dot.g3 { background: #e0a030; }
+.offer-bar .g4, .offer-dot.g4 { background: #b5651d; }
+.offer-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }

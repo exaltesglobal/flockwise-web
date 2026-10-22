@@ -69,6 +69,7 @@ export function MemberGivePage() {
         <h1>{t('giveTitle')}</h1>
         <p className="muted">{t('giveBody', { church: church.name })}</p>
       </div>
+      <Campaigns onPick={(id) => { setDone(false); setFundId(id); document.getElementById('give-form')?.scrollIntoView({ behavior: 'smooth' }); }} />
 
       {done ? (
         <div className="card card-pad stack" style={{ alignItems: 'center', textAlign: 'center' }}>
@@ -77,7 +78,7 @@ export function MemberGivePage() {
           <button className="btn" onClick={() => setDone(false)}>{t('giveTitle')}</button>
         </div>
       ) : (
-        <div className="card card-pad stack lg">
+        <div id="give-form" className="card card-pad stack lg">
           <Field label={t('fund')}>
             <div className="stack" style={{ gap: 8 }}>
               {funds.data.map((f) => (
@@ -154,6 +155,39 @@ export function MemberGivePage() {
       <Pledges india={india} />
       {india && <Statement />}
     </>
+  );
+}
+
+/** Harvest festival, building fund and other special offerings, with progress and the family's envelope. */
+function Campaigns({ onPick }: { onPick: (fundId: string) => void }) {
+  const { t, locale } = useT();
+  const currency = useSession(memberSession)!.church.currency;
+  const q = useApi(MemberApi.giving.campaigns);
+  if (!q.data?.length) return null;
+  return (
+    <section className="stack">
+      <h2>{t('specialOfferings')}</h2>
+      {q.data.map((c) => (
+        <div key={c.id} className="card card-pad stack" style={{ gap: 8 }}>
+          <div className="row between wrap" style={{ gap: 6 }}>
+            <b>{c.name}</b>
+            {c.endsOn && <span className="small muted">{t('endsOn', { date: formatDate(c.endsOn, locale) })}</span>}
+          </div>
+          {c.description && <p className="small muted" style={{ margin: 0 }}>{c.description}</p>}
+          {c.goal ? <div className="progress"><i style={{ width: `${Math.min(100, c.percent ?? 0)}%` }} /></div> : null}
+          <div className="small">
+            {c.goal ? t('raisedOfGoal', { raised: formatMoney(c.raised, currency, locale), goal: formatMoney(c.goal, currency, locale) }) : t('raisedSoFar', { raised: formatMoney(c.raised, currency, locale) })} · {t('giversCount', { n: c.givers })}
+          </div>
+          {c.envelope && (
+            <div className="small" style={{ fontWeight: 600 }}>
+              {t('yourEnvelope', { n: c.envelope.number })}
+              <span className="muted" style={{ fontWeight: 400 }}> · {c.envelope.amount ? `${formatMoney(c.envelope.amount, currency, locale)} ${t('envelopeGiven')}` : c.envelope.promised ? t('envelopePromised', { amount: formatMoney(c.envelope.promised, currency, locale) }) : ''}</span>
+            </div>
+          )}
+          <div><button className="btn sm" onClick={() => onPick(c.fundId)}>{t('giveToThis')}</button></div>
+        </div>
+      ))}
+    </section>
   );
 }
 

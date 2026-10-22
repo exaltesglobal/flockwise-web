@@ -7,7 +7,7 @@ import { PublicApi } from '@/api/endpoints';
 import { RegistrationForm } from '@/components/registration';
 import { ErrorState, Field, FormError, Loading, Logo, Modal } from '@/components/ui';
 import { useT } from '@/i18n';
-import { formatDay, formatTime } from '@/lib/format';
+import { formatDay, formatMoney, formatTime } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 import { SermonList } from '@/member/pages/sermons';
 
@@ -46,7 +46,7 @@ export function PublicChurchPage() {
 
   if (error) return <Shell><ErrorState error={error} onRetry={reload} /></Shell>;
   if (!data) return <Shell><Loading /></Shell>;
-  const { church, page, contact, events, sermons, groups, forms } = data;
+  const { church, page, contact, events, sermons, groups, forms, campaigns = [] } = data;
   const zones = [...new Set(groups.map((g) => g.zone).filter(Boolean))].sort();
   const shownGroups = groups.filter((g) => !zone || g.zone === zone);
 
@@ -86,6 +86,23 @@ export function PublicChurchPage() {
                 {e.description && <p className="small muted clamp3">{e.description}</p>}
                 {e.formId && <Link to={`/forms/${e.formId}`} className="btn sm primary" style={{ alignSelf: 'flex-start' }}><ClipboardList size={14} /> Register</Link>}
               </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {campaigns.length > 0 && (
+        <section className="pub-section">
+          <h2>Special offerings</h2>
+          <div className="pub-grid">
+            {campaigns.map((c) => (
+              <div key={c.id} className="card card-pad stack" style={{ gap: 8 }}>
+                <h3>{c.name}</h3>
+                {c.description && <p className="small muted clamp3">{c.description}</p>}
+                {c.goal ? <div className="progress"><i style={{ width: `${Math.min(100, c.percent ?? 0)}%` }} /></div> : null}
+                <span className="small"><b>{formatMoney(c.raised, church.currency, locale)}</b>{c.goal ? ` of ${formatMoney(c.goal, church.currency, locale)}` : ' given'} · {c.givers} givers</span>
+                <Link to="/app/give" className="small" style={{ color: 'var(--primary)', fontWeight: 600 }}>Give →</Link>
+              </div>
             ))}
           </div>
         </section>

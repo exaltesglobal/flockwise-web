@@ -2,7 +2,8 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod } from '@/core/types';
+export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
@@ -183,6 +184,7 @@ export const MemberApi = {
     pledge: (input: { fundId: string; amount: number; endDate: string; startDate?: string; autopay?: boolean; pan?: string }) => m.post<PledgeView & { checkoutUrl?: string; monthly?: number; months?: number }>('/giving/pledges', input),
     recurring: () => m.get<RecurringGift[]>('/giving/recurring'),
     changeRecurring: (id: string, action: 'pause' | 'resume' | 'cancel') => m.post<RecurringGift>(`/giving/recurring/${id}/${action}`),
+    campaigns: () => m.get<MemberCampaign[]>('/giving/campaigns'),
     removePledge: (id: string) => m.del<void>(`/giving/pledges/${id}`),
   },
   serving: {
@@ -354,6 +356,22 @@ export const AdminApi = {
     removePledge: (id: string) => a.del<void>(`/admin/giving/pledges/${id}`),
     recurring: (status?: string) => a.get<{ summary: RecurringSummary; rows: RecurringGift[] }>(`/admin/giving/recurring${qs({ status })}`),
     cancelRecurring: (id: string) => a.post<RecurringGift>(`/admin/giving/recurring/${id}/cancel`),
+  },
+  offerings: {
+    list: () => a.get<CampaignView[]>('/admin/offerings'),
+    create: (input: CampaignInput & { fundId?: string | null }) => a.post<CampaignDetail>('/admin/offerings', input),
+    get: (id: string) => a.get<CampaignDetail>(`/admin/offerings/${id}`),
+    update: (id: string, input: Partial<CampaignInput> & { status?: 'active' | 'closed' }) => a.patch<CampaignDetail>(`/admin/offerings/${id}`, input),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/offerings/${id}`),
+    giveEnvelopes: (id: string, input: { blank?: number; promised?: number | null; zoneId?: string }) => a.post<{ made: number; campaign: CampaignDetail }>(`/admin/offerings/${id}/envelopes`, input),
+    updateEnvelope: (id: string, envId: string, input: { personId?: string | null; familyName?: string; promised?: number | null }) => a.patch<OfferingEnvelope>(`/admin/offerings/${id}/envelopes/${envId}`, input),
+    receiveEnvelope: (id: string, envId: string, input: { amount: number; method: PaymentMethod; donorName?: string; pan?: string }) => a.post<OfferingEnvelope>(`/admin/offerings/${id}/envelopes/${envId}/receive`, input),
+    removeEnvelope: (id: string, envId: string) => a.del<{ ok: true }>(`/admin/offerings/${id}/envelopes/${envId}`),
+    addInKind: (id: string, input: { donorId?: string | null; donorName?: string; item: string; quantity?: string; value?: number; forAuction?: boolean; note?: string }) => a.post<InKindGift>(`/admin/offerings/${id}/in-kind`, input),
+    removeInKind: (id: string, itemId: string) => a.del<{ ok: true }>(`/admin/offerings/${id}/in-kind/${itemId}`),
+    addLot: (id: string, input: { inKindId?: string | null; title?: string; bidderId?: string | null; bidderName?: string; amount: number; paidNow?: boolean; method?: PaymentMethod }) => a.post<AuctionLot>(`/admin/offerings/${id}/lots`, input),
+    payLot: (id: string, lotId: string, method: PaymentMethod) => a.post<AuctionLot>(`/admin/offerings/${id}/lots/${lotId}/pay`, { method }),
+    removeLot: (id: string, lotId: string) => a.del<{ ok: true }>(`/admin/offerings/${id}/lots/${lotId}`),
   },
   checkin: {
     events: () => a.get<AdminEvent[]>('/admin/checkin/events'),
