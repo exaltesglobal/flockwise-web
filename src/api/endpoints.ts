@@ -86,6 +86,7 @@ import type {
   Song,
   SongView,
   StaffMember,
+  TeamLoginView,
   TeamView,
   Template,
   Batch,
@@ -525,6 +526,11 @@ export const AdminApi = {
     autofill: (eventId: string) => a.post<{ added: number; schedule: Schedule }>(`/admin/volunteers/autofill/${eventId}`),
     notify: (eventId: string) => a.post<{ notified: number; message: Message }>(`/admin/volunteers/notify/${eventId}`),
     blockouts: () => a.get<BlockoutView[]>('/admin/volunteers/blockouts'),
+    // Team app logins (the volunteers' mobile app).
+    logins: () => a.get<TeamLoginView[]>('/admin/team-logins'),
+    sendLogin: (personId: string) => a.post<TeamLoginView>('/admin/team-logins', { personId }),
+    resetLogin: (personId: string) => a.post<TeamLoginView>(`/admin/team-logins/${personId}/reset`),
+    disableLogin: (personId: string) => a.del<void>(`/admin/team-logins/${personId}`),
   },
   services: {
     list: (when: 'upcoming' | 'past' = 'upcoming') => a.get<ServiceSummary[]>(`/admin/services${qs({ when })}`),

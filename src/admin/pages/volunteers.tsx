@@ -1,7 +1,7 @@
-import { CalendarOff, Mail, Pencil, Plus, Printer, Trash2, UserPlus, Users, Wand2, X } from 'lucide-react';
+import { CalendarOff, KeyRound, Mail, Pencil, Plus, Printer, Smartphone, Trash2, UserPlus, Users, Wand2, X } from 'lucide-react';
 import { useState } from 'react';
 
-import type { AssignmentStatus, AvailablePerson, Schedule, ScheduleSlot, TeamView } from '@/api/admin-types';
+import type { AssignmentStatus, AvailablePerson, Schedule, ScheduleSlot, TeamLoginView, TeamView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Avatar, Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { formatDate, formatDay, formatRelative, formatTime } from '@/lib/format';
@@ -15,7 +15,7 @@ const STATUS_TONE: Record<AssignmentStatus, string> = { accepted: 'ok', pending:
 const STATUS_LABEL: Record<AssignmentStatus, string> = { accepted: 'Confirmed', pending: 'Asked', declined: 'Declined' };
 const COLORS = ['#1F6B5C', '#F2A93B', '#7C5CBF', '#D9534F', '#2E86AB', '#8FB339', '#C06C84', '#5B6B68'];
 
-type Tab = 'schedule' | 'teams' | 'blockouts';
+type Tab = 'schedule' | 'teams' | 'blockouts' | 'logins';
 
 export function VolunteersPage() {
   const [tab, setTab] = useState<Tab>('schedule');
@@ -26,10 +26,12 @@ export function VolunteersPage() {
         <button className={tab === 'schedule' ? 'on' : ''} onClick={() => setTab('schedule')}>Schedule</button>
         <button className={tab === 'teams' ? 'on' : ''} onClick={() => setTab('teams')}>Teams</button>
         <button className={tab === 'blockouts' ? 'on' : ''} onClick={() => setTab('blockouts')}>Away dates</button>
+        <button className={tab === 'logins' ? 'on' : ''} onClick={() => setTab('logins')}>App logins</button>
       </div>
       {tab === 'schedule' && <SchedulePane />}
       {tab === 'teams' && <TeamsPane />}
       {tab === 'blockouts' && <BlockoutsPane />}
+      {tab === 'logins' && <LoginsPane />}
     </>
   );
 }
@@ -258,6 +260,22 @@ function MembersModal({ team, onClose }: { team: TeamView; onClose: () => void }
   const [rows, setRows] = useState(team.memberDetails.map((m) => ({ personId: m.personId, name: m.name, positionIds: m.positionIds, times: m.timesServed90d })));
   const save = useAction(() => AdminApi.volunteers.setMembers(team.id, rows.map((r) => ({ personId: r.personId, positionIds: r.positionIds }))));
   const toast = useToast();
+  const logins = useApi(AdminApi.volunteers.logins);
+  const [sending, setSending] = useState<string | null>(null);
+  const loginOf = (pid: string) => logins.data?.find((l) => l.personId === pid && !l.disabled);
+  const saved = new Set(team.memberDetails.map((m) => m.personId));
+  async function sendLogin(personId: string) {
+    setSending(personId);
+    try {
+      await AdminApi.volunteers.sendLogin(personId);
+      toast('Login emailed');
+      logins.reload();
+    } catch (e) {
+      toast(toApiError(e).message);
+    } finally {
+      setSending(null);
+    }
+  }
   const toggle = (pid: string, pos: string) => setRows(rows.map((r) => (r.personId === pid ? { ...r, positionIds: r.positionIds.includes(pos) ? r.positionIds.filter((x) => x !== pos) : [...r.positionIds, pos] } : r)));
   return (
     <Modal title={`${team.name} members`} onClose={onClose}
@@ -281,12 +299,62 @@ function MembersModal({ team, onClose }: { team: TeamView; onClose: () => void }
                   ))}
                 </div>
               </div>
+              {loginOf(r.personId) ? (
+                <span className="badge ok small" title="Has a team app login"><Smartphone size={12} /> App</span>
+              ) : saved.has(r.personId) ? (
+                <button className="btn sm" title="Email this volunteer a password for the team app" disabled={sending === r.personId} onClick={() => sendLogin(r.personId)}><Smartphone size={14} /> {sending === r.personId ? 'Sending…' : 'Send app login'}</button>
+              ) : (
+                <span className="small muted" title="Save first, then send the app login">Save first</span>
+              )}
               <button className="btn ghost icon sm danger" onClick={() => setRows(rows.filter((x) => x.personId !== r.personId))}><X size={15} /></button>
             </div>
           ))}
         </div>
+        <p className="small muted" style={{ margin: 0 }}>The team app is for volunteers only. “Send app login” emails a temporary password; they pick their team when they sign in and see only their own rota.</p>
       </div>
     </Modal>
+  );
+}
+
+function LoginsPane() {
+  const list = useApi(AdminApi.volunteers.logins);
+  const toast = useToast();
+  const [busy, setBusy] = useState<string | null>(null);
+  async function act(l: TeamLoginView, what: 'reset' | 'disable') {
+    if (what === 'disable' && !confirm(`Switch off the app login for ${l.name}? Their phone is signed out and the password stops working.`)) return;
+    setBusy(l.personId);
+    try {
+      if (what === 'reset') await AdminApi.volunteers.resetLogin(l.personId);
+      else await AdminApi.volunteers.disableLogin(l.personId);
+      toast(what === 'reset' ? 'New password emailed' : 'Login switched off');
+      list.reload();
+    } catch (e) {
+      toast(toApiError(e).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+  if (list.error) return <ErrorState error={list.error} onRetry={list.reload} />;
+  if (!list.data) return <Loading />;
+  return (
+    <div className="card">
+      <div className="card-head"><h2>Team app logins</h2><span className="small muted">Send one from a team's Members list. Each volunteer picks their team at sign-in and sees only their own rota.</span></div>
+      {list.data.length === 0 ? <Empty icon={<Smartphone size={28} />} title="No app logins yet" body="Open a team, choose Members, and press “Send app login” next to a volunteer." /> : list.data.map((l) => (
+        <div key={l.personId} className="list-row">
+          <Avatar name={l.name} />
+          <div className="grow">
+            <b>{l.name}</b> <span className="small muted">· {l.email}</span>
+            <div className="small muted">
+              {l.teams.map((t) => t.name).join(', ') || 'Not on a team'}
+              {l.disabled ? ' · switched off' : l.mustChangePassword ? ' · temporary password, not signed in yet' : l.lastSignInAt ? ` · last signed in ${formatRelative(l.lastSignInAt)}` : ''}
+            </div>
+          </div>
+          {l.disabled ? <span className="badge gray">Off</span> : l.mustChangePassword ? <span className="badge warn">Waiting</span> : <span className="badge ok">Active</span>}
+          <button className="btn sm" disabled={busy === l.personId} title="Email a new temporary password" onClick={() => act(l, 'reset')}><KeyRound size={14} /> {l.disabled ? 'Send again' : 'Reset'}</button>
+          {!l.disabled && <button className="btn ghost icon sm danger" disabled={busy === l.personId} title="Switch off" onClick={() => act(l, 'disable')}><X size={15} /></button>}
+        </div>
+      ))}
+    </div>
   );
 }
 
