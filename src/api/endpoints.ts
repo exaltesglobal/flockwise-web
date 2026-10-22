@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { Certificate, PaymentsStatus, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
+import type { Certificate, PaymentsStatus, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
 export type RazorpayKeysInput = { keyId: string; keySecret: string; webhookSecret: string; fcra?: { keyId: string; keySecret: string; webhookSecret: string } | null };
@@ -532,6 +532,23 @@ export const AdminApi = {
   groupPosts: {
     list: (groupId: string) => a.get<{ posts: GroupPost[]; resources: GroupResource[] }>(`/admin/groups/${groupId}/posts`),
     remove: (postId: string) => a.del<void>(`/admin/groups/posts/${postId}`),
+  },
+  zones: {
+    list: () => a.get<ZoneView[]>('/admin/zones'),
+    get: (id: string) => a.get<ZoneDetail>(`/admin/zones/${id}`),
+    create: (input: { name: string; parentId?: string | null; leaderIds?: string[]; meetingDay?: string | null; area?: string | null; notes?: string | null }) => a.post<ZoneView>('/admin/zones', input),
+    update: (id: string, input: Partial<{ name: string; parentId: string | null; leaderIds: string[]; meetingDay: string | null; area: string | null; notes: string | null; active: boolean }>) => a.patch<ZoneView>(`/admin/zones/${id}`, input),
+    remove: (id: string) => a.del<void>(`/admin/zones/${id}`),
+    addPeople: (id: string, personIds: string[]) => a.post<{ families: number; people: number }>(`/admin/zones/${id}/members`, { personIds }),
+    removeFamily: (id: string, key: string) => a.del<{ people: number }>(`/admin/zones/${id}/families/${encodeURIComponent(key)}`),
+    report: (since?: string) => a.get<{ since: string; rows: ZoneReportRow[] }>(`/admin/zones/report${qs({ since })}`),
+  },
+  visits: {
+    list: (f: { status?: 'planned' | 'done' | 'cancelled'; zoneId?: string; mine?: '1'; familyKey?: string }) => a.get<VisitView[]>(`/admin/visits${qs(f)}`),
+    due: (f: { since?: string; zoneId?: string }) => a.get<{ since: string; families: ZoneFamily[] }>(`/admin/visits/due${qs(f)}`),
+    create: (input: { personId?: string; familyKey?: string; date: string; status?: 'done'; purpose: VisitPurpose; visitorIds?: string[]; visitorNames?: string[]; notes?: string; prayerPoints?: string; followUp?: string; confidential?: boolean }) => a.post<VisitView>('/admin/visits', input),
+    update: (id: string, input: Partial<{ status: 'planned' | 'done' | 'cancelled'; date: string; purpose: VisitPurpose; notes: string; prayerPoints: string; followUp: string; confidential: boolean; visitorIds: string[]; visitorNames: string[] }>) => a.patch<VisitView>(`/admin/visits/${id}`, input),
+    remove: (id: string) => a.del<void>(`/admin/visits/${id}`),
   },
   registers: {
     summary: () => a.get<{ kinds: RegisterSummary[]; fields: Record<RegisterKind, RegisterField[]>; labels: Record<RegisterKind, { name: string; certificate: string; prefix: string; person: string; date: string }> }>('/admin/registers/summary'),

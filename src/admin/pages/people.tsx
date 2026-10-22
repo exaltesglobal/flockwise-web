@@ -30,9 +30,11 @@ export function PeoplePage() {
   const [status, setStatus] = useState<PersonStatus | ''>('');
   const [tag, setTag] = useState('');
   const [campusId, setCampusId] = useState('');
+  const [zoneId, setZoneId] = useState(params.get('zone') ?? '');
   const [dupes, setDupes] = useState(false);
   const tags = useApi(AdminApi.people.tags);
   const campuses = useApi(AdminApi.campuses.list);
+  const zones = useApi(AdminApi.zones.list);
   const can = useCan();
   const [extra, setExtra] = useState<Person[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -45,11 +47,11 @@ export function PeoplePage() {
   }, [q]);
 
   const list = useApi(async () => {
-    const page = await AdminApi.people.list({ q: debounced, status, tag, campusId });
+    const page = await AdminApi.people.list({ q: debounced, status, tag, campusId, zoneId: zoneId || undefined });
     setExtra([]);
     setCursor(page.nextCursor);
     return page;
-  }, [debounced, status, tag, campusId]);
+  }, [debounced, status, tag, campusId, zoneId]);
 
   const people = [...(list.data?.data ?? []), ...extra];
 
@@ -57,7 +59,7 @@ export function PeoplePage() {
     if (!cursor) return;
     setLoadingMore(true);
     try {
-      const page = await AdminApi.people.list({ q: debounced, status, tag, campusId, cursor });
+      const page = await AdminApi.people.list({ q: debounced, status, tag, campusId, zoneId: zoneId || undefined, cursor });
       setExtra((e) => [...e, ...page.data]);
       setCursor(page.nextCursor);
     } finally {
@@ -69,7 +71,7 @@ export function PeoplePage() {
     const all: Person[] = [];
     let next: string | null | undefined = undefined;
     do {
-      const page = await AdminApi.people.list({ q: debounced, status, tag, campusId, cursor: next ?? undefined });
+      const page = await AdminApi.people.list({ q: debounced, status, tag, campusId, zoneId: zoneId || undefined, cursor: next ?? undefined });
       all.push(...page.data);
       next = page.nextCursor;
     } while (next);
@@ -120,6 +122,13 @@ export function PeoplePage() {
             <select className="select" style={{ width: 170 }} value={campusId} onChange={(e) => setCampusId(e.target.value)}>
               <option value="">All campuses</option>
               {campuses.data!.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          )}
+          {(zones.data?.length ?? 0) > 0 && (
+            <select className="select" style={{ width: 170 }} value={zoneId} onChange={(e) => setZoneId(e.target.value)} aria-label="Zone">
+              <option value="">All zones</option>
+              <option value="none">No zone</option>
+              {zones.data!.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </select>
           )}
         </div>
@@ -206,6 +215,7 @@ const CONSENT_LABELS: Record<keyof Consent, string> = { email: 'Email', sms: 'SM
 function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; onClose: () => void; onEdit: (p: Person) => void; onDeleted: () => void; onOpen: (id: string) => void }) {
   const { data, error, reload } = useApi(() => AdminApi.people.timeline(id), [id]);
   const campuses = useApi(AdminApi.campuses.list);
+  const zones = useApi(AdminApi.zones.list);
   const fields = useApi(AdminApi.fields.list);
   const [tab, setTab] = useState<'profile' | 'activity'>('profile');
   const [statement, setStatement] = useState(false);
@@ -267,6 +277,7 @@ function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; 
                 <dt>Mobile</dt><dd className="mono">{p.phone ?? '—'}</dd>
                 <dt>Email</dt><dd>{p.email ?? '—'}</dd>
                 <dt>Household</dt><dd>{p.householdName ?? '—'}</dd>
+                {p.zoneId && zones.data && <><dt>Zone</dt><dd><Link to={`/admin/zones?zone=${p.zoneId}`}>{zones.data.find((z) => z.id === p.zoneId)?.name ?? '—'}</Link></dd></>}
                 {campuses.data && campuses.data.length > 0 && <><dt>Campus</dt><dd>{campuses.data.find((c) => c.id === p.campusId)?.name ?? '—'}</dd></>}
                 <dt>Birthday</dt><dd>{p.birthDate ? formatDate(p.birthDate) : '—'}</dd>
                 <dt>Anniversary</dt><dd>{p.anniversary ? formatDate(p.anniversary) : '—'}</dd>
@@ -385,6 +396,7 @@ function DuplicatesModal({ onClose, onMerged }: { onClose: () => void; onMerged:
 
 function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClose: () => void; onSaved: (p: Person) => void }) {
   const campuses = useApi(AdminApi.campuses.list);
+  const zones = useApi(AdminApi.zones.list);
   const [form, setForm] = useState<PersonInput>(() => ({
     firstName: person?.firstName ?? '',
     lastName: person?.lastName ?? '',
@@ -399,6 +411,7 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     address: person?.address ?? '',
     language: person?.language ?? 'en',
     campusId: person?.campusId ?? null,
+    zoneId: person?.zoneId ?? null,
     tags: person?.tags ?? [],
     notes: person?.notes ?? '',
     allergies: person?.allergies ?? '',
@@ -470,6 +483,14 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
                 <select className="select" value={form.campusId ?? ''} onChange={(e) => set('campusId', e.target.value || null)}>
                   <option value="">Not set</option>
                   {campuses.data!.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </Field>
+            )}
+            {(zones.data?.length ?? 0) > 0 && (
+              <Field label="Zone" hint="The whole household moves with them on the Zones page">
+                <select className="select" value={form.zoneId ?? ''} onChange={(e) => set('zoneId', e.target.value || null)}>
+                  <option value="">Not set</option>
+                  {zones.data!.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
                 </select>
               </Field>
             )}

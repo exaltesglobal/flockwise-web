@@ -254,3 +254,10 @@ button.chip.on { background: var(--primary); color: #fff; }
   body.cert-open .cert-page { box-shadow: none; margin: 0; max-width: none; min-height: 96vh; }
   @page { size: A4; margin: 12mm; }
 }
+
+/* zones and visits */
+.zone-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.zone-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; text-align: left; cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--border); min-width: 0; }
+.zone-card:hover { border-color: var(--primary); }
+.upper { text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+.danger-text { color: var(--danger); }

@@ -7,6 +7,7 @@ import { CalendarPage } from '@/admin/pages/calendar';
 import { CarePage } from '@/admin/pages/care';
 import { CelebrationsPage } from '@/admin/pages/celebrations';
 import { RegistersPage } from '@/admin/pages/registers';
+import { ZonesPage } from '@/admin/pages/zones';
 import { CheckinPage } from '@/admin/pages/checkin';
 import { DashboardPage } from '@/admin/pages/dashboard';
 import { EventsPage } from '@/admin/pages/events';
@@ -71,6 +72,7 @@ const routes = [
       { path: 'workflows', element: <WorkflowsPage /> },
       { path: 'celebrations', element: <CelebrationsPage /> },
       { path: 'registers', element: <RegistersPage /> },
+      { path: 'zones', element: <ZonesPage /> },
       { path: 'groups', element: <GroupsPage /> },
       { path: 'giving', element: <GivingPage /> },
       { path: 'messages', element: <MessagesPage /> },
