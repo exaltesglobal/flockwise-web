@@ -5,6 +5,7 @@ import type { AdminDonation, AdminFund, DonationQuery, FundInput, OfflineDonatio
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import type { Currency } from '@/api/types';
+import type { RecurringStatus } from '@/core/types';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { downloadCsv, formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { useCan } from '@/lib/perms';
@@ -18,7 +19,7 @@ import { PageHeader } from '../layout';
 const METHOD: Record<PaymentMethod, string> = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', cash: 'Cash', cheque: 'Cheque', bank_transfer: 'Bank transfer' };
 const STATUS_TONE = { succeeded: 'ok', pending: 'warn', failed: 'danger', refunded: 'gray' } as const;
 
-type Tab = 'donations' | 'batches' | 'funds' | 'pledges' | 'receipts';
+type Tab = 'donations' | 'monthly' | 'batches' | 'funds' | 'pledges' | 'receipts';
 
 /** Indian financial year (1 April – 31 March) as YYYY-MM-DD bounds. */
 function fiscalYear(offset = 0) {
@@ -50,6 +51,7 @@ export function GivingPage() {
       <div>
         <Segmented value={tab} onChange={setTab} options={[
           { value: 'donations', label: 'Donations' },
+          { value: 'monthly', label: 'Monthly gifts' },
           { value: 'batches', label: 'Batches' },
           { value: 'funds', label: 'Funds' },
           { value: 'pledges', label: 'Pledges' },
@@ -57,6 +59,7 @@ export function GivingPage() {
         ]} />
       </div>
       {tab === 'donations' && <Donations funds={funds.data ?? []} currency={currency} onChanged={funds.reload} />}
+      {tab === 'monthly' && <MonthlyGifts currency={currency} />}
       {tab === 'batches' && <Batches funds={funds.data ?? []} currency={currency} />}
       {tab === 'funds' && <Funds funds={funds} currency={currency} />}
       {tab === 'pledges' && <Pledges funds={funds.data ?? []} currency={currency} />}
@@ -411,6 +414,68 @@ export function StatementModal({ personId, financialYear, onClose }: { personId:
   );
 }
 
+const RG: Record<RecurringStatus, [string, string]> = {
+  pending: ['Waiting for approval', 'gray'],
+  active: ['Active', 'ok'],
+  failing: ['Payment failing', 'warn'],
+  paused: ['Paused', 'gray'],
+  halted: ['Stopped: payments failed', 'danger'],
+  cancelled: ['Cancelled', 'gray'],
+  completed: ['Completed', 'ok'],
+};
+
+/** Monthly gifts on UPI AutoPay, card or e-mandate (Razorpay subscriptions). */
+function MonthlyGifts({ currency }: { currency: Currency }) {
+  const [status, setStatus] = useState('');
+  const q = useApi(() => AdminApi.giving.recurring(status || undefined), [status]);
+  const cancel = useAction(AdminApi.giving.cancelRecurring);
+  const can = useCan();
+  const toast = useToast();
+  const sum = q.data?.summary;
+  return (
+    <>
+      {sum && (
+        <div className="grid cols-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}>
+          <div className="card kpi"><span className="label">Active monthly givers</span><span className="value">{formatNumber(sum.active)}</span></div>
+          <div className="card kpi"><span className="label">Comes in each month</span><span className="value">{formatMoney(sum.monthly, currency)}</span><span className="delta muted">{formatMoney(sum.monthly * 12, currency)} a year</span></div>
+          <button className="card kpi" style={{ textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }} onClick={() => setStatus('attention')}><span className="label">Payments failing</span><span className="value">{sum.failing}</span><span className="delta muted">Show them →</span></button>
+          <button className="card kpi" style={{ textAlign: 'left', font: 'inherit', color: 'inherit', cursor: 'pointer' }} onClick={() => setStatus('pending')}><span className="label">Not approved yet</span><span className="value">{sum.pending}</span><span className="delta muted">Started but never approved</span></button>
+        </div>
+      )}
+      <div className="card">
+        <div className="toolbar">
+          <div className="seg-scroll">
+            <Segmented value={status} onChange={setStatus} options={[{ value: '', label: 'All' }, { value: 'active', label: 'Active' }, { value: 'attention', label: 'Needs attention' }, { value: 'paused', label: 'Paused' }, { value: 'pending', label: 'Not approved' }, { value: 'cancelled', label: 'Cancelled' }]} />
+          </div>
+          <div className="grow" />
+          <span className="small muted hide-sm">Givers approve once in their UPI app, by card or by bank e-mandate. They can pause or stop it from the member app.</span>
+        </div>
+        <FormError error={cancel.error} />
+        {q.error ? <ErrorState error={q.error} onRetry={q.reload} /> : !q.data ? <Loading /> : q.data.rows.length === 0 ? <Empty icon={<Gift size={32} />} title="No monthly gifts here" body="When members choose Monthly on the give page, their gifts appear here." /> : (
+          <div className="table-wrap">
+            <table className="table">
+              <thead><tr><th>Giver</th><th>Fund</th><th className="num">Each month</th><th>Status</th><th className="hide-sm">Given so far</th><th className="hide-sm">Next</th><th /></tr></thead>
+              <tbody>
+                {q.data.rows.map((g) => (
+                  <tr key={g.id}>
+                    <td style={{ fontWeight: 600 }}>{g.donorName}{g.pledgeId && <div className="small muted">Paying a pledge{g.totalCount ? ` · ${g.chargedCount} of ${g.totalCount}` : ''}</div>}</td>
+                    <td className="small">{g.fundName}</td>
+                    <td className="num nowrap" style={{ fontWeight: 600 }}>{formatMoney(g.amount, g.currency)}</td>
+                    <td><span className={`badge ${RG[g.status][1]}`}>{RG[g.status][0]}</span>{g.method && <div className="small muted">{METHOD[g.method]}</div>}</td>
+                    <td className="small hide-sm">{formatMoney(g.totalGiven, g.currency)} · {g.chargedCount} {g.chargedCount === 1 ? 'gift' : 'gifts'}</td>
+                    <td className="small muted hide-sm nowrap">{g.nextChargeAt && (g.status === 'active' || g.status === 'failing') ? formatDate(g.nextChargeAt) : '—'}</td>
+                    <td style={{ textAlign: 'right' }}>{can('giving.edit') && !['cancelled', 'completed'].includes(g.status) && <button className="btn ghost sm" disabled={cancel.busy} onClick={async () => { if (!confirm(`Stop ${g.donorName}'s monthly gift? Razorpay will take no more money.`)) return; if (await cancel.run(g.id)) { toast('Monthly gift stopped'); q.reload(); } }}>Stop</button>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function Pledges({ funds, currency }: { funds: AdminFund[]; currency: Currency }) {
   const list = useApi(AdminApi.giving.pledges);
   const [adding, setAdding] = useState(false);
@@ -441,7 +506,7 @@ function Pledges({ funds, currency }: { funds: AdminFund[]; currency: Currency }
                   const pct = Math.min(100, Math.round((p.given / p.amount) * 100));
                   return (
                     <tr key={p.id}>
-                      <td style={{ fontWeight: 600 }}>{p.personName}</td>
+                      <td style={{ fontWeight: 600 }}>{p.personName}{p.autopay && <div><span className={`badge ${RG[p.autopay.status][1]}`}>AutoPay {formatMoney(p.autopay.amount, p.currency)}/mo · {RG[p.autopay.status][0].toLowerCase()}</span></div>}</td>
                       <td className="small">{p.fundName}</td>
                       <td className="small muted">{formatDate(p.startDate)} – {formatDate(p.endDate)}</td>
                       <td><div className="progress"><i style={{ width: `${pct}%`, background: pct >= 100 ? 'var(--ok)' : undefined }} /></div><span className="small muted">{formatMoney(p.given, p.currency)} · {pct}%</span></td>

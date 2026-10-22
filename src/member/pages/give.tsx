@@ -1,12 +1,13 @@
-import { CheckCircle2, FileText, Plus, Printer, Target, Trash2 } from 'lucide-react';
+import { CheckCircle2, FileText, Plus, Printer, Repeat, Target, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
 import type { GiveFrequency } from '@/api/types';
+import type { RecurringStatus } from '@/core/types';
 import { ErrorState, Field, FormError, Loading, Segmented } from '@/components/ui';
-import { useT } from '@/i18n';
+import { useT, type StringKey } from '@/i18n';
 import { formatDate, formatMoney } from '@/lib/format';
 import { printHtml, statementHtml } from '@/lib/print';
 import { useSession } from '@/lib/session';
@@ -44,6 +45,7 @@ export function MemberGivePage() {
   const minor = Math.round(Number(amount) * 100);
   const panBad = pan.length > 0 && !PAN_RE.test(pan);
   const give = useAction(MemberApi.giving.createIntent);
+  const [tick, setTick] = useState(0);
 
   async function onGive() {
     const intent = await give.run({ fundId, amount: minor, currency: church.currency, frequency, donorCitizenship: india && !indian ? 'OTHER' : 'IN', pan: pan || undefined });
@@ -53,6 +55,7 @@ export function MemberGivePage() {
     else {
       setDone(true);
       history.reload();
+      setTick((n) => n + 1);
     }
   }
 
@@ -147,20 +150,76 @@ export function MemberGivePage() {
         ) : history.data ? <p className="muted small">—</p> : <Loading />}
       </section>
 
-      <Pledges />
+      <MonthlyGifts tick={tick} />
+      <Pledges india={india} />
       {india && <Statement />}
     </>
   );
 }
 
-function Pledges() {
+const GIFT_STATUS: Record<RecurringStatus, [StringKey, string]> = {
+  pending: ['giftPending', ''],
+  active: ['giftActive', 'ok'],
+  failing: ['giftFailing', 'warn'],
+  paused: ['giftPaused', ''],
+  halted: ['giftHalted', 'danger'],
+  cancelled: ['giftCancelled', ''],
+  completed: ['giftCompleted', 'ok'],
+};
+
+/** Monthly gifts on UPI AutoPay: the giver can pause, resume or stop them here. */
+function MonthlyGifts({ tick }: { tick: number }) {
   const { t, locale } = useT();
+  const q = useApi(MemberApi.giving.recurring, [tick]);
+  const act = useAction(MemberApi.giving.changeRecurring);
+  const live = (q.data ?? []).filter((g) => !['cancelled', 'completed'].includes(g.status) || Date.now() - new Date(g.endedAt ?? 0).getTime() < 30 * 86_400_000);
+  if (!live.length) return null;
+  async function run(id: string, action: 'pause' | 'resume' | 'cancel') {
+    if (action === 'cancel' && !confirm(t('cancelGiftConfirm'))) return;
+    if (await act.run(id, action)) q.reload();
+  }
+  return (
+    <section className="stack">
+      <h2>{t('monthlyGifts')}</h2>
+      <FormError error={act.error} />
+      <div className="card">
+        {live.map((g) => (
+          <div key={g.id} className="list-row wrap">
+            <Repeat size={18} className="muted" />
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600 }}>{g.fundName} · {formatMoney(g.amount, g.currency, locale)}</div>
+              <div className="small muted">
+                <span className={`badge ${GIFT_STATUS[g.status][1]}`}>{t(GIFT_STATUS[g.status][0])}</span>
+                {g.nextChargeAt && (g.status === 'active' || g.status === 'failing') ? ` ${t('nextGift', { date: formatDate(g.nextChargeAt, locale) })}` : ''}
+              </div>
+            </div>
+            <div className="row" style={{ gap: 6 }}>
+              {(g.status === 'active' || g.status === 'failing') && <button className="btn ghost sm" disabled={act.busy} onClick={() => run(g.id, 'pause')}>{t('pauseGift')}</button>}
+              {g.status === 'paused' && <button className="btn ghost sm" disabled={act.busy} onClick={() => run(g.id, 'resume')}>{t('resumeGift')}</button>}
+              {!['cancelled', 'completed'].includes(g.status) && <button className="btn ghost sm" disabled={act.busy} onClick={() => run(g.id, 'cancel')}>{t('cancelGift')}</button>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Pledges({ india }: { india: boolean }) {
+  const { t, locale } = useT();
+  const session = useSession(memberSession);
   const pledges = useApi(MemberApi.giving.pledges);
   const funds = useApi(MemberApi.giving.funds);
   const [adding, setAdding] = useState(false);
   const yearEnd = `${new Date().getMonth() >= 3 ? new Date().getFullYear() + 1 : new Date().getFullYear()}-03-31`;
-  const [form, setForm] = useState({ fundId: '', amount: '', endDate: yearEnd });
-  const add = useAction(() => MemberApi.giving.pledge({ fundId: form.fundId || funds.data![0].id, amount: Math.round(Number(form.amount) * 100), endDate: form.endDate }));
+  const [form, setForm] = useState({ fundId: '', amount: '', endDate: yearEnd, autopay: false });
+  const add = useAction(() => MemberApi.giving.pledge({ fundId: form.fundId || funds.data![0].id, amount: Math.round(Number(form.amount) * 100), endDate: form.endDate, autopay: form.autopay || undefined }));
+  const months = (() => {
+    const now = new Date();
+    const end = new Date(`${form.endDate}T00:00:00`);
+    return Math.max(1, (end.getFullYear() - now.getFullYear()) * 12 + end.getMonth() - now.getMonth() + 1);
+  })();
+  const monthly = Math.ceil((Number(form.amount) || 0) / months);
   return (
     <section className="stack">
       <div className="section-head">
@@ -177,8 +236,14 @@ function Pledges() {
             <label className="stack small grow" style={{ gap: 4 }}>{t('amount')}<input className="input" type="number" min={1} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></label>
             <label className="stack small grow" style={{ gap: 4 }}>{t('completeBy')}<input className="input" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></label>
           </div>
+          {india && (
+            <label className="check">
+              <input type="checkbox" checked={form.autopay} onChange={(e) => setForm({ ...form, autopay: e.target.checked })} />
+              <span>{t('payByAutopay')}{form.autopay && Number(form.amount) > 0 ? <span className="small muted"> · {t('autopayEach', { amount: formatMoney(monthly * 100, session!.church.currency, locale), months: String(months) })}</span> : null}</span>
+            </label>
+          )}
           <div className="row">
-            <button className="btn primary" disabled={add.busy || !(Number(form.amount) > 0)} onClick={async () => { if (await add.run()) { setAdding(false); setForm({ fundId: '', amount: '', endDate: yearEnd }); pledges.reload(); } }}>{t('save')}</button>
+            <button className="btn primary" disabled={add.busy || !(Number(form.amount) > 0)} onClick={async () => { const r = await add.run(); if (r) { if (r.checkoutUrl) { window.location.href = r.checkoutUrl; return; } setAdding(false); setForm({ fundId: '', amount: '', endDate: yearEnd, autopay: false }); pledges.reload(); } }}>{t('save')}</button>
             <button className="btn ghost" onClick={() => setAdding(false)}>{t('cancel')}</button>
           </div>
         </div>
@@ -194,7 +259,7 @@ function Pledges() {
               <button className="btn ghost icon sm" title={t('remove')} onClick={async () => { if (confirm(t('remove'))) { await MemberApi.giving.removePledge(p.id); pledges.reload(); } }}><Trash2 size={14} /></button>
             </div>
             <div className="progress"><i style={{ width: `${pct}%` }} /></div>
-            <span className="small muted">{t('pledgeProgress', { given: formatMoney(p.given, p.currency, locale), amount: formatMoney(p.amount, p.currency, locale) })}</span>
+            <span className="small muted">{t('pledgeProgress', { given: formatMoney(p.given, p.currency, locale), amount: formatMoney(p.amount, p.currency, locale) })}{p.autopay && p.autopay.status !== 'pending' ? ` · ${t('autopayOn', { amount: formatMoney(p.autopay.amount, p.currency, locale) })}` : ''}</span>
           </div>
         );
       })}

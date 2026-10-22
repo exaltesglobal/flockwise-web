@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView } from '@/core/types';
+import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary } from '@/core/types';
 import type { AccountHead, AccountsSummary, Certificate, ExpenseMethod, ExpenseStatus, ExpenseView, PaymentsStatus, TallySettings, VisitPurpose, VisitView, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView, RegisterEntry, RegisterEntryInput, RegisterField, RegisterKind, RegisterSummary } from '@/core/types';
 
 export type BillingView = ReturnType<typeof billingView>;
@@ -179,7 +179,9 @@ export const MemberApi = {
     history: (cursor?: string) => m.get<Paginated<Donation>>(`/giving/donations${qs({ cursor })}`),
     statement: (financialYear?: string) => m.get<GivingStatement>(`/giving/statement${qs({ financialYear })}`),
     pledges: () => m.get<PledgeView[]>('/giving/pledges'),
-    pledge: (input: { fundId: string; amount: number; endDate: string; startDate?: string }) => m.post<PledgeView>('/giving/pledges', input),
+    pledge: (input: { fundId: string; amount: number; endDate: string; startDate?: string; autopay?: boolean; pan?: string }) => m.post<PledgeView & { checkoutUrl?: string; monthly?: number; months?: number }>('/giving/pledges', input),
+    recurring: () => m.get<RecurringGift[]>('/giving/recurring'),
+    changeRecurring: (id: string, action: 'pause' | 'resume' | 'cancel') => m.post<RecurringGift>(`/giving/recurring/${id}/${action}`),
     removePledge: (id: string) => m.del<void>(`/giving/pledges/${id}`),
   },
   serving: {
@@ -349,6 +351,8 @@ export const AdminApi = {
     pledges: () => a.get<PledgeView[]>('/admin/giving/pledges'),
     createPledge: (input: { personId: string; fundId: string; amount: number; endDate: string; startDate?: string }) => a.post<PledgeView>('/admin/giving/pledges', input),
     removePledge: (id: string) => a.del<void>(`/admin/giving/pledges/${id}`),
+    recurring: (status?: string) => a.get<{ summary: RecurringSummary; rows: RecurringGift[] }>(`/admin/giving/recurring${qs({ status })}`),
+    cancelRecurring: (id: string) => a.post<RecurringGift>(`/admin/giving/recurring/${id}/cancel`),
   },
   checkin: {
     events: () => a.get<AdminEvent[]>('/admin/checkin/events'),
