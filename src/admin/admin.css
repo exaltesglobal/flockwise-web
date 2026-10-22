@@ -1,0 +1,50 @@
+.admin { min-height: 100%; display: flex; flex-direction: column; }
+.admin-shell { flex: 1; display: flex; min-height: 0; }
+.admin-side { width: 248px; flex-shrink: 0; background: var(--sidebar); color: var(--sidebar-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.admin-brand { padding: 22px 20px 14px; display: flex; align-items: center; justify-content: space-between; }
+.admin-brand .admin-close { display: none; color: #fff; }
+.admin-church { margin: 0 12px 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.06); font-weight: 600; color: #fff; font-size: 14px; }
+.admin-church small { display: block; color: var(--sidebar-text); font-weight: 400; opacity: 0.75; }
+.admin-nav { display: flex; flex-direction: column; gap: 2px; padding: 6px 12px; flex: 1; overflow-y: auto; }
+.admin-nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px; color: var(--sidebar-text); font-weight: 600; font-size: 14.5px; }
+.admin-nav a:hover { background: rgba(255,255,255,0.07); text-decoration: none; color: #fff; }
+.admin-nav a.active { background: rgba(143, 214, 194, 0.16); color: #fff; box-shadow: inset 3px 0 0 var(--fw-saffron); }
+.admin-user { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 14px; color: #fff; }
+.admin-user small { color: var(--sidebar-text); opacity: 0.8; }
+.admin-user .avatar { background: rgba(143,214,194,0.2); color: var(--fw-mint); }
+.admin-user .btn { color: var(--sidebar-text); }
+.admin-user .btn:hover { background: rgba(255,255,255,0.08); }
+.admin-main { flex: 1; min-width: 0; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 22px; max-width: 1360px; }
+.admin-mobilebar { display: none; }
+.admin-scrim { display: none; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.page-head p { margin-top: 4px; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.toolbar .search { flex: 1; min-width: 220px; max-width: 380px; }
+@media (max-width: 900px) {
+  .admin-side { position: fixed; z-index: 40; left: 0; top: 0; transform: translateX(-100%); transition: transform 0.2s; }
+  .admin-side.open { transform: none; }
+  .admin-brand .admin-close { display: inline-flex; }
+  .admin-scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 30; }
+  .admin-main { padding: 12px 16px 48px; }
+  .admin-mobilebar { display: flex; align-items: center; gap: 8px; margin: 0 -8px; }
+}
+
+.auth-page { min-height: 100%; display: flex; flex-direction: column; background: radial-gradient(900px 420px at 80% -10%, color-mix(in srgb, var(--fw-mint) 30%, transparent), transparent), var(--bg); }
+.auth-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 16px; }
+.auth-card { width: 100%; max-width: 420px; padding: 32px; display: flex; flex-direction: column; gap: 22px; }
+.auth-card h1 { font-size: 24px; margin-bottom: 6px; }
+
+.detail-grid { display: grid; grid-template-columns: 140px 1fr; gap: 10px 16px; font-size: 14px; }
+.detail-grid dt { color: var(--muted); }
+.detail-grid dd { margin: 0; }
+.tag-input { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.dropzone:hover, .dropzone.over { border-color: var(--primary); background: var(--tint); }
+.steps { display: flex; gap: 8px; flex-wrap: wrap; }
+.steps span { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.steps span b { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--tint); font-size: 12px; }
+.steps span.on { color: var(--text); }
+.steps span.on b { background: var(--primary); color: var(--on-primary); }
+.steps i { width: 24px; height: 1px; background: var(--border); align-self: center; }
