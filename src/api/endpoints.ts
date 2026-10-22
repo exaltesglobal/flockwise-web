@@ -2,6 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
+import type { HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
@@ -406,6 +407,16 @@ export const AdminApi = {
     create: (input: Omit<Campus, 'id'>) => a.post<Campus>('/admin/campuses', input),
     update: (id: string, input: Partial<Omit<Campus, 'id'>>) => a.patch<Campus>(`/admin/campuses/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/campuses/${id}`),
+  },
+  teamHub: {
+    get: () => a.get<HubView>('/admin/team-hub'),
+    createChannel: (input: { name: string; memberKeys: string[]; teamId?: string | null }) => a.post<HubChannelView>('/admin/team-hub/channels', input),
+    channel: (id: string, cursor?: string | null) => a.get<HubChannelDetail>(`/admin/team-hub/channels/${id}${qs({ cursor })}`),
+    post: (id: string, input: { kind: HubPost['kind']; text: string; pinned?: boolean; task?: { assigneeKey: string; dueAt?: string | null } }) => a.post<HubPost>(`/admin/team-hub/channels/${id}/posts`, input),
+    updateChannel: (id: string, input: { name?: string; memberKeys?: string[]; archived?: boolean }) => a.patch<HubChannelView>(`/admin/team-hub/channels/${id}`, input),
+    updatePost: (id: string, input: { text?: string; pinned?: boolean; done?: boolean }) => a.patch<HubPost>(`/admin/team-hub/posts/${id}`, input),
+    removePost: (id: string) => a.del<void>(`/admin/team-hub/posts/${id}`),
+    myTasks: () => a.get<MyTask[]>('/me/tasks'),
   },
   media: {
     list: (folder?: MediaFolder) => a.get<MediaList>(`/admin/media${qs({ folder })}`),

@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -69,6 +69,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
   {
     title: 'Communication',
     items: [
+      { to: '/admin/team-hub', label: 'Team hub', icon: MessagesSquare },
       { to: '/admin/messages', label: 'Messages', icon: MessageSquare, perm: ['comms'] },
       { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'] },
       { to: '/admin/bulletin', label: 'Bulletin', icon: Newspaper, perm: ['comms'] },
