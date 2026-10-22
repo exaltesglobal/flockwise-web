@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, CheckCircle2, HandHeart, Lock, MessageCircle, Phone, Plus, Trash2, UserRound } from 'lucide-react';
+import { AlertTriangle, CalendarClock, CheckCircle2, HandHeart, Link2, Lock, MessageCircle, Phone, Plus, Trash2, UserRound } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -154,6 +154,21 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
   const [filter, setFilter] = useState<'open' | 'answered'>('open');
   const [answering, setAnswering] = useState<AdminPrayer | null>(null);
   const toast = useToast();
+  const chain = useApi(AdminApi.care.chain);
+  const [sending, setSending] = useState<string | null>(null);
+  async function sendChain(p: AdminPrayer) {
+    if (!confirm(`Send ${p.name.split(' ')[0]}’s request to the ${chain.data?.members ?? ''} people on the prayer chain?`)) return;
+    setSending(p.id);
+    try {
+      const next = await AdminApi.care.sendChain(p.id);
+      toast(`Sent to ${next.chainCount} ${next.chainCount === 1 ? 'person' : 'people'}`);
+      reload();
+    } catch (e) {
+      toast((e as Error).message);
+    } finally {
+      setSending(null);
+    }
+  }
   const items = useMemo(() => data?.filter((p) => p.status === filter) ?? [], [data, filter]);
   const patch = async (p: AdminPrayer, change: Parameters<typeof AdminApi.care.updatePrayer>[1], msg: string) => {
     await AdminApi.care.updatePrayer(p.id, change);
@@ -162,8 +177,9 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
   };
   return (
     <>
-      <div className="row" style={{ margin: '12px 0' }}>
+      <div className="row between wrap" style={{ margin: '12px 0', gap: 8 }}>
         <Segmented value={filter} options={[{ value: 'open', label: 'Open' }, { value: 'answered', label: 'Answered' }]} onChange={setFilter} />
+        {chain.data && <span className="small muted" title="Members join from Prayer in the app, or reply JOIN PRAYER CHAIN on WhatsApp"><Link2 size={13} /> Prayer chain: {chain.data.members} {chain.data.members === 1 ? 'person' : 'people'}</span>}
       </div>
       <div className="card">
         {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : items.length === 0 ? (
@@ -176,6 +192,7 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
                 <strong>{p.name}</strong>
                 {p.visibility === 'pastors' ? <span className="badge gray"><Lock size={11} /> Pastors only</span> : <span className="badge">Prayer wall</span>}
                 <span className="small muted">{formatRelative(p.createdAt)} · {p.prayedCount} praying</span>
+                {p.chainSentAt && <span className="badge ok"><Link2 size={11} /> Chain · {p.chainCount}</span>}
               </div>
               <p style={{ whiteSpace: 'pre-wrap' }}>{p.text}</p>
               {p.answeredNote && <p className="small" style={{ color: 'var(--ok)' }}>Answered: {p.answeredNote}</p>}
@@ -186,6 +203,7 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
                   ? <button className="btn sm" onClick={() => patch(p, { visibility: 'pastors' }, 'Hidden from the prayer wall')}>Hide from wall</button>
                   : <button className="btn sm" onClick={() => patch(p, { visibility: 'church' }, 'Shared on the prayer wall')}>Share on wall</button>}
                 <button className="btn sm" onClick={() => onCase(p)}>Open care case</button>
+                {p.status === 'open' && <button className="btn sm" disabled={sending === p.id || !chain.data?.members} title={chain.data?.members ? undefined : 'Nobody has joined the prayer chain yet'} onClick={() => void sendChain(p)}><Link2 size={14} /> {p.chainSentAt ? 'Send to chain again' : 'Send to prayer chain'}</button>}
                 <button className="btn ghost icon sm danger" title="Delete" onClick={async () => {
                   if (!confirm('Delete this prayer request?')) return;
                   await AdminApi.care.removePrayer(p.id);

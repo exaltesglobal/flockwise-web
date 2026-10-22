@@ -286,7 +286,7 @@ function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; 
                 <dt>Language</dt><dd>{languages[p.language]?.label ?? p.language}</dd>
                 <dt>Groups</dt><dd>{p.groups.length ? p.groups.map((g) => g.name).join(', ') : '—'}</dd>
                 <dt>Check-in code</dt><dd><span className="kbd">{p.checkinCode}</span></dd>
-                <dt>Consent</dt><dd className="row wrap" style={{ gap: 4 }}>{(Object.keys(CONSENT_LABELS) as (keyof Consent)[]).map((k) => <span key={k} className={`badge ${p.consent[k] ? 'ok' : 'gray'}`}>{p.consent[k] ? '✓' : '✕'} {CONSENT_LABELS[k]}</span>)}</dd>
+                <dt>Consent</dt><dd className="row wrap" style={{ gap: 4 }}>{(Object.keys(CONSENT_LABELS) as (keyof Consent)[]).map((k) => <span key={k} className={`badge ${p.consent[k] ? 'ok' : 'gray'}`}>{p.consent[k] ? '✓' : '✕'} {CONSENT_LABELS[k]}</span>)}{p.prayerChain && <span className="badge">🙏 Prayer chain</span>}</dd>
                 {fields.data?.filter((f) => p.custom?.[f.id] !== undefined && p.custom?.[f.id] !== null && p.custom?.[f.id] !== '').map((f) => <Fragment key={f.id}><dt>{f.label}</dt><dd>{p.custom![f.id] === true ? 'Yes' : p.custom![f.id] === false ? 'No' : String(p.custom![f.id])}</dd></Fragment>)}
                 <dt>Added</dt><dd>{formatDate(p.joinedAt)}</dd>
                 <dt>Last attended</dt><dd>{p.lastAttendedAt ? formatRelative(p.lastAttendedAt) : 'Never'}</dd>
@@ -417,6 +417,7 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
     allergies: person?.allergies ?? '',
     medicalNotes: person?.medicalNotes ?? '',
     consent: person?.consent ?? { email: true, sms: true, whatsapp: true, directory: false },
+    prayerChain: person?.prayerChain ?? false,
     custom: person?.custom ?? {},
   }));
   const fields = useApi(AdminApi.fields.list);
@@ -516,6 +517,10 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
                 <span>{k === 'directory' ? 'Show in the member directory' : `OK to receive ${CONSENT_LABELS[k]}`}</span>
               </label>
             ))}
+            <label className="check">
+              <input type="checkbox" checked={!!form.prayerChain} onChange={(e) => set('prayerChain', e.target.checked)} />
+              <span>On the prayer chain <span className="small muted">(gets prayer requests the office sends out)</span></span>
+            </label>
             <Field label="Pastoral notes" hint="Only visible to staff"><textarea className="textarea" value={form.notes ?? ''} onChange={(e) => set('notes', e.target.value)} /></Field>
           </div>
         )}

@@ -399,7 +399,7 @@ function AutomationsPane() {
     <div className="stack">
       <FormError error={save.error} />
       {(Object.keys(AUTOMATION_INFO) as MessageAutomation[]).map((k) => {
-        const a = draft[k] as Automation & { weeks?: number; daysBefore?: number; createFollowUp?: boolean };
+        const a = draft[k] as Automation & { weeks?: number; daysBefore?: number; createFollowUp?: boolean; askReply?: boolean; assignLeader?: boolean };
         return (
           <div key={k} className="card stack" style={{ gap: 10 }}>
             <div className="row" style={{ gap: 10 }}>
@@ -429,6 +429,20 @@ function AutomationsPane() {
                     </label>
                   )}
                 </div>
+                {k === 'missing' && (
+                  <div className="row wrap" style={{ gap: 12 }}>
+                    {a.channel === 'whatsapp' && (
+                      <label className="row small" style={{ gap: 6 }}>
+                        <input type="checkbox" checked={a.askReply !== false} onChange={(e) => set(k, { askReply: e.target.checked } as never)} /> Ask how they are (reply 1 = all well, 2 = travelling, 3 = call me; the answer lands on the care case)
+                      </label>
+                    )}
+                    {a.createFollowUp && (
+                      <label className="row small" style={{ gap: 6 }}>
+                        <input type="checkbox" checked={a.assignLeader !== false} onChange={(e) => set(k, { assignLeader: e.target.checked } as never)} /> Give the case to their zone leader
+                      </label>
+                    )}
+                  </div>
+                )}
                 {a.channel === 'email' && <input className="input" placeholder="Subject" value={a.subject} onChange={(e) => set(k, { subject: e.target.value } as never)} />}
                 <textarea className="textarea" rows={3} value={a.body} onChange={(e) => set(k, { body: e.target.value } as never)} />
               </>

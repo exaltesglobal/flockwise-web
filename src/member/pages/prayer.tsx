@@ -1,4 +1,4 @@
-import { CheckCircle2, HandHeart, Lock } from 'lucide-react';
+import { CheckCircle2, HandHeart, Link2, Lock } from 'lucide-react';
 import { useState } from 'react';
 
 import { MemberApi } from '@/api/endpoints';
@@ -14,6 +14,7 @@ export function MemberPrayerPage() {
   const [visibility, setVisibility] = useState<'pastors' | 'church'>('church');
   const toast = useToast();
   const create = useAction(() => MemberApi.prayer.create(text.trim(), visibility));
+  const prefs = useApi(MemberApi.me.preferences);
 
   const replace = (p: Awaited<ReturnType<typeof MemberApi.prayer.pray>>) =>
     data && setData({ ...data, data: data.data.map((x) => (x.id === p.id ? p : x)) });
@@ -34,6 +35,16 @@ export function MemberPrayerPage() {
           }}>{t('shareRequest')}</button>
         </div>
       </div>
+      {prefs.data && (
+        <label className="card card-pad row" style={{ gap: 12, cursor: 'pointer' }}>
+          <Link2 size={20} className="muted" />
+          <div className="grow stack" style={{ gap: 2 }}>
+            <strong>{t('prayerChainTitle')}</strong>
+            <span className="small muted">{prefs.data.prayerChain ? t('prayerChainOn') : t('prayerChainBody')}</span>
+          </div>
+          <input type="checkbox" className="switch" checked={prefs.data.prayerChain} onChange={async (e) => { prefs.setData(await MemberApi.me.updatePreferences({ prayerChain: e.target.checked })); toast(t('saved')); }} />
+        </label>
+      )}
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.data.length === 0 ? (
         <p className="muted">{t('noPrayer')}</p>
       ) : (

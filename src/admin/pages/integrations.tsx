@@ -282,6 +282,7 @@ function TestSend() {
 const INTENT_LABEL: Record<BotIntent, string> = {
   menu: 'Menu', services: 'Service times', events: 'Events', prayer_ask: 'Prayer', prayer: 'Prayer request', give: 'Give',
   sermon: 'Sermon', new: 'New here', talk: 'Talk to someone', stop: 'Stopped', start: 'Started again', unknown: 'Not understood',
+  prayed: 'Prayed', chain_join: 'Joined prayer chain', chain_leave: 'Left prayer chain', checkin_ok: 'Doing well', checkin_away: 'Travelling', checkin_call: 'Wants a call',
 };
 
 function WhatsAppBotCard() {
