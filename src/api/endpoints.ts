@@ -661,6 +661,7 @@ export const AdminApi = {
     get: () => a.get<BillingView>('/admin/billing'),
     checkout: (plan: PlanId, interval: BillingInterval) => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/checkout', { plan, interval }),
     cancel: () => a.post<BillingView>('/admin/billing/cancel'),
+    buyAiPack: () => a.post<{ activated: boolean; checkoutUrl?: string; billing?: BillingView }>('/admin/billing/ai-pack'),
   },
   ai: {
     status: () => a.get<AiStatus>('/admin/ai/status'),

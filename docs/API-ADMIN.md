@@ -242,6 +242,20 @@ Every change is written to the activity log (`GET /admin/audit?q=&cursor=`).
 | PATCH | `/admin/songs/:id` | `services` |
 | DELETE | `/admin/songs/:id` | `services` |
 
+Songs take an optional `copyright` line, and songs added from the song database keep `catalogId` (and `licensedFrom` when the words came from a licensed lyrics feed).
+
+### Song database (shared by every church)
+
+Public-domain hymns any church can search and copy into its library. See [SONG-CATALOG.md](SONG-CATALOG.md).
+
+| Method | Path | Needs |
+|---|---|---|
+| GET | `/admin/song-catalog?q=&lang=&theme=&limit=&offset=` | `services` or `volunteers`. Searches titles, other titles, tunes, writers, themes, then lines of the words. Rows leave the words out and say `inLibrary` (the church's song id) |
+| GET | `/admin/song-catalog/:id` | `services` or `volunteers`. The full song with words |
+| POST | `/admin/song-catalog/:id/add` | `services`. Copies it into the library, once: `{ song, created, licensed }` |
+| GET | `/admin/song-catalog/licence` | `services` or `settings`. The church's CCLI licence numbers and the licensed lyrics feeds on this server |
+| PUT | `/admin/song-catalog/licence` | `settings`. `{ ccliLicence, streamingLicence, otherLicences }`, digits only for CCLI numbers |
+
 ### Forms and registrations
 
 Forms can sell ticket types (prices in minor units), apply discount codes, cap places and keep a waitlist. A paid registration is a pending payment to the hidden "Event registrations" fund with `formResponseId` set; the payment webhook confirms it. Free forms promote the waitlist automatically when someone cancels.
@@ -697,3 +711,9 @@ A church can make its own roles (Settings › Team › "Roles this church made")
 A staff login is either a built-in role (`role`) or `role: 'custom'` with `roleId` and `scopeIds` (the zones, groups or teams it covers; required unless the role reaches the whole church). `POST /admin/staff` and `PATCH /admin/staff/:id` take `{ role }` or `{ roleId, scopeIds }`; `GET /admin/staff` returns `StaffView` with `roleName`, `scopeKind`, `scopeNames`, `permissions`. From a person's record: `GET /admin/people/:id/access` and `PUT /admin/people/:id/access` with `{ role }`, `{ roleId, scopeIds }` or `{ role: null }` to take access away (needs the person's email; the invite email goes there).
 
 Permissions come from `permsOf(db, staff)` (built-in table or the custom role; a deleted role gives nothing). Scope comes from `scopeOf(db, staff)` → `ctx.scope` and `ctx.inScope(personId)`. A scoped login sees only its people in `/admin/people` (403 on a person outside), care cases, celebrations, and only its own zones (plus their units), groups or teams in those lists. Giving, settings and team access are church-wide when granted. Sessions carry `staff.roleName` and `staff.scope`. Test: `test/roles.test.ts`.
+
+## Plans page, feature matrix and add-ons
+
+`GET /admin/billing` now also returns `addons`: `ai` (`credits` per pack, `price` in the church's currency, `extraThisMonth`, `packsThisMonth`, `online`) and `razorpaySetup` (`price`, `status`, `available` = INR churches). `FEATURES` in `core/plans.ts` is the full feature matrix (group → items with the lowest plan `from`); the web plans page renders it as a table with the current plan highlighted, and shows all four plans to every church, founding churches included (their buttons are replaced by "included in your founding plan"). Moving down is allowed from the same page; features above the new plan lock at once, nothing is deleted.
+
+**AI credit pack** (`POST /admin/billing/ai-pack`, perm settings): `AI_PACK` = 500 credits for ₹499 / $9, valid for the current month. Demo adds them at once; online it creates a one-time Razorpay payment link with `notes.kind = 'ai_pack'`, and `/webhooks/billing` `payment_link.paid` calls `markAiPackPaid` which adds the credits to meta `ai-extra:<month>`. `GET /admin/ai/status` and the meters count plan credits + extra.

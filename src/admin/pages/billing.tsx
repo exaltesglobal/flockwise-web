@@ -1,11 +1,11 @@
 // Settings › Plan and billing, and the church's own Razorpay keys for online giving.
-import { Check, CreditCard, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { Check, CreditCard, ExternalLink, Landmark, Minus, Sparkles } from 'lucide-react';
+import { Fragment, useState } from 'react';
 import { Link } from 'react-router';
 
 import { AdminApi, type BillingView, type RazorpayKeysInput } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
-import type { BillingInterval, PlanId } from '@/core/plans';
+import { atLeast, FEATURES, PLAN_ORDER, type BillingInterval, type PlanId } from '@/core/plans';
 import { getApiUrl } from '@/lib/config';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -33,8 +33,10 @@ export function PlanBilling() {
   const q = useApi(AdminApi.billing.get);
   const [interval, setInterval] = useState<BillingInterval>('yearly');
   const [confirm, setConfirm] = useState<PlanId | null>(null);
+  const [aiConfirm, setAiConfirm] = useState(false);
   const checkout = useAction(AdminApi.billing.checkout);
   const cancel = useAction(AdminApi.billing.cancel);
+  const aiPack = useAction(AdminApi.billing.buyAiPack);
   const toast = useToast();
 
   if (q.error) return <ErrorState error={q.error} onRetry={q.reload} />;
@@ -42,6 +44,7 @@ export function PlanBilling() {
   const b: BillingView = q.data;
   const s = b.subscription;
   const current = b.plan;
+  const currentPlan = b.plans.find((p) => p.id === current)!;
 
   async function choose(plan: PlanId) {
     const r = await checkout.run(plan, interval);
@@ -57,11 +60,19 @@ export function PlanBilling() {
     }
     toast(plan === 'seed' ? 'Moved to the free Seed plan' : 'Plan changed');
   }
+  async function buyAi() {
+    const r = await aiPack.run();
+    if (!r) return;
+    setAiConfirm(false);
+    if (r.checkoutUrl) { window.location.href = r.checkoutUrl; return; }
+    if (r.billing) { q.setData(r.billing); refreshPlan(r.billing); }
+    toast(`${b.addons.ai.credits} AI credits added for this month`);
+  }
 
   const status = s.founding
-    ? 'Founding church: every feature, no limits.'
+    ? 'Founding church: every feature, no limits, nothing to pay.'
     : s.status === 'trial' && b.trialDaysLeft
-      ? `Free trial of every feature until ${date(s.trialEndsAt)} (${b.trialDaysLeft} days left).`
+      ? `Free trial of every feature until ${date(s.trialEndsAt)} (${b.trialDaysLeft} days left). Pick a plan below before it ends.`
       : s.status === 'trial'
         ? 'Your trial has ended. The church is on the free Seed plan.'
         : s.status === 'active' && current !== 'seed'
@@ -70,7 +81,10 @@ export function PlanBilling() {
             ? 'The last payment did not go through. Razorpay will try again; you can also start the plan again below.'
             : s.status === 'cancelled' && current !== 'seed'
               ? `Cancelled. Your features stay on until ${date(s.currentPeriodEnd)}.`
-              : 'Free forever, up to 100 people.';
+              : `Free forever, up to ${currentPlan.limits.people} people.`;
+  const rank = (p: PlanId) => PLAN_ORDER.indexOf(p);
+  const setupStatus = b.addons.razorpaySetup.status;
+  const setupLabel = setupStatus === 'done' ? 'Done: your Razorpay account is live' : setupStatus === 'in_progress' ? 'In progress: our team is on it' : setupStatus === 'paid' ? 'Paid: send us your papers' : setupStatus === 'pending_payment' ? 'Payment pending' : null;
 
   return (
     <div className="stack">
@@ -78,7 +92,7 @@ export function PlanBilling() {
         <div className="card-head"><h2>Your plan</h2><CreditCard size={18} className="muted" /></div>
         <div className="card-body billing-now">
           <div className="stack-sm">
-            <div className="billing-plan">{b.plans.find((p) => p.id === current)?.name}{s.status === 'trial' && b.trialDaysLeft ? <span className="badge">Trial</span> : null}</div>
+            <div className="billing-plan">{currentPlan.name}{s.status === 'trial' && b.trialDaysLeft ? <span className="badge">Trial</span> : s.founding ? <span className="badge">Founding</span> : null}</div>
             <p className="small muted">{status}</p>
             {!s.founding && s.status === 'active' && current !== 'seed' && (
               <button className="btn ghost sm left" disabled={cancel.busy} onClick={async () => { const r = await cancel.run(); if (r) { q.setData(r); refreshPlan(r); toast('Plan cancelled'); } }}>Cancel plan</button>
@@ -89,59 +103,122 @@ export function PlanBilling() {
             <Meter label="People" used={b.usage.people} limit={b.limits.people} />
             <Meter label="Office logins" used={b.usage.staff} limit={b.limits.staff} />
             <Meter label="Campuses" used={b.usage.campuses} limit={b.limits.campuses} />
-            <Meter label="AI credits this month" used={b.usage.aiCredits} limit={b.limits.aiCredits} />
+            <Meter label="AI credits this month" used={b.usage.aiCredits} limit={b.limits.aiCredits + b.addons.ai.extraThisMonth} />
           </div>
         </div>
       </div>
 
-      {!s.founding && (
-        <>
-          <div className="row wrap">
-            <h2 className="grow">Plans</h2>
-            <Segmented value={interval} options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly (2 months free)' }]} onChange={setInterval} />
+      <div className="row wrap">
+        <h2 className="grow">Plans</h2>
+        <Segmented value={interval} options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly (2 months free)' }]} onChange={setInterval} />
+      </div>
+      <div className="plan-grid">
+        {b.plans.map((p) => {
+          const isCurrent = p.id === current && (s.founding || s.status === 'active' || s.status === 'trial' || p.id === 'seed');
+          const price = interval === 'yearly' ? p.prices.yearly : p.prices.monthly;
+          const direction = rank(p.id) > rank(current) ? 'up' : rank(p.id) < rank(current) ? 'down' : null;
+          return (
+            <div key={p.id} className={`plan-card ${p.id === current ? 'current' : p.id === 'thrive' ? 'featured' : ''}`}>
+              <div className="row between">
+                <h3 style={{ margin: 0 }}>{p.name}</h3>
+                {p.id === current && <span className="badge ok">Current</span>}
+              </div>
+              <p className="small muted" style={{ margin: 0 }}>{p.tagline}</p>
+              <div className="plan-price">
+                {money(price, b.currency)}
+                {price > 0 && <span className="small muted"> / {interval === 'yearly' ? 'year' : 'month'}</span>}
+              </div>
+              <p className="small" style={{ margin: 0 }}>Up to {p.limits.people >= 1_000_000 ? 'unlimited' : p.limits.people.toLocaleString('en-IN')} people · {p.limits.staff >= 1_000_000 ? 'unlimited' : p.limits.staff} office logins · {p.limits.campuses >= 1_000_000 ? 'unlimited' : p.limits.campuses} {p.limits.campuses === 1 ? 'campus' : 'campuses'} · {p.limits.aiCredits.toLocaleString('en-IN')} AI credits a month</p>
+              <ul>
+                {p.highlights.map((h) => <li key={h}><Check size={14} /> {h}</li>)}
+              </ul>
+              {s.founding ? (
+                <span className="small muted" style={{ textAlign: 'center' }}>{p.id === current ? 'Your founding plan' : 'Included in your founding plan'}</span>
+              ) : (
+                <button className={`btn block ${direction === 'up' ? 'primary' : ''}`} disabled={isCurrent || checkout.busy} onClick={() => setConfirm(p.id)}>
+                  {isCurrent ? 'Current plan' : direction === 'down' ? `Move down to ${p.name}` : `Upgrade to ${p.name}`}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="card">
+        <div className="card-head"><h2>Everything in each plan</h2><span className="small muted">Your plan is highlighted</span></div>
+        <div className="table-wrap">
+          <table className="table feature-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                {b.plans.map((p) => <th key={p.id} className={p.id === current ? 'current' : ''}>{p.name}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="limits"><td>People</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.people >= 1_000_000 ? 'Unlimited' : p.limits.people.toLocaleString('en-IN')}</td>)}</tr>
+              <tr className="limits"><td>Office logins</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.staff >= 1_000_000 ? 'Unlimited' : p.limits.staff}</td>)}</tr>
+              <tr className="limits"><td>Campuses</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.campuses >= 1_000_000 ? 'Unlimited' : p.limits.campuses}</td>)}</tr>
+              <tr className="limits"><td>AI credits a month</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.aiCredits.toLocaleString('en-IN')}</td>)}</tr>
+              {FEATURES.map((g) => (
+                <Fragment key={g.group}>
+                  <tr className="group"><td colSpan={1 + b.plans.length}>{g.group}</td></tr>
+                  {g.items.map((f) => (
+                    <tr key={f.label}>
+                      <td>{f.label}</td>
+                      {b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{atLeast(p.id, f.from) ? <Check size={16} className="yes" /> : <Minus size={14} className="no" />}</td>)}
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h2>Add-ons</h2>
+      <div className="plan-grid">
+        <div className="plan-card">
+          <div className="row" style={{ gap: 8 }}><Sparkles size={18} /><h3 style={{ margin: 0 }}>Extra AI credits</h3></div>
+          <p className="small muted" style={{ margin: 0 }}>{b.addons.ai.credits} more requests for the assistant, writer, translator and sermon help, on top of your plan’s {b.limits.aiCredits.toLocaleString('en-IN')} a month. Valid for the current month.</p>
+          <div className="plan-price">{money(b.addons.ai.price, b.currency)}<span className="small muted"> / pack</span></div>
+          <p className="small" style={{ margin: 0 }}>This month: {b.usage.aiCredits.toLocaleString('en-IN')} used of {(b.limits.aiCredits + b.addons.ai.extraThisMonth).toLocaleString('en-IN')}{b.addons.ai.packsThisMonth ? ` (${b.addons.ai.packsThisMonth} pack${b.addons.ai.packsThisMonth === 1 ? '' : 's'} bought)` : ''}.</p>
+          <button className="btn block" disabled={aiPack.busy} onClick={() => setAiConfirm(true)}>Buy {b.addons.ai.credits} credits</button>
+        </div>
+        {b.addons.razorpaySetup.available && (
+          <div className="plan-card">
+            <div className="row" style={{ gap: 8 }}><Landmark size={18} /><h3 style={{ margin: 0 }}>Razorpay account opening with KYC</h3></div>
+            <p className="small muted" style={{ margin: 0 }}>Our team opens the church’s own Razorpay account, prepares the KYC papers with you and follows up until gifts can come in by UPI, cards and netbanking. One-time, India only.</p>
+            <div className="plan-price">{money(b.addons.razorpaySetup.price, 'INR')}<span className="small muted"> once</span></div>
+            {setupLabel && <p className="small" style={{ margin: 0 }}>{setupLabel}</p>}
+            <Link className={`btn block ${setupStatus ? '' : 'primary'}`} to="/admin/razorpay-setup">{setupStatus ? 'Open setup' : 'Start setup'}</Link>
           </div>
-          <div className="plan-grid">
-            {b.plans.map((p) => {
-              const isCurrent = p.id === current && (s.status === 'active' || p.id === 'seed') && (p.id === 'seed' || s.interval === interval);
-              const price = interval === 'yearly' ? p.prices.yearly : p.prices.monthly;
-              return (
-                <div key={p.id} className={`plan-card ${p.id === 'thrive' ? 'featured' : ''}`}>
-                  <div>
-                    <h3>{p.name}</h3>
-                    <p className="small muted">{p.tagline}</p>
-                  </div>
-                  <div className="plan-price">
-                    {money(price, b.currency)}
-                    {price > 0 && <span className="small muted"> / {interval === 'yearly' ? 'year' : 'month'}</span>}
-                  </div>
-                  <p className="small">Up to {p.limits.people.toLocaleString('en-IN')} people · {p.limits.staff >= 1_000_000 ? 'unlimited' : p.limits.staff} office logins</p>
-                  <ul>
-                    {p.highlights.map((h) => <li key={h}><Check size={14} /> {h}</li>)}
-                  </ul>
-                  <button className={`btn block ${p.id === 'thrive' ? 'primary' : ''}`} disabled={isCurrent || checkout.busy} onClick={() => setConfirm(p.id)}>
-                    {isCurrent ? 'Current plan' : p.id === 'seed' ? 'Move to Seed' : `Choose ${p.name}`}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-          <p className="small muted">Plans are billed by Agape Labs (Exaltes Global Private Limited) through Razorpay. Gifts to your church never pass through Flockwise and carry no platform fee.</p>
-        </>
-      )}
+        )}
+      </div>
+      <p className="small muted">Plans and add-ons are billed by Agape Labs (Exaltes Global Private Limited) through Razorpay. Gifts to your church never pass through Flockwise and carry no platform fee.</p>
 
       {confirm && (
-        <Modal title={confirm === 'seed' ? 'Move to the free Seed plan?' : `Choose ${b.plans.find((p) => p.id === confirm)?.name}`} onClose={() => setConfirm(null)}
+        <Modal title={confirm === 'seed' ? 'Move to the free Seed plan?' : `${rank(confirm) < rank(current) ? 'Move down to' : 'Upgrade to'} ${b.plans.find((p) => p.id === confirm)?.name}`} onClose={() => setConfirm(null)}
           footer={<><button className="btn ghost" onClick={() => setConfirm(null)}>Not now</button><button className="btn primary" disabled={checkout.busy} onClick={() => choose(confirm)}>{checkout.busy ? '…' : confirm === 'seed' ? 'Move to Seed' : b.online ? 'Continue to payment' : 'Start plan'}</button></>}>
           <div className="stack">
             {confirm === 'seed' ? (
-              <p>Seed is free for up to 100 people and 2 office logins. Features from higher plans will be locked, but nothing is deleted.</p>
+              <p>Seed is free for up to {b.plans[0].limits.people} people and {b.plans[0].limits.staff} office logins. Features from higher plans will be locked, but nothing is deleted.</p>
             ) : (
               <p>
                 {money(interval === 'yearly' ? b.plans.find((p) => p.id === confirm)!.prices.yearly : b.plans.find((p) => p.id === confirm)!.prices.monthly, b.currency)} a {interval === 'yearly' ? 'year' : 'month'}.
+                {rank(confirm) < rank(current) ? ' Features above this plan will be locked at once; nothing is deleted, and they come back if you move up again.' : ''}
                 {b.online ? ' You will approve the payment on Razorpay with UPI AutoPay, a card or netbanking, and come back here.' : ''}
               </p>
             )}
             <FormError error={checkout.error} />
+          </div>
+        </Modal>
+      )}
+      {aiConfirm && (
+        <Modal title={`Buy ${b.addons.ai.credits} AI credits?`} onClose={() => setAiConfirm(false)}
+          footer={<><button className="btn ghost" onClick={() => setAiConfirm(false)}>Not now</button><button className="btn primary" disabled={aiPack.busy} onClick={() => void buyAi()}>{aiPack.busy ? '…' : b.addons.ai.online && b.online ? 'Continue to payment' : 'Add credits'}</button></>}>
+          <div className="stack">
+            <p>{money(b.addons.ai.price, b.currency)} for {b.addons.ai.credits} extra AI requests this month. Unused credits do not carry over.</p>
+            <FormError error={aiPack.error} />
           </div>
         </Modal>
       )}
