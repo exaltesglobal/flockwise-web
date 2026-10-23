@@ -1,4 +1,4 @@
-import { BookOpen, BookOpenCheck, BookUser, Cake, Car, ClipboardList, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { BookOpen, BookOpenCheck, BookUser, Cake, Car, Clapperboard, ClipboardList, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -36,6 +36,7 @@ export function MemberHomePage() {
         <Link to="/app/practice" className="card"><MicVocal size={22} />{t('practiceTitle')}</Link>
         <Link to="/app/verses" className="card"><Star size={22} />{t('verseTitle')}</Link>
         <Link to="/app/vote" className="card"><Vote size={22} />{t('voteTitle')}</Link>
+        <Link to="/app/recap" className="card"><Clapperboard size={22} />{t('recapTitle')}</Link>
         <Link to="/app/forms" className="card"><ClipboardList size={22} />{t('tabForms')}</Link>
         <Link to="/app/sermons" className="card"><BookOpen size={22} />{t('tabSermons')}</Link>
         <Link to="/app/directory" className="card"><BookUser size={22} />{t('tabDirectory')}</Link>

@@ -492,6 +492,16 @@ export const ml: Strings = {
   voteElection: 'തിരഞ്ഞെടുപ്പ്',
   voteSeats: '{n} സീറ്റുകൾ',
 
+  // Sunday in 60 seconds
+  recapTitle: '60 സെക്കൻഡിൽ ഞായറാഴ്ച',
+  recapBody: 'കഴിഞ്ഞ ഞായറാഴ്ച ഒരു മിനിറ്റിൽ. കണ്ടിട്ട് നിങ്ങളുടെ WhatsApp സ്റ്റാറ്റസിൽ പങ്കിടൂ.',
+  recapNone: 'ഇതുവരെ റീക്യാപ്പ് ഇല്ല. ഞായറാഴ്ചയ്ക്ക് ശേഷം വരൂ.',
+  recapWatch: 'കാണുക',
+  recapShare: 'പങ്കിടുക',
+  recapSaveCard: 'കാർഡ് സേവ് ചെയ്യുക',
+  recapTap: 'തുടരാൻ ടാപ്പ് ചെയ്യുക',
+  recapBack: 'തിരികെ',
+
   // Calendar subscribe
   calendarAdd: 'എന്റെ കലണ്ടറിൽ ചേർക്കുക',
   calendarBody: 'സഭാ ആരാധനകൾ, നിങ്ങൾ പോകുന്ന പരിപാടികൾ, നിങ്ങൾ സേവിക്കുന്ന ഞായറാഴ്ചകൾ എന്നിവ നിങ്ങളുടെ കലണ്ടർ ആപ്പിൽ തനിയെ പുതുക്കപ്പെടും.',

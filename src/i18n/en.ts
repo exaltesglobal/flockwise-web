@@ -489,6 +489,16 @@ export const en = {
   voteElection: 'Election',
   voteSeats: '{n} seats',
 
+  // Sunday in 60 seconds
+  recapTitle: 'Sunday in 60 seconds',
+  recapBody: 'Last Sunday in a minute. Watch it, then share it on your WhatsApp status.',
+  recapNone: 'No recap yet. Come back after Sunday.',
+  recapWatch: 'Watch',
+  recapShare: 'Share',
+  recapSaveCard: 'Save card',
+  recapTap: 'Tap to continue',
+  recapBack: 'Back',
+
   // Calendar subscribe
   calendarAdd: 'Add to my calendar',
   calendarBody: 'Your church services, events you are going to and the Sundays you serve, kept up to date in your own calendar app.',

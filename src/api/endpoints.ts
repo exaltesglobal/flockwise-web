@@ -118,6 +118,11 @@ import type {
   MemberVerses,
   ElectionRoll,
   ElectionView,
+  Recap,
+  RecapFacts,
+  RecapSlide,
+  RecapSunday,
+  MemberRecap,
   MemberElection,
   ReceiptCheck,
   VoteReceipt,
@@ -270,6 +275,10 @@ export const MemberApi = {
     done: (planId: string, day: number, done = true) => m.post<MyReading>(`/me/reading/${planId}/done`, { day, done }),
   },
   /** Choir practice: the next rehearsal, songs with part recordings, my attendance; leaders record who came. */
+  recaps: {
+    list: () => m.get<MemberRecap[]>('/me/recaps'),
+    get: (id: string) => m.get<MemberRecap>(`/me/recaps/${id}`),
+  },
   elections: {
     list: () => m.get<MemberElection[]>('/me/elections'),
     vote: (id: string, choices: string[]) => m.post<VoteReceipt>(`/me/elections/${id}/vote`, { choices }),
@@ -353,6 +362,7 @@ export type FamilyMemberInput = { firstName: string; lastName?: string; birthDat
 export const PublicApi = {
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
+  recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),
   groups: () => m.get<PublicGroup[]>('/public/groups'),
   groupInterest: (id: string, input: { name: string; email: string; phone?: string; message?: string }) => m.post<{ ok: boolean; message: string }>(`/public/groups/${id}/interest`, input),
   form: (id: string) => m.get<PublicForm>(`/public/forms/${id}`),
@@ -655,6 +665,15 @@ export const AdminApi = {
     addReport: (id: string, input: { title: string; body: string; prayerPoints: string; date?: string; published: boolean; send: boolean }) => a.post<MissionaryDetail & { delivery?: ReportDelivery }>(`/admin/missions/${id}/reports`, input),
     sendReport: (id: string, rid: string) => a.post<MissionaryDetail & { delivery: ReportDelivery }>(`/admin/missions/${id}/reports/${rid}/send`),
     removeReport: (id: string, rid: string) => a.del<MissionaryDetail>(`/admin/missions/${id}/reports/${rid}`),
+  },
+  recaps: {
+    list: () => a.get<Recap[]>('/admin/recaps'),
+    sundays: () => a.get<RecapSunday[]>('/admin/recaps/sundays'),
+    facts: (eventId?: string, includeGiving?: boolean) => a.get<RecapFacts>(`/admin/recaps/facts${qs({ eventId, includeGiving: includeGiving ? '1' : undefined })}`),
+    create: (input: { eventId?: string; language?: string; includeGiving?: boolean }) => a.post<Recap>('/admin/recaps', input),
+    update: (id: string, input: { headline?: string; caption?: string; slides?: RecapSlide[] }) => a.patch<Recap>(`/admin/recaps/${id}`, input),
+    publish: (id: string) => a.post<Recap>(`/admin/recaps/${id}/publish`, {}),
+    remove: (id: string) => a.del<{ ok: boolean }>(`/admin/recaps/${id}`),
   },
   elections: {
     list: () => a.get<ElectionView[]>('/admin/elections'),

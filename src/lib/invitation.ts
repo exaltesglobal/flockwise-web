@@ -67,7 +67,7 @@ const W = 1080;
 const H = 1350;
 const M = 84;
 
-function wrap(c: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
+export function wrap(c: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number): string[] {
   const lines: string[] = [];
   for (const para of text.split('\n')) {
     let line = '';
@@ -89,7 +89,7 @@ function wrap(c: CanvasRenderingContext2D, text: string, maxWidth: number, maxLi
 }
 
 /** Fits a title: shrinks the font until it needs at most `maxLines`. */
-function fitTitle(c: CanvasRenderingContext2D, text: string, font: string, start: number, min: number, maxWidth: number, maxLines: number) {
+export function fitTitle(c: CanvasRenderingContext2D, text: string, font: string, start: number, min: number, maxWidth: number, maxLines: number) {
   for (let size = start; size >= min; size -= 4) {
     c.font = `700 ${size}px ${font}`;
     const lines = wrap(c, text, maxWidth, 99);
@@ -99,7 +99,7 @@ function fitTitle(c: CanvasRenderingContext2D, text: string, font: string, start
   return { size: min, lines: wrap(c, text, maxWidth, maxLines) };
 }
 
-function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+export function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   c.beginPath();
   c.moveTo(x + r, y);
   c.arcTo(x + w, y, x + w, y + h, r);

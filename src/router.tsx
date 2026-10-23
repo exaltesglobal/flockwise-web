@@ -78,6 +78,8 @@ import { MemberReadingPage } from '@/member/pages/reading';
 import { MemberPracticePage } from '@/member/pages/practice';
 import { MemberVersesPage } from '@/member/pages/verses';
 import { MemberVotePage } from '@/member/pages/vote';
+import { MemberRecapPage, MemberRecapStoryPage, PublicRecapPage } from '@/member/pages/recap';
+import { RecapPage } from '@/admin/pages/recap';
 import { ElectionsPage } from '@/admin/pages/elections';
 
 const routes = [
@@ -137,6 +139,7 @@ const routes = [
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
       { path: 'elections', element: <ElectionsPage /> },
+      { path: 'recap', element: <RecapPage /> },
       { path: 'practice', element: <PracticePage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
@@ -159,6 +162,7 @@ const routes = [
   { path: '/forms/:id', element: <PublicFormPage /> },
   { path: '/rent', element: <PublicRentPage /> },
   { path: '/verify/:code', element: <VerifyCertificatePage /> },
+  { path: '/r/:id', element: <PublicRecapPage /> },
   { path: '/pray', element: <PrayPage /> },
   { path: '/pray/wall', element: <PrayerWallPage /> },
   { path: '/verify', element: <VerifyCertificatePage /> },
@@ -190,6 +194,8 @@ const routes = [
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },
+      { path: 'recap', element: <MemberRecapPage /> },
+      { path: 'recap/:id', element: <MemberRecapStoryPage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },

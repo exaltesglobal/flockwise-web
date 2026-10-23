@@ -492,6 +492,16 @@ export const ta: Strings = {
   voteElection: 'தேர்தல்',
   voteSeats: '{n} இடங்கள்',
 
+  // Sunday in 60 seconds
+  recapTitle: '60 வினாடிகளில் ஞாயிறு',
+  recapBody: 'கடந்த ஞாயிறு ஒரு நிமிடத்தில். பாருங்கள், பின்னர் உங்கள் WhatsApp ஸ்டேட்டஸில் பகிருங்கள்.',
+  recapNone: 'இன்னும் ரீகேப் இல்லை. ஞாயிறுக்குப் பிறகு வாருங்கள்.',
+  recapWatch: 'பார்க்க',
+  recapShare: 'பகிர',
+  recapSaveCard: 'கார்டை சேமி',
+  recapTap: 'தொடர தட்டவும்',
+  recapBack: 'பின்',
+
   // Calendar subscribe
   calendarAdd: 'என் காலெண்டரில் சேர்',
   calendarBody: 'சபை ஆராதனைகள், நீங்கள் செல்லும் நிகழ்வுகள், நீங்கள் சேவை செய்யும் ஞாயிறுகள் உங்கள் காலெண்டர் ஆப்பில் தானாகப் புதுப்பிக்கப்படும்.',

@@ -105,3 +105,31 @@ input.switch:checked::after { transform: translateX(18px); }
 .ballot-option.on .box { background: var(--primary); border-color: var(--primary); }
 .ballot-option:disabled { opacity: 0.55; cursor: default; }
 .ballot-option .grow { flex: 1; min-width: 0; }
+
+/* Sunday in 60 seconds: the story player */
+.story { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; color: #fff; background: linear-gradient(160deg, var(--story-a, #1f6b5c), var(--story-b, #0b1412)); padding: calc(10px + env(safe-area-inset-top, 0px)) 0 calc(12px + env(safe-area-inset-bottom, 0px)); user-select: none; }
+.story-bars { display: flex; gap: 5px; padding: 0 14px; }
+.story-bars i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.3); overflow: hidden; display: block; }
+.story-bars i b { display: block; height: 100%; background: #fff; width: 0; }
+.story-bars i.done b { width: 100%; }
+.story-bars i.on b { animation: story-fill var(--story-ms, 10s) linear forwards; }
+.story.paused .story-bars i.on b { animation-play-state: paused; }
+@keyframes story-fill { from { width: 0; } to { width: 100%; } }
+.story-top { display: flex; align-items: center; gap: 10px; padding: 12px 16px 0; }
+.story-top .name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.story-top .small { color: rgba(255,255,255,0.75); }
+.story-top button { background: rgba(255,255,255,0.14); border: 0; color: #fff; border-radius: 999px; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.story-slide { position: relative; z-index: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 28px; gap: 14px; animation: story-in 0.4s ease; }
+@keyframes story-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.story-slide .kicker { color: var(--story-accent, #f2a93b); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+.story-slide h2 { font-family: var(--font-heading, inherit); font-size: clamp(30px, 8vw, 44px); line-height: 1.08; margin: 0; }
+.story-slide .stat { color: var(--story-accent, #f2a93b); font-family: var(--font-heading, inherit); font-size: clamp(44px, 16vw, 92px); font-weight: 800; line-height: 1; word-break: break-word; }
+.story-slide p { font-size: clamp(17px, 4.6vw, 22px); line-height: 1.4; margin: 0; max-width: 34ch; }
+.story-tap { position: absolute; top: 90px; bottom: 90px; width: 50%; background: transparent; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.story-tap.left { left: 0; } .story-tap.right { right: 0; }
+.story-actions { display: flex; gap: 8px; justify-content: center; padding: 0 16px; flex-wrap: wrap; }
+.story-actions .btn { background: rgba(255,255,255,0.14); color: #fff; border-color: transparent; }
+.story-actions .btn.primary { background: #fff; color: var(--story-a, #1f6b5c); }
+.story-hint { text-align: center; color: rgba(255,255,255,0.7); font-size: 12px; }
+.recap-card { position: relative; }
+.recap-card .cover { aspect-ratio: 9 / 16; width: 100%; max-height: 360px; object-fit: cover; object-position: top; border-radius: 12px; background: var(--tint); }

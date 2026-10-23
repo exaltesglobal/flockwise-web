@@ -492,6 +492,16 @@ export const hi: Strings = {
   voteElection: 'चुनाव',
   voteSeats: '{n} सीटें',
 
+  // Sunday in 60 seconds
+  recapTitle: '60 सेकंड में रविवार',
+  recapBody: 'पिछला रविवार एक मिनट में। देखें, फिर अपने WhatsApp स्टेटस पर साझा करें।',
+  recapNone: 'अभी कोई रीकैप नहीं। रविवार के बाद फिर आएँ।',
+  recapWatch: 'देखें',
+  recapShare: 'साझा करें',
+  recapSaveCard: 'कार्ड सहेजें',
+  recapTap: 'जारी रखने के लिए टैप करें',
+  recapBack: 'वापस',
+
   // Calendar subscribe
   calendarAdd: 'मेरे कैलेंडर में जोड़ें',
   calendarBody: 'चर्च की सेवाएँ, जिन कार्यक्रमों में आप जा रहे हैं और जिन रविवारों को आप सेवा करते हैं, आपके कैलेंडर ऐप में अपने आप अपडेट रहेंगे।',

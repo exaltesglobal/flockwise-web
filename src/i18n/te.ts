@@ -492,6 +492,16 @@ export const te: Strings = {
   voteElection: 'ఎన్నిక',
   voteSeats: '{n} స్థానాలు',
 
+  // Sunday in 60 seconds
+  recapTitle: '60 సెకన్లలో ఆదివారం',
+  recapBody: 'గత ఆదివారం ఒక నిమిషంలో. చూడండి, తర్వాత మీ WhatsApp స్టేటస్‌లో పంచుకోండి.',
+  recapNone: 'ఇంకా రీక్యాప్ లేదు. ఆదివారం తర్వాత రండి.',
+  recapWatch: 'చూడండి',
+  recapShare: 'పంచుకోండి',
+  recapSaveCard: 'కార్డ్ సేవ్ చేయండి',
+  recapTap: 'కొనసాగించడానికి నొక్కండి',
+  recapBack: 'వెనుకకు',
+
   // Calendar subscribe
   calendarAdd: 'నా క్యాలెండర్\u200cకు జోడించు',
   calendarBody: 'సంఘ ఆరాధనలు, మీరు వెళ్లే కార్యక్రమాలు, మీరు సేవ చేసే ఆదివారాలు మీ క్యాలెండర్ యాప్\u200cలో వాటంతట అవే అప్\u200cడేట్ అవుతాయి.',
