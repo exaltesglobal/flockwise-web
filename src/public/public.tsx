@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, KeyRound, Radio, ClipboardList, Clock, Gift, Mail, MapPin, Phone, Globe, UserRound, UsersRound, XCircle } from 'lucide-react';
+import { CalendarDays, CheckCircle2, HandHeart, KeyRound, Radio, ClipboardList, Clock, Gift, Mail, MapPin, Phone, Globe, UserRound, UsersRound, XCircle } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 
@@ -51,7 +51,7 @@ export function PublicChurchPage() {
 
   if (error) return <Shell><ErrorState error={error} onRetry={reload} /></Shell>;
   if (!data) return <Shell><Loading /></Shell>;
-  const { church, page, contact, events, sermons, groups, forms, campaigns = [], hire = [] } = data;
+  const { church, page, contact, events, sermons, groups, forms, campaigns = [], hire = [], prayer = false } = data;
   const zones = [...new Set(groups.map((g) => g.zone).filter(Boolean))].sort();
   const shownGroups = groups.filter((g) => !zone || g.zone === zone);
 
@@ -69,6 +69,7 @@ export function PublicChurchPage() {
         <div className="row wrap" style={{ gap: 10 }}>
           {events.length > 0 && <a href="#events" className="btn accent">Upcoming events</a>}
           {page.showGiving && <Link to="/app/give" className="btn ghost-light"><Gift size={16} /> Give online</Link>}
+          {prayer && <Link to="/pray" className="btn ghost-light"><HandHeart size={16} /> Ask for prayer</Link>}
           {hire.length > 0 && <Link to="/rent" className="btn ghost-light"><KeyRound size={16} /> Hire our hall</Link>}
           {live?.stream && <Link to="/live" className="btn ghost-light">{live.stream.status === 'live' ? <span className="live-pill"><i /> LIVE</span> : <Radio size={16} />} Watch online</Link>}
         </div>

@@ -50,6 +50,7 @@ import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { PublicRentPage, PublicRentalPage, RentalReturnPage } from '@/public/rentals';
 import { VerifyCertificatePage } from '@/public/verify';
+import { PrayPage, PrayerWallPage } from '@/public/pray';
 import { BandPage } from '@/present/band';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
@@ -154,6 +155,8 @@ const routes = [
   { path: '/forms/:id', element: <PublicFormPage /> },
   { path: '/rent', element: <PublicRentPage /> },
   { path: '/verify/:code', element: <VerifyCertificatePage /> },
+  { path: '/pray', element: <PrayPage /> },
+  { path: '/pray/wall', element: <PrayerWallPage /> },
   { path: '/verify', element: <VerifyCertificatePage /> },
   { path: '/rent/return', element: <RentalReturnPage /> },
   { path: '/rent/pay/:token', element: <PublicRentalPage /> },

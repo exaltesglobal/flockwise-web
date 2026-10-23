@@ -1,5 +1,6 @@
-import { AlertTriangle, CalendarClock, CheckCircle2, HandHeart, Link2, Lock, MessageCircle, Phone, Plus, Trash2, UserRound } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { AlertTriangle, CalendarClock, CheckCircle2, Copy, HandHeart, Link2, Lock, MessageCircle, Phone, Plus, Printer, QrCode as QrIcon, RefreshCw, Tablet, Trash2, UserRound } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import type { AtRiskPerson, CareCase, CareStatus, CareType } from '@/api/admin-types';
@@ -7,6 +8,8 @@ import { AdminApi, type AdminPrayer } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { formatDate, formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
+
+import { QrCode } from '@/components/qr';
 
 import { PersonField, type PickedPerson } from '../components/person-picker';
 import { PageHeader } from '../layout';
@@ -153,6 +156,7 @@ function AtRiskList({ data, error, reload, onOpenCase }: { data: AtRiskPerson[] 
 function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[] | undefined; error: ReturnType<typeof useApi>['error']; reload: () => void; onCase: (p: AdminPrayer) => void }) {
   const [filter, setFilter] = useState<'open' | 'answered'>('open');
   const [answering, setAnswering] = useState<AdminPrayer | null>(null);
+  const [kiosk, setKiosk] = useState(false);
   const toast = useToast();
   const chain = useApi(AdminApi.care.chain);
   const [sending, setSending] = useState<string | null>(null);
@@ -178,7 +182,10 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
   return (
     <>
       <div className="row between wrap" style={{ margin: '12px 0', gap: 8 }}>
-        <Segmented value={filter} options={[{ value: 'open', label: 'Open' }, { value: 'answered', label: 'Answered' }]} onChange={setFilter} />
+        <div className="row wrap" style={{ gap: 8 }}>
+          <Segmented value={filter} options={[{ value: 'open', label: 'Open' }, { value: 'answered', label: 'Answered' }]} onChange={setFilter} />
+          <button className="btn sm" onClick={() => setKiosk(true)}><Tablet size={14} /> Lobby kiosk &amp; QR cards</button>
+        </div>
         {chain.data && <span className="small muted" title="Members join from Prayer in the app, or reply JOIN PRAYER CHAIN on WhatsApp"><Link2 size={13} /> Prayer chain: {chain.data.members} {chain.data.members === 1 ? 'person' : 'people'}</span>}
       </div>
       <div className="card">
@@ -191,6 +198,9 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
               <div className="row wrap" style={{ gap: 8 }}>
                 <strong>{p.name}</strong>
                 {p.visibility === 'pastors' ? <span className="badge gray"><Lock size={11} /> Pastors only</span> : <span className="badge">Prayer wall</span>}
+                {p.source === 'card' && <span className="badge warn"><QrIcon size={11} /> Prayer card</span>}
+                {p.source === 'kiosk' && <span className="badge warn"><Tablet size={11} /> Lobby kiosk</span>}
+                {p.contact && <span className="small muted"><Phone size={11} /> {p.contact}</span>}
                 <span className="small muted">{formatRelative(p.createdAt)} · {p.prayedCount} praying</span>
                 {p.chainSentAt && <span className="badge ok"><Link2 size={11} /> Chain · {p.chainCount}</span>}
               </div>
@@ -215,6 +225,7 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
           </div>
         ))}
       </div>
+      {kiosk && <KioskModal onClose={() => setKiosk(false)} />}
       {answering && <AnsweredForm p={answering} onClose={() => setAnswering(null)} onSaved={() => { setAnswering(null); reload(); toast('Praise God! Marked as answered'); }} />}
     </>
   );
@@ -363,5 +374,89 @@ function CaseForm({ initial, onClose, onSaved }: { initial: Partial<{ person: Pi
         </label>
       </div>
     </Modal>
+  );
+}
+
+/** The lobby kiosk link, the public /pray link as a QR, and printable prayer cards. */
+function KioskModal({ onClose }: { onClose: () => void }) {
+  const toast = useToast();
+  const { data, error, reload, setData } = useApi(AdminApi.care.kiosk);
+  const act = useAction((input: { enabled?: boolean; rotate?: boolean }) => AdminApi.care.setKiosk(input));
+  const [cards, setCards] = useState(false);
+  const copy = (v: string) => navigator.clipboard?.writeText(v).then(() => toast('Copied'), () => undefined);
+  return (
+    <Modal title="Lobby kiosk & QR prayer cards" onClose={onClose} footer={<button className="btn" onClick={onClose}>Done</button>}>
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
+        <div className="stack">
+          <FormError error={act.error} />
+          <div className="row between wrap" style={{ gap: 8 }}>
+            <label className="row" style={{ gap: 8 }}><input type="checkbox" checked={data.enabled} onChange={async (e) => { const r = await act.run({ enabled: e.target.checked }); if (r) setData(r); }} /> Anyone can send a prayer request from the cards and the kiosk</label>
+            <span className="small muted">{data.stats.fromCards} from cards · {data.stats.fromKiosk} from the kiosk · {data.stats.prayedThisWeek} prayed this week</span>
+          </div>
+          <div className="row wrap" style={{ gap: 16, alignItems: 'flex-start' }}>
+            <QrCode value={data.publicUrl} size={140} label="Scan to send a prayer request" />
+            <div className="stack grow" style={{ gap: 8, minWidth: 220 }}>
+              <b>Prayer cards</b>
+              <p className="small muted">Print cards for the pews and the welcome desk. Each has this QR; people scan it and type a request, or write on the card and drop it in the box.</p>
+              <div className="row wrap" style={{ gap: 6 }}>
+                <input className="input small" readOnly value={data.publicUrl} style={{ flex: 1, minWidth: 160 }} onFocus={(e) => e.currentTarget.select()} />
+                <button className="btn sm" onClick={() => copy(data.publicUrl)}><Copy size={13} /></button>
+                <button className="btn sm primary" onClick={() => setCards(true)}><Printer size={14} /> Print 8 cards (A4)</button>
+              </div>
+            </div>
+          </div>
+          <div className="stack" style={{ gap: 8 }}>
+            <b>Lobby kiosk</b>
+            <p className="small muted">Open this link on a tablet in the lobby. It shows the prayer wall with an “I prayed” button and takes new requests, and resets itself for the next person. Keep the link private: it carries a key.</p>
+            <div className="row wrap" style={{ gap: 6 }}>
+              <input className="input small" readOnly value={data.kioskUrl} style={{ flex: 1, minWidth: 200 }} onFocus={(e) => e.currentTarget.select()} />
+              <button className="btn sm" onClick={() => copy(data.kioskUrl)}><Copy size={13} /> Copy</button>
+              <a className="btn sm" href={data.kioskUrl} target="_blank" rel="noreferrer"><Tablet size={13} /> Open</a>
+              <button className="btn sm" disabled={act.busy} onClick={async () => { if (!confirm('Make a new kiosk link? The old one stops working.')) return; const r = await act.run({ rotate: true }); if (r) { setData(r); toast('New kiosk link'); } }}><RefreshCw size={13} /> New link</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {cards && data && <CardsSheet url={data.publicUrl} onClose={() => setCards(false)} />}
+    </Modal>
+  );
+}
+
+/** Eight prayer cards on an A4 sheet; the print hides everything else. */
+function CardsSheet({ url, onClose }: { url: string; onClose: () => void }) {
+  const church = useApi(AdminApi.settings.get);
+  useEffect(() => {
+    document.body.classList.add('cert-open');
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.classList.remove('cert-open'); window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+  const c = church.data;
+  return createPortal(
+    <div className="cert-overlay">
+      <div className="cert-bar no-print">
+        <span className="grow small">Eight cards on A4. Cut along the lines; a pen on each pew helps.</span>
+        <button className="btn primary sm" onClick={() => window.print()}><Printer size={15} /> Print</button>
+        <button className="btn ghost sm" onClick={onClose}>Close</button>
+      </div>
+      <article className="cert-page cards-page">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div key={i} className="prayer-card">
+            <div className="row" style={{ gap: 8 }}>
+              {c?.logoUrl && <img src={c.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }} />}
+              <b style={{ fontSize: 13 }}>{c?.name ?? 'Our church'}</b>
+            </div>
+            <div className="prayer-card-title">How can we pray for you?</div>
+            <div className="row" style={{ gap: 10, alignItems: 'flex-start' }}>
+              <QrCode value={url} size={78} />
+              <div className="small" style={{ lineHeight: 1.35 }}>Scan to send your request from your phone, or write it here and drop the card in the prayer box. The pastors pray for every request this week.</div>
+            </div>
+            <div className="prayer-card-lines"><i /><i /><i /></div>
+            <div className="small muted" style={{ fontSize: 10 }}>Name and phone (optional): ______________________ · Share with the church? ☐ yes ☐ pastors only</div>
+          </div>
+        ))}
+      </article>
+    </div>,
+    document.body,
   );
 }

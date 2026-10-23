@@ -34,3 +34,10 @@
 .rent-form { max-width: 760px; }
 .rent-estimate { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 12px 14px; border-radius: var(--radius); background: var(--tint); }
 .rent-estimate b { font-size: 20px; font-family: var(--font-heading); }
+/* Prayer kiosk and wall */
+.pray-kiosk { min-height: 100vh; background: var(--bg); padding-block: 24px 40px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 20px; max-width: 1200px; margin: 0 auto; font-size: 17px; }
+.pray-kiosk .input { font-size: 17px; }
+.pray-kiosk-form .btn.lg { height: 54px; font-size: 18px; }
+.pray-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.pray-grid > * { min-width: 0; }
+.pray-item.answered { opacity: 0.75; }

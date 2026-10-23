@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub, MyPractice, PracticeSong, PracticeView, PracticesHub, SongPartName, CertificateCheck } from '@/core/types';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub, MyPractice, PracticeSong, PracticeView, PracticesHub, SongPartName, CertificateCheck, PrayerKiosk, PrayerWall, PublicPrayerInfo, WallRequest } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
@@ -340,6 +340,11 @@ export const PublicApi = {
   live: () => m.get<LiveNow>('/public/live'),
   livePing: (streamId: string, viewer: string) => m.post<{ ok: boolean; status: LiveStatus; watching: number }>(`/public/live/${streamId}/ping`, { viewer }),
   /** Hall, ground and room hire by outsiders: the spaces, a request, and the renter's own page by token. */
+  /** Prayer cards and the lobby kiosk: anyone can send a request; the wall needs the kiosk key. */
+  prayerInfo: () => m.get<PublicPrayerInfo>('/public/prayer'),
+  sendPrayer: (input: { text: string; name?: string; phone?: string; share?: boolean; source?: 'card' | 'kiosk' }) => m.post<{ ok: true; id: string; message: string }>('/public/prayer', input),
+  prayerWall: (k: string, device: string) => m.get<PrayerWall>(`/public/prayer/wall${qs({ k, device })}`),
+  prayWall: (id: string, k: string, device: string) => m.post<WallRequest>(`/public/prayer/wall/${id}/pray${qs({ k })}`, { device }),
   /** The QR on a register certificate: confirms it was issued and is not void. */
   verifyCertificate: (code: string) => m.get<CertificateCheck>(`/public/verify/${encodeURIComponent(code)}`),
   rentals: () => m.get<PublicRentals>('/public/rentals'),
@@ -776,6 +781,9 @@ export const AdminApi = {
     atRisk: () => a.get<AtRiskPerson[]>('/admin/care/at-risk'),
     assignees: () => a.get<Assignee[]>('/admin/care/assignees'),
     create: (input: Partial<CareInput> & { title: string; personName?: string; prayerId?: string }) => a.post<CareCase>('/admin/care', input),
+    /** POST, not GET: the first call mints the kiosk key, and the demo saves only on writes. */
+    kiosk: () => a.post<PrayerKiosk>('/admin/prayer/kiosk', {}),
+    setKiosk: (input: { enabled?: boolean; rotate?: boolean }) => a.post<PrayerKiosk>('/admin/prayer/kiosk', input),
     update: (id: string, patch: Partial<Pick<CareCase, 'status' | 'assignedTo' | 'priority' | 'dueAt' | 'title' | 'type' | 'confidential'>>) => a.patch<CareCase>(`/admin/care/${id}`, patch),
     addNote: (id: string, text: string) => a.post<CareCase>(`/admin/care/${id}/notes`, { text }),
     remove: (id: string) => a.del<void>(`/admin/care/${id}`),

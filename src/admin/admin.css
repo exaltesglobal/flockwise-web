@@ -259,6 +259,13 @@ button.chip.on { background: var(--primary); color: #fff; }
 .cert-verify svg { flex-shrink: 0; border: 1px solid #d8d2c2; border-radius: 6px !important; }
 .cert-meta { font-size: 11px; color: #8a918d; text-align: center; margin: 0; }
 @media (max-width: 640px) { .cert-page { padding: 28px 20px; min-height: 0; } .cert-table th { width: 46%; } }
+/* Prayer cards: eight on A4 */
+.cards-page { border: none; padding: 24px; gap: 0; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; font-family: var(--font-body); min-height: 1060px; }
+.prayer-card svg { flex-shrink: 0; }
+.prayer-card { border: 1px dashed #b9b2a3; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.prayer-card-title { font-family: var(--font-heading); font-size: 17px; color: #1F6B5C; }
+.prayer-card-lines { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+.prayer-card-lines i { display: block; border-bottom: 1px solid #c9c3b4; height: 1px; }
 @media print {
   body.cert-open > *:not(.cert-overlay) { display: none !important; }
   body.cert-open .cert-overlay { position: static; padding: 0; background: #fff; overflow: visible; }
