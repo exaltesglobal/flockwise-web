@@ -25,3 +25,12 @@
 .pub-foot { border-top: 1px solid var(--border); padding-block: 16px; background: var(--card); }
 .pub-foot a:hover { text-decoration: none; }
 .pub-live { max-width: 960px; margin: 0 auto; padding-block: 24px; }
+/* Hall hire */
+.rent-space { overflow: hidden; padding: 0; }
+.rent-space.picked { outline: 2px solid var(--primary); }
+.rent-photo { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; max-width: 100%; display: block; }
+.rent-photo.placeholder { display: flex; align-items: center; justify-content: center; background: var(--tint); color: var(--primary); }
+.rent-space h3 { margin-top: 12px; }
+.rent-form { max-width: 760px; }
+.rent-estimate { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 12px 14px; border-radius: var(--radius); background: var(--tint); }
+.rent-estimate b { font-size: 20px; font-family: var(--font-heading); }

@@ -33,6 +33,7 @@ import { BenevolencePage } from '@/admin/pages/benevolence';
 import { AssetsPage } from '@/admin/pages/assets';
 import { ReadingPlansPage } from '@/admin/pages/reading';
 import { FeastsPage } from '@/admin/pages/feasts';
+import { RentalsPage } from '@/admin/pages/rentals';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
@@ -46,6 +47,7 @@ import { SignupPage } from '@/platform/signup';
 import { NetworkPanel } from '@/platform/network';
 import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
+import { PublicRentPage, PublicRentalPage, RentalReturnPage } from '@/public/rentals';
 import { BandPage } from '@/present/band';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
@@ -126,6 +128,7 @@ const routes = [
       { path: 'assets', element: <AssetsPage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
+      { path: 'rentals', element: <RentalsPage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
@@ -145,6 +148,9 @@ const routes = [
   { path: '/live', element: <PublicLivePage /> },
   { path: '/forms/return', element: <FormReturnPage /> },
   { path: '/forms/:id', element: <PublicFormPage /> },
+  { path: '/rent', element: <PublicRentPage /> },
+  { path: '/rent/return', element: <RentalReturnPage /> },
+  { path: '/rent/pay/:token', element: <PublicRentalPage /> },
   {
     path: '/app',
     element: <MemberLayout />,

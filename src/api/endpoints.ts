@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub } from '@/core/types';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
@@ -333,7 +333,14 @@ export const PublicApi = {
   /** Signed-in members are counted by name; everyone else by a random id kept in their browser. */
   live: () => m.get<LiveNow>('/public/live'),
   livePing: (streamId: string, viewer: string) => m.post<{ ok: boolean; status: LiveStatus; watching: number }>(`/public/live/${streamId}/ping`, { viewer }),
+  /** Hall, ground and room hire by outsiders: the spaces, a request, and the renter's own page by token. */
+  rentals: () => m.get<PublicRentals>('/public/rentals'),
+  requestRental: (input: RentalRequestInput) => m.post<PublicRental>('/public/rentals', input),
+  rental: (token: string) => m.get<PublicRental>(`/public/rentals/${token}`),
+  payRental: (token: string) => m.post<{ checkoutUrl: string; rental: PublicRental }>(`/public/rentals/${token}/pay`, {}),
+  cancelRental: (token: string) => m.post<PublicRental>(`/public/rentals/${token}/cancel`, {}),
 };
+export type RentalRequestInput = { resourceId: string; name: string; phone: string; email?: string; organisation?: string; purpose: string; guests?: number; startsAt: string; endsAt: string };
 
 // ---------- Many churches: lookup, sign-up and the Flockwise team panel ----------
 export type ChurchPublic = { id: string; slug: string; name: string; city: string; logoUrl: string | null; isDefault: boolean };
@@ -481,6 +488,16 @@ export const AdminApi = {
     create: (input: { eventId: string; template: string; name?: string; extraHeads?: number }) => a.post<FeastView>('/admin/feasts', input),
     update: (id: string, input: { name?: string; menu?: FeastMenuInput; extraHeads?: number; headsOverride?: number | null; split?: FeastSplit; notes?: string }) => a.patch<FeastView>(`/admin/feasts/${id}`, input),
     remove: (id: string) => a.del<{ ok: true }>(`/admin/feasts/${id}`),
+  },
+  /** Hall hire: which spaces are for hire and at what rate, and the requests from outsiders. */
+  rentals: {
+    hub: (status?: 'open' | 'paid' | 'closed') => a.get<RentalsHub>(`/admin/rentals${qs({ status })}`),
+    setSpace: (id: string, input: Partial<Omit<RentalOffer, 'id'>>) => a.put<{ resource: Resource; offer: RentalOffer }>(`/admin/rentals/spaces/${id}`, input),
+    approve: (id: string, input: { amount?: number; deposit?: number; note?: string; force?: boolean }) => a.post<RentalView>(`/admin/rentals/${id}/approve`, input),
+    decline: (id: string, note: string) => a.post<RentalView>(`/admin/rentals/${id}/decline`, { note }),
+    markPaid: (id: string, input: { via: 'cash' | 'bank_transfer' | 'cheque' | 'upi'; reference?: string }) => a.post<RentalView>(`/admin/rentals/${id}/paid`, input),
+    refund: (id: string, note: string) => a.post<RentalView>(`/admin/rentals/${id}/refund`, { note }),
+    addNote: (id: string, text: string) => a.post<RentalView>(`/admin/rentals/${id}/notes`, { text }),
   },
   reading: {
     hub: (status?: 'active' | 'archived' | 'all') => a.get<ReadingHub>(`/admin/reading${qs({ status })}`),
