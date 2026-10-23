@@ -585,3 +585,12 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .bank-map label > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bank-table .num, .bank .table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bank .nowrap { white-space: nowrap; }
+/* safeguarding */
+.sg-stat { display: flex; flex-direction: column; gap: 2px; }
+.sg-stat b { font-size: 22px; }
+.sg-risk { border-color: var(--danger); background: var(--danger-tint); }
+.sg-table td { vertical-align: top; }
+.sg-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.sg-warn { color: var(--danger); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.sg-history ul { margin: 6px 0 0; padding-left: 18px; }
+.sg-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }

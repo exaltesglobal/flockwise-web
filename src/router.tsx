@@ -87,6 +87,7 @@ import { MissedCallPage } from '@/admin/pages/missed-call';
 import { GreetingPage } from '@/public/greeting';
 import { PublicQrPage } from '@/public/qr';
 import { ElectionsPage } from '@/admin/pages/elections';
+import { SafeguardingPage } from '@/admin/pages/safeguarding';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -146,6 +147,7 @@ const routes = [
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
       { path: 'elections', element: <ElectionsPage /> },
+      { path: 'safeguarding', element: <SafeguardingPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
