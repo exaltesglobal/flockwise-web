@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub } from '@/core/types';
+import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
@@ -234,6 +234,11 @@ export const MemberApi = {
     request: (input: { preferredDates: string[]; note?: string }) => m.post<NonNullable<MyCarols['request']>>('/me/carols/request', input),
     cancel: () => m.del<void>('/me/carols/request'),
   },
+  aid: {
+    get: () => m.get<MyAid>('/me/aid'),
+    request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
+    withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
   rides: {
     get: (sunday?: string) => m.get<MyRides>(`/me/rides${qs({ sunday })}`),
     request: (input: { sunday?: string; people?: number; weekly?: boolean; note?: string }) => m.post<MyRides>('/me/rides/request', input),
@@ -438,6 +443,14 @@ export const AdminApi = {
   calendarLinks: {
     feeds: () => a.get<{ church: CalendarFeedLink; teams: CalendarFeedLink[] }>('/admin/calendar/feeds'),
     reset: (id: string) => a.post<CalendarFeedLink>(`/admin/calendar/feeds/${id}/reset`),
+  },
+  benevolence: {
+    hub: (status?: string) => a.get<BenevolenceHub>(`/admin/benevolence${qs({ status })}`),
+    setFund: (fundId: string | null) => a.put<AidSummary>('/admin/benevolence/settings', { fundId }),
+    create: (input: { personId: string; kind: AidKind; amount: number; reason: string }) => a.post<AidRequest>('/admin/benevolence', input),
+    update: (id: string, input: { status?: 'reviewing' | 'approved' | 'declined' | 'withdrawn'; approved?: number; note?: string }) => a.patch<AidRequest>(`/admin/benevolence/${id}`, input),
+    pay: (id: string, input: { via: string; reference?: string; date?: string; amount?: number }) => a.post<AidRequest>(`/admin/benevolence/${id}/pay`, input),
+    addNote: (id: string, text: string) => a.post<AidRequest>(`/admin/benevolence/${id}/notes`, { text }),
   },
   rides: {
     hub: (sunday?: string) => a.get<RidesHub>(`/admin/rides${qs({ sunday })}`),

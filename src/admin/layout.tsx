@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -36,6 +36,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'] },
       { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
       { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
+      { to: '/admin/benevolence', label: 'Benevolence', icon: HandCoins, perm: ['care'] },
       { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'] },
       { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },
       { to: '/admin/zones', label: 'Zones & visits', icon: MapPin, perm: ['people.view'] },
