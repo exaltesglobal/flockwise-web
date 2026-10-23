@@ -49,6 +49,7 @@ import { NetworkPanel } from '@/platform/network';
 import { TeamPanel } from '@/platform/team';
 import { FormReturnPage, PublicBulletinPage, PublicLivePage, PublicChurchPage, PublicFormPage } from '@/public/public';
 import { PublicRentPage, PublicRentalPage, RentalReturnPage } from '@/public/rentals';
+import { VerifyCertificatePage } from '@/public/verify';
 import { BandPage } from '@/present/band';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
 import { StudioPage } from '@/present/studio';
@@ -152,6 +153,8 @@ const routes = [
   { path: '/forms/return', element: <FormReturnPage /> },
   { path: '/forms/:id', element: <PublicFormPage /> },
   { path: '/rent', element: <PublicRentPage /> },
+  { path: '/verify/:code', element: <VerifyCertificatePage /> },
+  { path: '/verify', element: <VerifyCertificatePage /> },
   { path: '/rent/return', element: <RentalReturnPage /> },
   { path: '/rent/pay/:token', element: <PublicRentalPage /> },
   {

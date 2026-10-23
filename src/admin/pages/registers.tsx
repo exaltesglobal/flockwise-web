@@ -8,6 +8,7 @@ import { Link } from 'react-router';
 import type { Certificate, RegisterEntry, RegisterField, RegisterKind } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { QrCode } from '@/components/qr';
 import { REGISTER_FIELDS, REGISTER_KINDS, REGISTER_LABELS } from '@/core/modules/registers';
 import { formatDate } from '@/lib/format';
 import { useCan } from '@/lib/perms';
@@ -324,7 +325,13 @@ function CertificateSheet({ cert, onClose }: { cert: Certificate; onClose: () =>
           <div><div className="cert-sign" />Seal of the church</div>
           <div><div className="cert-sign" />{cert.entry.kind === 'transfer' ? cert.entry.officiant || 'Pastor' : 'Pastor / Presbyter'}</div>
         </footer>
-        <p className="cert-meta">Issued on {day(cert.issuedAt)}{cert.copy > 1 ? ` · Copy ${cert.copy}` : ''} · Entry {cert.entry.number}</p>
+        <div className="cert-verify">
+          <QrCode value={cert.verifyUrl} size={84} label="Scan to verify this certificate" />
+          <div>
+            <p className="cert-meta" style={{ textAlign: 'left' }}>Issued on {day(cert.issuedAt)}{cert.copy > 1 ? ` · Copy ${cert.copy}` : ''} · Entry {cert.entry.number}</p>
+            <p className="cert-meta" style={{ textAlign: 'left' }}>Scan the code, or open <b>{cert.verifyUrl.replace(/^https?:\/\//, '')}</b>, to confirm this {cert.letter ? 'letter' : 'certificate'} was issued by {c.name} and is still in force.</p>
+          </div>
+        </div>
       </article>
     </div>,
     document.body,

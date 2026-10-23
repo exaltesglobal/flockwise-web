@@ -255,6 +255,8 @@ button.chip.on { background: var(--primary); color: #fff; }
 .cert-foot { margin-top: auto; display: flex; justify-content: space-between; gap: 40px; font-size: 14px; color: #5b6560; text-align: center; }
 .cert-foot > div { flex: 1; }
 .cert-sign { border-bottom: 1px solid #1b2a26; height: 56px; margin-bottom: 6px; }
+.cert-verify { display: flex; align-items: center; gap: 14px; }
+.cert-verify svg { flex-shrink: 0; border: 1px solid #d8d2c2; border-radius: 6px !important; }
 .cert-meta { font-size: 11px; color: #8a918d; text-align: center; margin: 0; }
 @media (max-width: 640px) { .cert-page { padding: 28px 20px; min-height: 0; } .cert-table th { width: 46%; } }
 @media print {
