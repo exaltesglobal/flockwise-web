@@ -17,11 +17,12 @@ import { useAction, useApi } from '@/lib/use-api';
 import { PersonField, type PickedPerson } from '../components/person-picker';
 
 import { PageHeader } from '../layout';
+import { OfferingQrTab } from './offering-qr';
 
 const METHOD: Record<PaymentMethod, string> = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', cash: 'Cash', cheque: 'Cheque', bank_transfer: 'Bank transfer' };
 const STATUS_TONE = { succeeded: 'ok', pending: 'warn', failed: 'danger', refunded: 'gray' } as const;
 
-type Tab = 'donations' | 'monthly' | 'batches' | 'funds' | 'pledges' | 'receipts';
+type Tab = 'donations' | 'monthly' | 'batches' | 'funds' | 'pledges' | 'receipts' | 'qr';
 
 /** Indian financial year (1 April – 31 March) as YYYY-MM-DD bounds. */
 function fiscalYear(offset = 0) {
@@ -58,6 +59,7 @@ export function GivingPage() {
           { value: 'funds', label: 'Funds' },
           { value: 'pledges', label: 'Pledges' },
           ...(isIndia ? [{ value: 'receipts' as Tab, label: '80G receipts' }] : []),
+          { value: 'qr', label: 'Offering QR' },
         ]} />
       </div>
       {tab === 'donations' && <Donations funds={funds.data ?? []} currency={currency} onChanged={funds.reload} />}
@@ -66,6 +68,7 @@ export function GivingPage() {
       {tab === 'funds' && <Funds funds={funds} currency={currency} />}
       {tab === 'pledges' && <Pledges funds={funds.data ?? []} currency={currency} />}
       {tab === 'receipts' && <Receipts currency={currency} />}
+      {tab === 'qr' && <OfferingQrTab currency={currency} />}
     </>
   );
 }

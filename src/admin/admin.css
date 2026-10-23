@@ -546,3 +546,24 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .gs-steps li > svg { flex: none; margin-top: 2px; }
 .gs-steps li.done b { color: var(--muted); font-weight: 500; text-decoration: line-through; }
 @media (max-width: 800px) { .gs-steps { grid-template-columns: minmax(0, 1fr); } }
+/* offering QR */
+.oq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.oq-card { display: flex; gap: 16px; align-items: flex-start; }
+.oq-qr { flex: none; padding: 6px; background: #fff; border-radius: 14px; border: 1px solid var(--border); }
+.oq-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.oq-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.oq-stats > div { display: flex; flex-direction: column; }
+.oq-num { font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .oq-card { flex-direction: column; align-items: center; text-align: center; } .oq-body { align-items: center; } }
+.qr-print { display: none; }
+@media print {
+  body:has(.qr-print) .oq-screen > :not(.qr-print), body:has(.qr-print) .admin-main > :not(:has(.qr-print)), body:has(.qr-print) .admin-nav, body:has(.qr-print) aside { display: none !important; }
+  .qr-print { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; min-height: 96vh; justify-content: center; color: #000; }
+  .qr-print h1 { font-size: 52px; margin: 0; line-height: 1.05; }
+  .qr-print-church { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 700; }
+  .qr-print-church img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+  .qr-print-fund { font-size: 30px; font-weight: 700; border: 3px solid #000; border-radius: 14px; padding: 8px 26px; }
+  .qr-print-line { font-size: 19px; max-width: 80%; line-height: 1.4; }
+  .qr-print-foot { font-size: 13px; color: #333; margin-top: 18px; }
+  @page { size: A4; margin: 16mm; }
+}

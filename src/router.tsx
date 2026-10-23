@@ -84,6 +84,7 @@ import { VideoGreetingsPage } from '@/admin/pages/video-greetings';
 import { AnnualReturnPage } from '@/admin/pages/annual-return';
 import { MissedCallPage } from '@/admin/pages/missed-call';
 import { GreetingPage } from '@/public/greeting';
+import { PublicQrPage } from '@/public/qr';
 import { ElectionsPage } from '@/admin/pages/elections';
 
 const routes = [
@@ -171,6 +172,7 @@ const routes = [
   { path: '/verify/:code', element: <VerifyCertificatePage /> },
   { path: '/r/:id', element: <PublicRecapPage /> },
   { path: '/g/:token', element: <GreetingPage /> },
+  { path: '/qr/:id', element: <PublicQrPage /> },
   { path: '/pray', element: <PrayPage /> },
   { path: '/pray/wall', element: <PrayerWallPage /> },
   { path: '/verify', element: <VerifyCertificatePage /> },

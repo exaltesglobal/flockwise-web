@@ -5,6 +5,7 @@ import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
 import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub, MyPractice, PracticeSong, PracticeView, PracticesHub, SongPartName, CertificateCheck, PrayerKiosk, PrayerWall, PublicPrayerInfo, WallRequest } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
+import type { OfferingQrHub, OfferingQrView, PublicOfferingQr } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type ReturnTemplateSummary = { id: string; name: string; body: string; unit: string; above: string; lines: number };
@@ -382,6 +383,7 @@ export const PublicApi = {
   sermons: () => m.get<Sermon[]>('/public/sermons'),
   recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),
   greeting: (token: string) => m.get<PublicGreeting>(`/public/greetings/${token}`),
+  qr: (id: string) => m.get<PublicOfferingQr>(`/public/qr/${id}`),
   greetingWatched: (token: string) => m.post<{ ok: boolean }>(`/public/greetings/${token}/watched`, {}),
   greetingReply: (token: string, message: string) => m.post<{ ok: boolean; message: string }>(`/public/greetings/${token}/reply`, { message }),
   groups: () => m.get<PublicGroup[]>('/public/groups'),
@@ -659,6 +661,13 @@ export const AdminApi = {
   giving: {
     donations: (q: DonationQuery) => a.get<DonationPage>(`/admin/giving/donations${qs(q)}`),
     import: (rows: ImportGiftRow[], source: ImportSource) => a.post<GiftImportResult>('/admin/giving/import', { rows, source }),
+    qr: {
+      hub: () => a.get<OfferingQrHub>('/admin/giving/qr'),
+      create: (input: { fundId: string; name?: string }) => a.post<OfferingQrView>('/admin/giving/qr', input),
+      close: (id: string) => a.post<OfferingQrView>(`/admin/giving/qr/${id}/close`, {}),
+      /** Demo only: pretend someone scanned the code. */
+      testGift: (id: string, amount: number) => a.post<{ gift: unknown; code: OfferingQrView }>(`/admin/giving/qr/${id}/test-gift`, { amount }),
+    },
     recordOffline: (input: OfflineDonationInput & { batchId?: string | null }) => a.post<AdminDonation>('/admin/giving/donations', input),
     refund: (id: string) => a.post<AdminDonation>(`/admin/giving/donations/${id}/refund`),
     funds: () => a.get<AdminFund[]>('/admin/giving/funds'),

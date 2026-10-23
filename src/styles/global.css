@@ -572,3 +572,13 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .greet-reply .input { flex: 1; min-width: 0; }
 .greet-reply.done { align-items: center; justify-content: center; color: var(--primary); font-weight: 500; background: var(--tint); border-radius: 12px; padding: 10px 12px; }
 .greet-powered { display: inline-flex; align-items: center; gap: 6px; justify-content: center; color: var(--muted); font-size: 12px; text-decoration: none; }
+/* public offering QR (projector) */
+.pqr { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left, 0px)); background: #0f2a26; color: #fff; }
+.pqr-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; max-width: 640px; width: 100%; }
+.pqr-church { display: flex; align-items: center; gap: 12px; font-size: clamp(18px, 2.4vw, 26px); font-weight: 700; opacity: 0.9; }
+.pqr-church img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #fff; }
+.pqr h1 { font-size: clamp(32px, 6vw, 64px); margin: 0; line-height: 1.05; }
+.pqr-fund { font-size: clamp(18px, 3vw, 30px); font-weight: 600; padding: 6px 22px; border: 2px solid rgba(255,255,255,0.5); border-radius: 999px; }
+.pqr svg, .pqr-img { max-width: min(78vw, 60vh); height: auto; width: 100%; border-radius: 16px; background: #fff; padding: 12px; box-sizing: border-box; }
+.pqr-line { font-size: clamp(16px, 2.2vw, 22px); opacity: 0.85; margin: 0; }
+.pqr-closed { font-size: 20px; max-width: 420px; }
