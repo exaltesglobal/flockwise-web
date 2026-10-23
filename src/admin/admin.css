@@ -489,3 +489,6 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .count-summary { display: flex; flex-wrap: wrap; gap: 6px 14px; }
 
 /* Key/value facts in a side panel (asset detail and the like). */
+
+/* Weekly SMS digest preview: a phone-width bubble so the office sees the text as the member will. */
+.sms-preview { max-width: 360px; margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--tint); border: 1px solid var(--border); font: inherit; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }

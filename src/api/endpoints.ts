@@ -110,6 +110,8 @@ import type {
   ScheduleOverview,
   ServiceDetail,
   ServiceSummary,
+  SmsDigestPreview,
+  SmsDigestStatus,
   Song,
   SongView,
   StaffMember,
@@ -775,6 +777,9 @@ export const AdminApi = {
     removeTemplate: (id: string) => a.del<void>(`/admin/messages/templates/${id}`),
     automations: () => a.get<Automations>('/admin/messages/automations'),
     saveAutomations: (patch: Partial<Automations>) => a.put<Automations>('/admin/messages/automations', patch),
+    smsDigest: () => a.get<SmsDigestStatus>('/admin/messages/sms-digest'),
+    smsDigestPreview: (q: { personId?: string; language?: string } = {}) => a.get<SmsDigestPreview>(`/admin/messages/sms-digest/preview${qs(q)}`),
+    sendSmsDigest: () => a.post<{ messageId: string; recipients: number; sent: number; failed: number }>('/admin/messages/sms-digest/send', {}),
   },
   care: {
     list: (q: { status?: string; mine?: boolean } = {}) => a.get<Paginated<CareCase>>(`/admin/care${qs({ status: q.status, mine: q.mine ? 'true' : undefined })}`),

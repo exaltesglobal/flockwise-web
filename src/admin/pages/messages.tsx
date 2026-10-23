@@ -2,7 +2,7 @@ import { Bell, Clock, Copy, FileText, Inbox, Mail, MessageCircle, Pencil, Plus, 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 
-import type { Audience, AudiencePreview, AudienceType, Automation, Automations, Channel, Message, Template } from '@/api/admin-types';
+import type { Audience, AudiencePreview, AudienceType, Automation, Automations, Channel, LanguageCode, Message, SmsDigestSettings, Template } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { demoOutbox } from '@/api/mock';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -373,7 +373,7 @@ function TemplateForm({ item, onClose, onSaved }: { item: Template | null; onClo
 
 // ---------- automations ----------
 
-type MessageAutomation = Exclude<keyof Automations, 'staffDigest'>;
+type MessageAutomation = Exclude<keyof Automations, 'staffDigest' | 'smsDigest'>;
 const AUTOMATION_INFO: Record<MessageAutomation, { title: string; body: string }> = {
   birthday: { title: 'Birthday wishes', body: 'Sent on the morning of each person’s birthday.' },
   anniversary: { title: 'Wedding anniversaries', body: 'Sent to both spouses on their anniversary.' },
@@ -467,10 +467,93 @@ function AutomationsPane() {
           </label>
         )}
       </div>
+      <SmsDigestCard value={draft.smsDigest ?? DIGEST_DEFAULT} saved={data?.smsDigest ?? DIGEST_DEFAULT} onChange={(smsDigest) => setDraft({ ...draft, smsDigest })} />
       {can('comms') && (
         <div className="row" style={{ justifyContent: 'flex-end', gap: 8 }}>
           {dirty && <button className="btn" onClick={() => setDraft(structuredClone(data!))}>Discard changes</button>}
           <button className="btn primary" disabled={!dirty || save.busy} onClick={async () => { if (await save.run(draft)) { toast('Automations saved'); reload(); } }}>Save automations</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- weekly SMS digest ----------
+
+const DIGEST_DEFAULT: SmsDigestSettings = { enabled: false, day: 6, hour: 17, audience: 'no_app', channel: 'sms', note: '' };
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DIGEST_LANGS: { value: LanguageCode; label: string }[] = [
+  { value: 'en', label: 'English' }, { value: 'hi', label: 'हिन्दी' }, { value: 'ta', label: 'தமிழ்' }, { value: 'te', label: 'తెలుగు' }, { value: 'ml', label: 'മലയാളം' }, { value: 'kn', label: 'ಕನ್ನಡ' },
+];
+const hourLabel = (h: number) => `${h % 12 || 12}:00 ${h < 12 ? 'am' : 'pm'}`;
+
+/** One text a week for members without the app, in their own script. Settings save with the other automations; preview and "Send now" are live. */
+function SmsDigestCard({ value, saved, onChange }: { value: SmsDigestSettings; saved: SmsDigestSettings; onChange: (v: SmsDigestSettings) => void }) {
+  const status = useApi(AdminApi.messages.smsDigest, [saved]);
+  const [lang, setLang] = useState<LanguageCode>('en');
+  const preview = useApi(() => AdminApi.messages.smsDigestPreview({ language: lang }), [lang, saved]);
+  const send = useAction(() => AdminApi.messages.sendSmsDigest());
+  const [confirm, setConfirm] = useState(false);
+  const toast = useToast();
+  const can = useCan();
+  const set = (patch: Partial<SmsDigestSettings>) => onChange({ ...value, ...patch });
+  const st = status.data;
+  const langs = st ? Object.entries(st.byLanguage).sort((a, b) => b[1] - a[1]) : [];
+
+  return (
+    <div className="card stack" style={{ gap: 10 }}>
+      <div className="row" style={{ gap: 10 }}>
+        <Smartphone size={18} className={value.enabled ? '' : 'muted'} />
+        <div className="grow">
+          <h3>Weekly text in their own language</h3>
+          <p className="small muted">Members without the app get one SMS a week with the Sunday time, this week's events, the bulletin verse and the office number, written in Hindi, Tamil, Telugu, Malayalam, Kannada or English to match each person.</p>
+        </div>
+        <label className="row small" style={{ gap: 6 }}>
+          <input type="checkbox" checked={value.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> On
+        </label>
+      </div>
+      <div className="row wrap" style={{ gap: 12 }}>
+        <label className="row small" style={{ gap: 6 }}>Every
+          <select className="select" value={value.day} onChange={(e) => set({ day: Number(e.target.value) })}>{WEEKDAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}</select>
+          at
+          <select className="select" value={value.hour} onChange={(e) => set({ hour: Number(e.target.value) })}>{Array.from({ length: 16 }, (_, i) => i + 6).map((h) => <option key={h} value={h}>{hourLabel(h)}</option>)}</select>
+        </label>
+        <Segmented value={value.audience} options={[{ value: 'no_app', label: 'Only people without the app' }, { value: 'everyone', label: 'Everyone with a phone' }]} onChange={(audience) => set({ audience: audience as SmsDigestSettings['audience'] })} />
+        <Segmented value={value.channel} options={[{ value: 'sms', label: 'SMS' }, { value: 'whatsapp', label: 'WhatsApp' }]} onChange={(channel) => set({ channel: channel as SmsDigestSettings['channel'] })} />
+      </div>
+      <Field label="A line from the office (optional, 160 characters)" hint="Goes in as written, in every language.">
+        <input className="input" maxLength={160} placeholder="Bring a friend this Sunday." value={value.note} onChange={(e) => set({ note: e.target.value })} />
+      </Field>
+      {st && (
+        <div className="small muted">
+          <strong>{st.recipients}</strong> {st.recipients === 1 ? 'person' : 'people'} would get it
+          {langs.length > 0 && <> · {langs.map(([l, n]) => `${DIGEST_LANGS.find((x) => x.value === l)?.label ?? l} ${n}`).join(', ')}</>}
+          {st.nextAt && <> · next {formatDate(st.nextAt)} {hourLabel(saved.hour)}</>}
+          {st.lastSentAt && <> · last sent {formatRelative(st.lastSentAt)}</>}
+          {!st.channelReady && <span className="badge warn"> {saved.channel === 'sms' ? 'SMS' : 'WhatsApp'} is not connected yet (Settings › Integrations)</span>}
+        </div>
+      )}
+      <div className="stack" style={{ gap: 6 }}>
+        <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
+          <span className="small muted">Preview in</span>
+          <Segmented value={lang} options={DIGEST_LANGS} onChange={(l) => setLang(l as LanguageCode)} />
+          {preview.data && <span className="small muted">{preview.data.chars} characters · {preview.data.segments} SMS {preview.data.segments === 1 ? 'segment' : 'segments'}</span>}
+        </div>
+        <pre className="sms-preview">{preview.data?.text ?? '…'}</pre>
+        {JSON.stringify(value) !== JSON.stringify(saved) && <p className="small muted">Save automations to see your changes in the preview.</p>}
+      </div>
+      {can('comms') && (
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <FormError error={send.error} />
+          {!confirm ? (
+            <button className="btn" disabled={!st || st.recipients === 0} onClick={() => setConfirm(true)}><Send size={14} /> Send now</button>
+          ) : (
+            <>
+              <span className="small">Send this week's text to {st?.recipients} people now?</span>
+              <button className="btn primary" disabled={send.busy} onClick={async () => { const r = await send.run(); if (r) { toast(`Sent to ${r.sent} of ${r.recipients}`); setConfirm(false); status.reload(); } }}>Yes, send</button>
+              <button className="btn" onClick={() => setConfirm(false)}>Cancel</button>
+            </>
+          )}
         </div>
       )}
     </div>
