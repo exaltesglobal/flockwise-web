@@ -3,6 +3,7 @@
 // so singers can learn their line at home. The parts show in the musicians' view and the app.
 import { Download, ExternalLink, MicVocal, Music2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 
 import type { PracticeSong, PracticeView, PracticesHub, SongPartName, SongView } from '@/api/admin-types';
 import { AdminApi, type PracticeInput } from '@/api/endpoints';
@@ -32,15 +33,23 @@ export function PracticePage() {
     <>
       <PageHeader title="Choir practice" subtitle="Tick who came to each rehearsal and what was sung, see who is slipping away, and put part recordings (soprano, alto, tenor, bass) on songs so singers learn their line at home. The team gets a nudge the evening before a rehearsal."
         actions={canEdit && team && <button className="btn primary" onClick={() => setRecording('new')}><Plus size={16} /> Record a practice</button>} />
-      <div className="row between wrap" style={{ gap: 10 }}>
+      {team && <div className="row between wrap" style={{ gap: 10 }}>
         <div className="row wrap" style={{ gap: 8 }}>
-          <select className="input" style={{ width: 'auto' }} value={data.teamId ?? ''} onChange={(e) => setTeamId(e.target.value)} aria-label="Team">
-            {data.teams.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.roster})</option>)}
-          </select>
+          {data.teams.length > 1 ? (
+            <select className="input" style={{ width: 'auto' }} value={data.teamId ?? ''} onChange={(e) => setTeamId(e.target.value)} aria-label="Team">
+              {data.teams.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.roster})</option>)}
+            </select>
+          ) : team && <span className="badge">{team.name} · {team.roster} {team.roster === 1 ? 'singer' : 'singers'}</span>}
           <Segmented value={tab} onChange={setTab} options={[{ value: 'practices', label: 'Practices' }, { value: 'members', label: 'Attendance' }, { value: 'parts', label: 'Part recordings' }]} />
         </div>
-      </div>
-      {next && (
+      </div>}
+      {!team && (
+        <div className="card">
+          <Empty icon={<MicVocal size={26} />} title="Make a choir team first" body="Choir practice works with a volunteer team. Add a team such as Choir or Worship team, put your singers on it, and their practices, attendance and part recordings show here."
+            action={<Link className="btn primary" to="/admin/volunteers"><Plus size={16} /> Go to Volunteers</Link>} />
+        </div>
+      )}
+      {team && next && (
         <div className="card card-pad stack" style={{ gap: 6 }}>
           <div className="row between wrap" style={{ gap: 8 }}>
             <b>Next rehearsal: {when(next.at)}</b>
@@ -53,7 +62,7 @@ export function PracticePage() {
           <span className="small muted">Set the rehearsal time and notes on the service plan. ♪ = has part recordings.</span>
         </div>
       )}
-      {tab === 'practices' && (
+      {team && tab === 'practices' && (
         <div className="card">
           {data.practices.length === 0 ? <Empty icon={<MicVocal size={26} />} title="No practice recorded yet" body="After Thursday's rehearsal, record who came and what you sang. Two weeks in you will see who needs a call." action={canEdit && team ? <button className="btn primary" onClick={() => setRecording('new')}><Plus size={16} /> Record a practice</button> : undefined} /> : (
             <div className="table-wrap"><table className="table">
@@ -71,7 +80,7 @@ export function PracticePage() {
           )}
         </div>
       )}
-      {tab === 'members' && (
+      {team && tab === 'members' && (
         <div className="card">
           <div className="row between wrap card-pad" style={{ gap: 8, paddingBottom: 0 }}>
             <span className="small muted">Over the last {Math.min(12, data.practices.length)} practice{data.practices.length === 1 ? '' : 's'}. Those who have missed the most sort first.</span>
@@ -91,7 +100,7 @@ export function PracticePage() {
           </table></div>
         </div>
       )}
-      {tab === 'parts' && <Parts songs={data.songsWithParts} next={next} parts={data.parts} canEdit={canEdit} onChanged={reload} />}
+      {team && tab === 'parts' && <Parts songs={data.songsWithParts} next={next} parts={data.parts} canEdit={canEdit} onChanged={reload} />}
       {recording && team && <RecordPractice teamId={team.id} teamName={team.name} roster={data.members} existing={recording === 'new' ? null : recording} next={next} onClose={() => setRecording(null)} onSaved={() => { setRecording(null); toast('Practice recorded'); reload(); }} />}
     </>
   );
