@@ -9,6 +9,7 @@ import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, Ba
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
+import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { DiscipleshipHub, MentorFocus, MentorshipDetail, MyMentoring } from '@/core/types';
 import type { MyVigil, Vigil, VigilDetail, VigilView } from '@/core/types';
 import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
@@ -292,6 +293,11 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  library: {
+    get: () => m.get<MyLibrary>('/me/library'),
+    request: (bookId: string) => m.post<MyLibrary>(`/me/library/${bookId}/request`, {}),
+    withdraw: (bookId: string) => m.del<MyLibrary>(`/me/library/${bookId}/request`),
   },
   mentoring: {
     get: () => m.get<MyMentoring>('/me/mentoring'),
@@ -695,6 +701,15 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  library: {
+    hub: () => a.get<LibraryHub>('/admin/library'),
+    settings: (loanDays: number) => a.patch<LibraryHub>('/admin/library/settings', { loanDays }),
+    add: (books: Partial<Omit<LibraryBook, 'id' | 'addedAt'>>[]) => a.post<LibraryHub>('/admin/library/books', { books }),
+    update: (id: string, patch: Partial<Omit<LibraryBook, 'id' | 'addedAt'>>) => a.patch<LibraryHub>(`/admin/library/books/${id}`, patch),
+    remove: (id: string) => a.del<LibraryHub>(`/admin/library/books/${id}`),
+    lend: (bookId: string, personId: string) => a.post<LibraryHub>('/admin/library/loans', { bookId, personId }),
+    act: (loanId: string, action: 'issue' | 'ready' | 'return' | 'renew' | 'cancel') => a.post<LibraryHub>(`/admin/library/loans/${loanId}/${action}`, {}),
   },
   discipleship: {
     hub: () => a.get<DiscipleshipHub>('/admin/discipleship'),

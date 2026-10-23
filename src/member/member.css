@@ -133,3 +133,6 @@ input.switch:checked::after { transform: translateX(18px); }
 .story-hint { text-align: center; color: rgba(255,255,255,0.7); font-size: 12px; }
 .recap-card { position: relative; }
 .recap-card .cover { aspect-ratio: 9 / 16; width: 100%; max-height: 360px; object-fit: cover; object-position: top; border-radius: 12px; background: var(--tint); }
+.lib-search { position: relative; display: flex; align-items: center; }
+.lib-search svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
+.lib-search .input { width: 100%; padding-left: 36px; }

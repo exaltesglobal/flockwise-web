@@ -553,6 +553,22 @@ export const en = {
   mentorSave: 'Save',
   mentorSaved: 'Thank you. Meeting saved.',
   mentorCall: 'Call',
+  libraryTitle: "Church library",
+  libraryBody: "Borrow books from the church shelf. Ask for one here and collect it at the church office.",
+  libraryMine: "Your books",
+  libraryAsked: "Asked for",
+  libraryDue: "Due back {date}",
+  libraryOverdue: "Was due {date}",
+  libraryEmpty: "The library has no books listed yet.",
+  librarySearch: "Search books",
+  libraryWithYou: "With you",
+  libraryWithdraw: "Cancel request",
+  libraryWithdrawn: "Request cancelled.",
+  libraryRequest: "Ask for it",
+  libraryQueue: "Join the queue",
+  libraryRequested: "Request sent. The office will let you know when it is ready.",
+  libraryNoMatch: "No books match.",
+  libraryLoanDays: "Books are lent for {days} days.",
 };
 
 export type Strings = typeof en;
