@@ -6,6 +6,7 @@ import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
+export type ReturnTemplateSummary = { id: string; name: string; body: string; unit: string; above: string; lines: number };
 export type FeastMenuInput = (Omit<FeastDish, 'id' | 'cookName'> & { id?: string })[];
 
 export type AssetInput = {
@@ -122,6 +123,8 @@ import type {
   VideoGreetingKind,
   VideoGreetingsHub,
   GreetingLinkView,
+  AnnualReturnView,
+  ReturnHeader,
   PublicGreeting,
   Recap,
   RecapFacts,
@@ -680,6 +683,14 @@ export const AdminApi = {
     remove: (kind: VideoGreetingKind) => a.del<{ ok: boolean }>(`/admin/video-greetings/${kind}`),
     test: (kind: VideoGreetingKind, personId?: string) => a.post<GreetingLinkView>(`/admin/video-greetings/${kind}/test`, personId ? { personId } : {}),
     links: () => a.get<GreetingLinkView[]>('/admin/video-greetings/links'),
+  },
+  annualReturn: {
+    templates: () => a.get<ReturnTemplateSummary[]>('/admin/annual-return/templates'),
+    get: (template?: string, year?: number) => a.get<AnnualReturnView>(`/admin/annual-return${qs({ template, year: year === undefined ? undefined : String(year) })}`),
+    save: (input: { template: string; year: number; values?: Record<string, string | number | null>; header?: Partial<ReturnHeader>; notes?: string }) => a.put<AnnualReturnView>('/admin/annual-return', input),
+    submit: (template: string, year: number) => a.post<AnnualReturnView>('/admin/annual-return/submit', { template, year }),
+    reopen: (template: string, year: number) => a.post<AnnualReturnView>('/admin/annual-return/reopen', { template, year }),
+    exportCsv: (template: string, year: number) => a.get<{ csv: string }>(`/admin/annual-return/export.csv${qs({ template, year: String(year) })}`),
   },
   recaps: {
     list: () => a.get<Recap[]>('/admin/recaps'),

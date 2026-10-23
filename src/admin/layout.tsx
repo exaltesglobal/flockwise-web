@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -91,6 +91,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
     title: 'Office',
     items: [
       { to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'] },
+      { to: '/admin/annual-return', label: 'Annual return', icon: FileSpreadsheet, perm: ['settings', 'insights'] },
       { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'] },
       { to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] },
     ],

@@ -81,6 +81,7 @@ import { MemberVotePage } from '@/member/pages/vote';
 import { MemberRecapPage, MemberRecapStoryPage, PublicRecapPage } from '@/member/pages/recap';
 import { RecapPage } from '@/admin/pages/recap';
 import { VideoGreetingsPage } from '@/admin/pages/video-greetings';
+import { AnnualReturnPage } from '@/admin/pages/annual-return';
 import { GreetingPage } from '@/public/greeting';
 import { ElectionsPage } from '@/admin/pages/elections';
 
@@ -143,6 +144,7 @@ const routes = [
       { path: 'elections', element: <ElectionsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
+      { path: 'annual-return', element: <AnnualReturnPage /> },
       { path: 'practice', element: <PracticePage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
