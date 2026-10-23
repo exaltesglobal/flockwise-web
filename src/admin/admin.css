@@ -567,3 +567,21 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
   .qr-print-foot { font-size: 13px; color: #333; margin-top: 18px; }
   @page { size: A4; margin: 16mm; }
 }
+/* bank reconciliation */
+.bank .stat { display: flex; flex-direction: column; gap: 2px; }
+.bank .stat b { font-size: 22px; }
+.bank-attn { border-color: var(--warn, #b7791f); background: var(--warn-tint); }
+.bank-table td { vertical-align: top; }
+.bank-open { background: color-mix(in srgb, var(--warn-tint) 55%, transparent); }
+.bank-narr { max-width: 420px; min-width: 0; word-break: break-word; }
+.bank-match, .bank-sugg { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.bank-chip { border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: 3px 10px; font-size: 12.5px; cursor: pointer; text-align: left; color: var(--text); }
+.bank-chip:hover { border-color: var(--primary); background: var(--tint); }
+.bank-chip.strong { border-color: var(--ok); }
+.bank-actions { text-align: right; }
+.bank-ignore { height: 32px; font-size: 13px; max-width: 150px; }
+.bank-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.bank-map label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bank-map label > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bank-table .num, .bank .table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bank .nowrap { white-space: nowrap; }

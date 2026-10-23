@@ -5,7 +5,8 @@ import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
 import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub, MyPractice, PracticeSong, PracticeView, PracticesHub, SongPartName, CertificateCheck, PrayerKiosk, PrayerWall, PublicPrayerInfo, WallRequest } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
-import type { OfferingQrHub, OfferingQrView, PublicOfferingQr } from '@/core/types';
+import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, BankLineView, BankUploadResult, BankView, AdminDonation as CoreAdminDonation } from '@/core/types';
+import type { BankLineInput } from '@/core/bank-presets';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type ReturnTemplateSummary = { id: string; name: string; body: string; unit: string; above: string; lines: number };
@@ -657,6 +658,16 @@ export const AdminApi = {
   exportAll: {
     summary: () => a.get<ExportSummary>('/admin/export'),
     bundle: () => a.post<ExportBundle>('/admin/export', {}),
+  },
+  bank: {
+    view: (q: { account?: BankAccountId; from?: string; to?: string }) => a.get<BankView>(`/admin/bank${qs(q)}`),
+    upload: (input: { account: BankAccountId; bankName: string; lines: BankLineInput[] }) => a.post<BankUploadResult>('/admin/bank/statements', input),
+    removeStatement: (id: string) => a.del(`/admin/bank/statements/${id}`),
+    match: (id: string, kind: 'gift' | 'expense' | 'batch', targetId: string) => a.post<BankLineView>(`/admin/bank/lines/${id}/match`, { kind, id: targetId }),
+    unmatch: (id: string) => a.post<BankLineView>(`/admin/bank/lines/${id}/unmatch`, {}),
+    ignore: (id: string, as: 'charges' | 'interest' | 'settlement' | 'ignored', note?: string) => a.post<BankLineView>(`/admin/bank/lines/${id}/ignore`, { as, note }),
+    recordGift: (id: string, input: { fundId: string; donorId?: string | null; donorName?: string; pan?: string }) => a.post<{ line: BankLineView; gift: CoreAdminDonation }>(`/admin/bank/lines/${id}/record-gift`, input),
+    recordExpense: (id: string, input: { headId: string; payee?: string; description?: string }) => a.post<{ line: BankLineView; expense: ExpenseView }>(`/admin/bank/lines/${id}/record-expense`, input),
   },
   giving: {
     donations: (q: DonationQuery) => a.get<DonationPage>(`/admin/giving/donations${qs(q)}`),

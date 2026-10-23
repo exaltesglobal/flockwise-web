@@ -31,6 +31,7 @@ import { CarolsPage } from '@/admin/pages/carols';
 import { RidesPage } from '@/admin/pages/rides';
 import { BenevolencePage } from '@/admin/pages/benevolence';
 import { AssetsPage } from '@/admin/pages/assets';
+import { BankPage } from '@/admin/pages/bank';
 import { ReadingPlansPage } from '@/admin/pages/reading';
 import { FeastsPage } from '@/admin/pages/feasts';
 import { RentalsPage } from '@/admin/pages/rentals';
@@ -140,6 +141,7 @@ const routes = [
       { path: 'rides', element: <RidesPage /> },
       { path: 'benevolence', element: <BenevolencePage /> },
       { path: 'assets', element: <AssetsPage /> },
+      { path: 'bank', element: <BankPage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
