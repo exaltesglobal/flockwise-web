@@ -1,4 +1,5 @@
 // One function per backend endpoint. Screens call these, never fetch() directly.
+import type { ImportGiftRow, ImportPersonRow } from '@/core/import-presets';
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
@@ -87,6 +88,7 @@ import type {
   GroupMeeting,
   ImportResult,
   ImportSource,
+  GiftImportResult,
   Insights,
   JoinRequest,
   MemberPreferences,
@@ -516,7 +518,7 @@ export const AdminApi = {
     create: (input: PersonInput) => a.post<Person>('/admin/people', input),
     update: (id: string, input: Partial<PersonInput>) => a.patch<Person>(`/admin/people/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/people/${id}`),
-    import: (rows: PersonInput[], source: ImportSource, dedupeBy: 'phone' | 'email') =>
+    import: (rows: ImportPersonRow[], source: ImportSource, dedupeBy: 'phone' | 'email') =>
       a.post<ImportResult>('/admin/people/import', { rows, source, dedupeBy }),
     duplicates: () => a.get<Duplicate[]>('/admin/people-duplicates'),
     merge: (keepId: string, mergeId: string) => a.post<Person>('/admin/people/merge', { keepId, mergeId }),
@@ -645,6 +647,7 @@ export const AdminApi = {
   },
   giving: {
     donations: (q: DonationQuery) => a.get<DonationPage>(`/admin/giving/donations${qs(q)}`),
+    import: (rows: ImportGiftRow[], source: ImportSource) => a.post<GiftImportResult>('/admin/giving/import', { rows, source }),
     recordOffline: (input: OfflineDonationInput & { batchId?: string | null }) => a.post<AdminDonation>('/admin/giving/donations', input),
     refund: (id: string) => a.post<AdminDonation>(`/admin/giving/donations/${id}/refund`),
     funds: () => a.get<AdminFund[]>('/admin/giving/funds'),

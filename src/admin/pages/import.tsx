@@ -3,108 +3,61 @@ import Papa from 'papaparse';
 import { useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router';
 
-import type { ImportResult, ImportSource, PersonInput, PersonStatus } from '@/api/admin-types';
+import type { Currency, GiftImportResult, ImportResult, ImportSource } from '@/api/admin-types';
+import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { Field, FormError, Segmented } from '@/components/ui';
-import { downloadCsv } from '@/lib/format';
+import {
+  detectKind,
+  GIFT_TARGETS,
+  guessColumns,
+  IMPORT_SOURCES,
+  PEOPLE_TARGETS,
+  rowsToGifts,
+  rowsToPeople,
+  type GiftTarget,
+  type ImportKind,
+  type PeopleTarget,
+} from '@/core/import-presets';
+import { downloadCsv, formatMoney } from '@/lib/format';
 import { useAction } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
 
-type Target = 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'status' | 'gender' | 'birthDate' | 'householdName' | 'address' | 'tags' | '';
-
-const TARGETS: { value: Target; label: string; synonyms: string[] }[] = [
-  { value: 'firstName', label: 'First name', synonyms: ['first name', 'firstname', 'given name', 'first'] },
-  { value: 'lastName', label: 'Last name', synonyms: ['last name', 'lastname', 'surname', 'family name', 'last'] },
-  { value: 'fullName', label: 'Full name (split)', synonyms: ['name', 'full name', 'member name', 'naam'] },
-  { value: 'phone', label: 'Mobile', synonyms: ['mobile', 'phone', 'mobile number', 'mobile phone number', 'mobile phone', 'contact', 'contact number', 'whatsapp', 'cell'] },
-  { value: 'email', label: 'Email', synonyms: ['email', 'e-mail', 'email address', 'home email', 'primary email'] },
-  { value: 'status', label: 'Status', synonyms: ['status', 'membership', 'member status', 'category'] },
-  { value: 'gender', label: 'Gender', synonyms: ['gender', 'sex'] },
-  { value: 'birthDate', label: 'Birth date', synonyms: ['birthdate', 'birth date', 'date of birth', 'dob', 'birthday'] },
-  { value: 'householdName', label: 'Household', synonyms: ['household', 'household name', 'family', 'family name'] },
-  { value: 'address', label: 'Address', synonyms: ['address', 'home address', 'street', 'area', 'locality', 'city'] },
-  { value: 'tags', label: 'Tags', synonyms: ['tags', 'ministry', 'ministries', 'department'] },
-];
-
-const SOURCES: { value: ImportSource; label: string; help: string }[] = [
-  { value: 'excel', label: 'Excel', help: 'Any .xlsx sheet with one person per row and column headings in the first row.' },
-  { value: 'csv', label: 'CSV / Google Sheets', help: 'In Google Sheets choose File → Download → Comma-separated values (.csv).' },
-  { value: 'elvanto', label: 'Elvanto', help: 'In Elvanto go to People → Export, choose all fields, and upload the file here.' },
-  { value: 'planning_center', label: 'Planning Center', help: 'In Planning Center People go to Lists or People → Export to CSV, and upload the file here.' },
-];
-
 type Sheet = { headers: string[]; rows: string[][]; fileName: string };
+type Target = PeopleTarget | GiftTarget;
 
-function guess(header: string): Target {
-  const h = header.trim().toLowerCase().replace(/[_*]/g, ' ').replace(/\s+/g, ' ');
-  for (const t of TARGETS) if (t.synonyms.includes(h)) return t.value;
-  for (const t of TARGETS) if (t.synonyms.some((s) => s.length > 3 && h.includes(s))) return t.value;
-  return '';
-}
+const KIND_HELP: Record<ImportKind, string> = {
+  people: 'One person per row. Households, groups and campuses in the file are created for you.',
+  gifts: 'One gift per row. Funds are created by name, donors are matched to people already in Flockwise, and nothing is imported twice.',
+};
 
-function normaliseStatus(v: string): PersonStatus | undefined {
-  const s = v.toLowerCase();
-  if (!s) return undefined;
-  if (/inactive|left|moved|deceased|archiv/.test(s)) return 'inactive';
-  if (/visit|guest|first|new/.test(s)) return 'visitor';
-  if (/regular|attender|attendee/.test(s)) return 'regular';
-  return 'member';
-}
-
-function normaliseDate(v: string) {
-  if (!v) return undefined;
-  if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
-  const m = v.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/); // Indian format DD/MM/YYYY
-  if (m) {
-    const y = m[3].length === 2 ? `19${m[3]}` : m[3];
-    return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
-  }
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
-}
-
-function normalisePhone(v: string) {
-  const digits = v.replace(/\D/g, '');
-  if (!digits) return undefined;
-  if (digits.length === 10) return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`; // bare Indian mobile
-  if (digits.length === 12 && digits.startsWith('91')) return `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`;
-  return v.trim().startsWith('+') ? v.trim() : `+${digits}`;
-}
-
-function toPeople(sheet: Sheet, mapping: Target[]): PersonInput[] {
-  return sheet.rows
-    .map((row) => {
-      const p: Record<string, unknown> = {};
-      mapping.forEach((target, i) => {
-        const raw = String(row[i] ?? '').trim();
-        if (!target || !raw) return;
-        if (target === 'fullName') {
-          const parts = raw.split(/\s+/);
-          p.firstName ??= parts[0];
-          p.lastName ??= parts.slice(1).join(' ') || '';
-        } else if (target === 'phone') p.phone = normalisePhone(raw);
-        else if (target === 'status') p.status = normaliseStatus(raw);
-        else if (target === 'birthDate') p.birthDate = normaliseDate(raw);
-        else if (target === 'gender') p.gender = /^f/i.test(raw) ? 'female' : /^m/i.test(raw) ? 'male' : null;
-        else if (target === 'tags') p.tags = raw.split(/[,;]/).map((t) => t.trim()).filter(Boolean);
-        else p[target] = raw;
-      });
-      return p as PersonInput;
-    })
-    .filter((p) => Object.keys(p).length > 0);
-}
+const TEMPLATES: Record<ImportKind, string[][]> = {
+  people: [
+    ['First name', 'Last name', 'Mobile', 'Email', 'Status', 'Gender', 'Date of birth', 'Family ID', 'Family relationship', 'Address', 'Groups', 'Campus', 'Tags'],
+    ['Priya', 'Thomas', '9876543210', 'priya@example.com', 'Member', 'Female', '24/10/1991', 'THOMAS', 'Primary', 'Kondapur, Hyderabad', 'Choir, Ushers', '', 'Youth'],
+    ['Arun', 'Thomas', '9876543211', '', 'Member', 'Male', '02/05/1989', 'THOMAS', 'Spouse', 'Kondapur, Hyderabad', '', '', ''],
+  ],
+  gifts: [
+    ['Date', 'Donor name', 'Mobile', 'Email', 'Amount', 'Fund', 'Payment method', 'Receipt number'],
+    ['05/04/2026', 'Priya Thomas', '9876543210', 'priya@example.com', '2500', 'Tithes & Offerings', 'UPI', '2026-27/00012'],
+    ['12/04/2026', 'Ravi Kumar', '', '', '1000', 'Building Fund', 'Cheque', '2026-27/00013'],
+  ],
+};
 
 export function ImportPage() {
   const [source, setSource] = useState<ImportSource>('excel');
+  const [kind, setKind] = useState<ImportKind>('people');
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [mapping, setMapping] = useState<Target[]>([]);
   const [dedupeBy, setDedupeBy] = useState<'phone' | 'email'>('phone');
   const [over, setOver] = useState(false);
   const [readError, setReadError] = useState<string | null>(null);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [result, setResult] = useState<{ kind: 'people'; r: ImportResult } | { kind: 'gifts'; r: GiftImportResult } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const doImport = useAction(AdminApi.people.import);
+  const importPeople = useAction(AdminApi.people.import);
+  const importGifts = useAction(AdminApi.giving.import);
+  const currency = (adminSession.get()?.church.currency ?? 'INR') as Currency;
 
   async function readFile(file: File) {
     setReadError(null);
@@ -123,11 +76,18 @@ export function ImportPage() {
       }
       const [headers = [], ...rows] = table;
       if (!rows.length) throw new Error('That file has no rows under the heading row.');
+      const detected = detectKind(headers);
+      setKind(detected);
       setSheet({ headers, rows, fileName: file.name });
-      setMapping(headers.map(guess));
+      setMapping(guessColumns(detected, headers));
     } catch (e) {
       setReadError(e instanceof Error ? e.message : 'Could not read that file.');
     }
+  }
+
+  function switchKind(k: ImportKind) {
+    setKind(k);
+    if (sheet) setMapping(guessColumns(k, sheet.headers));
   }
 
   function onDrop(e: DragEvent) {
@@ -137,14 +97,23 @@ export function ImportPage() {
     if (f) void readFile(f);
   }
 
-  const people = sheet ? toPeople(sheet, mapping) : [];
+  const people = sheet && kind === 'people' ? rowsToPeople(source, mapping as PeopleTarget[], sheet.rows) : [];
+  const gifts = sheet && kind === 'gifts' ? rowsToGifts(source, mapping as GiftTarget[], sheet.rows) : { gifts: [], problems: [] };
   const hasName = mapping.includes('firstName') || mapping.includes('fullName');
   const missingName = people.filter((p) => !p.firstName).length;
+  const households = new Set(people.map((p) => p.householdKey?.trim().toLowerCase()).filter(Boolean)).size;
+  const groupNames = new Set(people.flatMap((p) => p.groups ?? []).map((g) => g.toLowerCase())).size;
+  const giftTotal = gifts.gifts.reduce((s, g) => s + g.amount, 0);
+  const fundNames = [...new Set(gifts.gifts.map((g) => g.fundName))];
+  const hasAmount = mapping.includes('amount') && mapping.includes('date');
+  const targets = kind === 'people' ? PEOPLE_TARGETS : GIFT_TARGETS;
   const step = result ? 3 : sheet ? 2 : 1;
+  const busy = importPeople.busy || importGifts.busy;
+  const help = IMPORT_SOURCES.find((s) => s.value === source)!;
 
   return (
     <>
-      <PageHeader title="Import people" subtitle="Bring your existing member list across in a couple of minutes. Nothing is changed until you press Import." />
+      <PageHeader title="Import" subtitle="Bring your member list and past gifts across from Excel, Google Sheets, Planning Center or Elvanto. Nothing is changed until you press Import." />
 
       <div className="steps">
         <span className={step >= 1 ? 'on' : ''}><b>1</b> Upload</span><i />
@@ -155,26 +124,51 @@ export function ImportPage() {
       {result ? (
         <div className="card card-pad stack" style={{ alignItems: 'flex-start' }}>
           <div className="row"><CheckCircle2 color="var(--ok)" /><h2>Import finished</h2></div>
-          <p>
-            <b>{result.created}</b> added, <b>{result.updated}</b> updated, <b>{result.skipped}</b> unchanged
-            {result.errors.length > 0 && <>, <b style={{ color: 'var(--danger)' }}>{result.errors.length}</b> skipped with problems</>}.
-          </p>
-          {result.errors.length > 0 && (
+          {result.kind === 'people' ? (
+            <>
+              <p>
+                <b>{result.r.created}</b> added, <b>{result.r.updated}</b> updated, <b>{result.r.skipped}</b> unchanged
+                {result.r.errors.length > 0 && <>, <b style={{ color: 'var(--danger)' }}>{result.r.errors.length}</b> skipped with problems</>}.
+              </p>
+              {(result.r.households || result.r.groups?.length || result.r.campuses?.length) ? (
+                <p className="small muted">
+                  {result.r.households ? `${result.r.households} households linked. ` : ''}
+                  {result.r.groups?.length ? `Groups created: ${result.r.groups.join(', ')}. ` : ''}
+                  {result.r.campuses?.length ? `Campuses created: ${result.r.campuses.join(', ')}.` : ''}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <p>
+                <b>{result.r.created}</b> gifts added worth <b>{formatMoney(result.r.total, currency)}</b>, <b>{result.r.duplicates}</b> already there
+                {result.r.errors.length > 0 && <>, <b style={{ color: 'var(--danger)' }}>{result.r.errors.length}</b> skipped with problems</>}.
+              </p>
+              <p className="small muted">
+                {result.r.matched} matched to people in Flockwise, {result.r.unmatched} kept by name only.
+                {result.r.funds.length ? ` Funds created: ${result.r.funds.join(', ')}.` : ''} Imported gifts keep the receipt numbers in your file; none are issued again.
+              </p>
+            </>
+          )}
+          {result.r.errors.length > 0 && (
             <ul className="small muted">
-              {result.errors.slice(0, 10).map((er) => <li key={er.row}>Row {er.row + 1}: {er.message}</li>)}
+              {result.r.errors.slice(0, 10).map((er) => <li key={er.row}>Row {er.row + 1}: {er.message}</li>)}
             </ul>
           )}
           <div className="row">
-            <Link to="/admin/people" className="btn primary">See people</Link>
+            <Link to={result.kind === 'people' ? '/admin/people' : '/admin/giving'} className="btn primary">{result.kind === 'people' ? 'See people' : 'See giving'}</Link>
             <button className="btn" onClick={() => { setSheet(null); setResult(null); }}>Import another file</button>
           </div>
         </div>
       ) : !sheet ? (
         <div className="card card-pad stack lg">
-          <Field label="Where is your list coming from?">
-            <div><Segmented value={source} onChange={setSource} options={SOURCES.map(({ value, label }) => ({ value, label }))} /></div>
+          <Field label="Where is your file coming from?">
+            <div><Segmented value={source} onChange={setSource} options={IMPORT_SOURCES.map(({ value, label }) => ({ value, label }))} /></div>
           </Field>
-          <p className="small muted">{SOURCES.find((s) => s.value === source)!.help}</p>
+          <Field label="What is in it?">
+            <div><Segmented value={kind} onChange={switchKind} options={[{ value: 'people', label: 'People' }, { value: 'gifts', label: 'Past gifts' }]} /></div>
+          </Field>
+          <p className="small muted">{kind === 'people' ? help.people : help.gifts} {KIND_HELP[kind]}</p>
           <div
             className={`dropzone ${over ? 'over' : ''}`}
             onClick={() => fileRef.current?.click()}
@@ -190,10 +184,7 @@ export function ImportPage() {
           {readError && <div className="alert error">{readError}</div>}
           <div className="row small muted">
             <Download size={15} />
-            <button className="btn ghost sm" onClick={() => downloadCsv('flockwise-import-template.csv', [
-              ['First name', 'Last name', 'Mobile', 'Email', 'Status', 'Gender', 'Date of birth', 'Household', 'Address', 'Tags'],
-              ['Priya', 'Thomas', '9876543210', 'priya@example.com', 'Member', 'Female', '24/10/1991', 'Thomas family', 'Kondapur, Hyderabad', 'Choir'],
-            ])}>Download a template</button>
+            <button className="btn ghost sm" onClick={() => downloadCsv(kind === 'people' ? 'flockwise-people-template.csv' : 'flockwise-gifts-template.csv', TEMPLATES[kind])}>Download a template</button>
             <span>if you are starting from scratch.</span>
           </div>
         </div>
@@ -205,7 +196,10 @@ export function ImportPage() {
                 <h2>{sheet.fileName}</h2>
                 <p className="small muted">{sheet.rows.length} rows found. Check each column is matched to the right field.</p>
               </div>
-              <button className="btn sm" onClick={() => setSheet(null)}>Choose a different file</button>
+              <div className="row">
+                <Segmented value={kind} onChange={switchKind} options={[{ value: 'people', label: 'People' }, { value: 'gifts', label: 'Past gifts' }]} />
+                <button className="btn sm" onClick={() => setSheet(null)}>Choose a different file</button>
+              </div>
             </div>
             <div className="table-wrap">
               <table className="table">
@@ -213,7 +207,7 @@ export function ImportPage() {
                   <tr>
                     <th>Column in your file</th>
                     <th>Example</th>
-                    <th style={{ width: 240 }}>Flockwise field</th>
+                    <th style={{ width: 260 }}>Flockwise field</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,8 +218,9 @@ export function ImportPage() {
                       <td>
                         <select className="select" value={mapping[i]} onChange={(e) => setMapping((m) => m.map((x, j) => (j === i ? (e.target.value as Target) : x)))}>
                           <option value="">Don't import</option>
-                          {TARGETS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                          {targets.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
+                        {targets.find((t) => t.value === mapping[i])?.hint && <div className="small muted">{targets.find((t) => t.value === mapping[i])!.hint}</div>}
                       </td>
                     </tr>
                   ))}
@@ -234,41 +229,92 @@ export function ImportPage() {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-head"><h2>Preview</h2><span className="small muted">First 5 of {people.length}</span></div>
-            <div className="table-wrap">
-              <table className="table">
-                <thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Status</th><th>Household</th><th>Birth date</th></tr></thead>
-                <tbody>
-                  {people.slice(0, 5).map((p, i) => (
-                    <tr key={i}>
-                      <td>{p.firstName || <span style={{ color: 'var(--danger)' }}>Missing</span>} {p.lastName}</td>
-                      <td className="mono">{p.phone ?? '—'}</td>
-                      <td>{p.email ?? '—'}</td>
-                      <td>{p.status ?? 'visitor'}</td>
-                      <td>{p.householdName ?? '—'}</td>
-                      <td>{p.birthDate ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {kind === 'people' ? (
+            <div className="card">
+              <div className="card-head">
+                <h2>Preview</h2>
+                <span className="small muted">
+                  First 5 of {people.length}{households ? ` · ${households} households` : ''}{groupNames ? ` · ${groupNames} groups` : ''}
+                </span>
+              </div>
+              <div className="table-wrap">
+                <table className="table">
+                  <thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Status</th><th>Household</th><th>Groups</th><th>Birth date</th></tr></thead>
+                  <tbody>
+                    {people.slice(0, 5).map((p, i) => (
+                      <tr key={i}>
+                        <td>{p.firstName || <span style={{ color: 'var(--danger)' }}>Missing</span>} {p.lastName}</td>
+                        <td className="mono">{p.phone ?? '—'}</td>
+                        <td>{p.email ?? '—'}</td>
+                        <td>{p.status ?? 'visitor'}</td>
+                        <td>{p.householdName ?? (p.householdKey ? `#${p.householdKey}` : '—')}</td>
+                        <td>{p.groups?.join(', ') ?? '—'}</td>
+                        <td>{p.birthDate ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="card">
+              <div className="card-head">
+                <h2>Preview</h2>
+                <span className="small muted">First 5 of {gifts.gifts.length} · {formatMoney(giftTotal, currency)}{fundNames.length ? ` · funds: ${fundNames.join(', ')}` : ''}</span>
+              </div>
+              <div className="table-wrap">
+                <table className="table">
+                  <thead><tr><th>Date</th><th>Donor</th><th>Amount</th><th>Fund</th><th>Method</th><th>Receipt / ref</th></tr></thead>
+                  <tbody>
+                    {gifts.gifts.slice(0, 5).map((g, i) => (
+                      <tr key={i}>
+                        <td>{g.date}</td>
+                        <td>{g.donorName}{g.donorEmail ? <span className="small muted"> · {g.donorEmail}</span> : g.donorPhone ? <span className="small muted mono"> · {g.donorPhone}</span> : null}</td>
+                        <td className="mono">{formatMoney(g.amount, currency)}</td>
+                        <td>{g.fundName}</td>
+                        <td>{g.method.replace('_', ' ')}</td>
+                        <td className="mono">{g.reference ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="card card-pad stack">
-            <Field label="If someone is already in Flockwise, match them by" hint="Matched people are updated instead of added twice.">
-              <div><Segmented value={dedupeBy} onChange={setDedupeBy} options={[{ value: 'phone', label: 'Mobile number' }, { value: 'email', label: 'Email' }]} /></div>
-            </Field>
-            {!hasName && <div className="alert warn">Match a column to First name or Full name to continue.</div>}
-            {hasName && missingName > 0 && <div className="alert warn">{missingName} rows have no name and will be skipped.</div>}
-            <FormError error={doImport.error} />
+            {kind === 'people' ? (
+              <>
+                <Field label="If someone is already in Flockwise, match them by" hint="Matched people are updated instead of added twice. A column matched to “ID from the old system” is checked first.">
+                  <div><Segmented value={dedupeBy} onChange={setDedupeBy} options={[{ value: 'phone', label: 'Mobile number' }, { value: 'email', label: 'Email' }]} /></div>
+                </Field>
+                {!hasName && <div className="alert warn">Match a column to First name or Full name to continue.</div>}
+                {hasName && missingName > 0 && <div className="alert warn">{missingName} rows have no name and will be skipped.</div>}
+              </>
+            ) : (
+              <>
+                {!hasAmount && <div className="alert warn">Match a column to Date and one to Amount to continue.</div>}
+                {hasAmount && gifts.problems.length > 0 && <div className="alert warn">{gifts.problems.length} rows will be skipped (no amount, or a date that could not be read).</div>}
+                <p className="small muted">Donors are matched to people already in Flockwise by their old ID, email, mobile or exact name, so import people first. Gifts keep the receipt numbers in the file and get no new ones.</p>
+              </>
+            )}
+            <FormError error={importPeople.error ?? importGifts.error} />
             <div>
-              <button className="btn primary lg" disabled={!hasName || doImport.busy} onClick={async () => {
-                const r = await doImport.run(people, source, dedupeBy);
-                if (r) setResult(r);
-              }}>
-                <Upload size={16} /> {doImport.busy ? 'Importing…' : `Import ${people.length} people`}
-              </button>
+              {kind === 'people' ? (
+                <button className="btn primary lg" disabled={!hasName || busy} onClick={async () => {
+                  const r = await importPeople.run(people, source, dedupeBy);
+                  if (r) setResult({ kind: 'people', r });
+                }}>
+                  <Upload size={16} /> {busy ? 'Importing…' : `Import ${people.length} people`}
+                </button>
+              ) : (
+                <button className="btn primary lg" disabled={!hasAmount || gifts.gifts.length === 0 || busy} onClick={async () => {
+                  const r = await importGifts.run(gifts.gifts, source);
+                  if (r) setResult({ kind: 'gifts', r });
+                }}>
+                  <Upload size={16} /> {busy ? 'Importing…' : `Import ${gifts.gifts.length} gifts`}
+                </button>
+              )}
             </div>
           </div>
         </>
