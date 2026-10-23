@@ -137,3 +137,10 @@ input.switch:checked::after { transform: translateX(18px); }
 .lib-search svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
 .lib-search .input { width: 100%; padding-left: 36px; }
 .oc-kinds { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.sk-tag { border: 1px solid var(--border); background: var(--card); color: inherit; border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.sk-tag span { color: var(--muted); font-size: 12px; }
+.sk-tag.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.sk-tag.on span { color: inherit; opacity: .8; }
+.sk-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--tint); }
+.sk-tabs button { flex: 1; border: 0; background: none; color: inherit; font: inherit; font-size: 14px; padding: 8px 6px; border-radius: 9px; cursor: pointer; }
+.sk-tabs button.on { background: var(--card); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }

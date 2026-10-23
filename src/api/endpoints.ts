@@ -10,6 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
+import type { MySkills, SkillsHub } from '@/core/types';
 import type { MyOccasion, OccasionKind, OccasionStatus, OccasionsHub, OccasionView } from '@/core/types';
 export type OccasionInput = { kind: OccasionKind; personIds: string[]; title: string; date: string | null; time: string | null; place: string; pastorId: string | null; contactName: string; contactPhone: string; notes: string };
 import type { DiscipleshipHub, MentorFocus, MentorshipDetail, MyMentoring } from '@/core/types';
@@ -295,6 +296,12 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  skills: {
+    get: () => m.get<MySkills>('/me/skills'),
+    save: (input: { skills: string[]; note: string; serve: boolean; share: boolean }) => m.put<MySkills>('/me/skills', input),
+    post: (input: { kind: 'job' | 'need' | 'offer'; title: string; body: string; place: string }) => m.post<MySkills>('/me/board', input),
+    close: (id: string) => m.post<MySkills>(`/me/board/${id}/close`, {}),
   },
   occasions: {
     get: () => m.get<{ occasions: MyOccasion[] }>('/me/occasions'),
@@ -708,6 +715,11 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  skills: {
+    hub: () => a.get<SkillsHub>('/admin/skills'),
+    set: (personId: string, input: { skills: string[]; note?: string; serve?: boolean; share?: boolean }) => a.patch<SkillsHub>(`/admin/skills/${personId}`, input),
+    moderate: (postId: string, action: 'hide' | 'show') => a.post<SkillsHub>(`/admin/board/${postId}/${action}`, {}),
   },
   occasions: {
     hub: () => a.get<OccasionsHub>('/admin/occasions'),

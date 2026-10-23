@@ -95,6 +95,8 @@ import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
 import { OccasionsPage } from '@/admin/pages/occasions';
 import { MemberOccasionsPage } from '@/member/pages/occasions';
+import { SkillsPage } from '@/admin/pages/skills';
+import { MemberSkillsPage } from '@/member/pages/skills';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
 import { MemberVigilsPage } from '@/member/pages/vigils';
 import { MemberCoursesPage } from '@/member/pages/courses';
@@ -163,6 +165,7 @@ const routes = [
       { path: 'discipleship', element: <DiscipleshipPage /> },
       { path: 'library', element: <LibraryPage /> },
       { path: 'occasions', element: <OccasionsPage /> },
+      { path: 'skills', element: <SkillsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -225,6 +228,7 @@ const routes = [
       { path: 'mentoring', element: <MemberMentoringPage /> },
       { path: 'library', element: <MemberLibraryPage /> },
       { path: 'occasions', element: <MemberOccasionsPage /> },
+      { path: 'skills', element: <MemberSkillsPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },

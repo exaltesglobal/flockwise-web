@@ -658,3 +658,7 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .oc-chip { display: inline-flex; align-items: center; gap: 4px; }
 .oc-chip button { border: 0; background: none; padding: 0; display: inline-flex; color: inherit; cursor: pointer; }
 .ds-log li.oc-done span { color: var(--muted); text-decoration: line-through; }
+.sk-tag { border: 1px solid var(--border); background: var(--card); color: inherit; border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.sk-tag span { color: var(--muted); font-size: 12px; }
+.sk-tag.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.sk-tag.on span { color: inherit; opacity: .8; }
