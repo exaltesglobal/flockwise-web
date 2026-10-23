@@ -9,6 +9,7 @@ import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, Ba
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
+import type { DiscipleshipHub, MentorFocus, MentorshipDetail, MyMentoring } from '@/core/types';
 import type { MyVigil, Vigil, VigilDetail, VigilView } from '@/core/types';
 import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
@@ -291,6 +292,10 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  mentoring: {
+    get: () => m.get<MyMentoring>('/me/mentoring'),
+    met: (id: string, input: { date: string; topic: string }) => m.post<MyMentoring>(`/me/mentoring/${id}/meetings`, input),
   },
   vigils: {
     get: () => m.get<{ vigils: MyVigil[] }>('/me/vigils'),
@@ -690,6 +695,14 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  discipleship: {
+    hub: () => a.get<DiscipleshipHub>('/admin/discipleship'),
+    get: (id: string) => a.get<MentorshipDetail>(`/admin/discipleship/${id}`),
+    create: (input: { mentorId: string; menteeId: string; focus: MentorFocus; goal: string; everyDays: number }) => a.post<MentorshipDetail>('/admin/discipleship', input),
+    update: (id: string, patch: Partial<{ focus: MentorFocus; goal: string; everyDays: number; status: 'active' | 'paused' | 'completed' }>) => a.patch<MentorshipDetail>(`/admin/discipleship/${id}`, patch),
+    log: (id: string, input: { date: string; topic: string; note: string }) => a.post<MentorshipDetail>(`/admin/discipleship/${id}/meetings`, input),
+    unlog: (id: string, meetingId: string) => a.del<MentorshipDetail>(`/admin/discipleship/${id}/meetings/${meetingId}`),
   },
   vigils: {
     list: () => a.get<{ vigils: VigilView[] }>('/admin/vigils'),

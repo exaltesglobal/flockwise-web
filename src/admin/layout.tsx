@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -37,6 +37,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'] },
       { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'] },
       { to: '/admin/vigils', label: 'Prayer vigils', icon: Hourglass, perm: ['care'] },
+      { to: '/admin/discipleship', label: 'Discipleship', icon: Footprints, perm: ['care', 'people.view'] },
       { to: '/admin/benevolence', label: 'Benevolence', icon: HandCoins, perm: ['care'] },
       { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'] },
       { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'] },

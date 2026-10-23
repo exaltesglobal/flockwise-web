@@ -539,6 +539,20 @@ export const en = {
   vigilPrayer: 'Prayer chain',
   vigilFasting: 'Fasting chain',
   vigilOpenOnly: 'Show open slots only',
+  mentorTitle: 'Discipleship',
+  mentorBody: 'The people you walk with in faith, and the person walking with you.',
+  mentorNone: 'You are not in a discipleship pair yet. Ask your pastor if you would like someone to walk with you.',
+  mentorMentees: 'Walking with',
+  mentorMentors: 'Walking with you',
+  mentorLast: 'Last met {date}',
+  mentorNever: 'No meeting logged yet',
+  mentorDue: 'Next meeting by {date}',
+  mentorOverdue: 'Time to meet again',
+  mentorMet: 'We met',
+  mentorTopic: 'What did you talk about?',
+  mentorSave: 'Save',
+  mentorSaved: 'Thank you. Meeting saved.',
+  mentorCall: 'Call',
 };
 
 export type Strings = typeof en;

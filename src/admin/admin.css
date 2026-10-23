@@ -641,3 +641,12 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .canva-designs li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
 .canva-designs li:last-child { border-bottom: 0; }
 .canva-designs li > .grow { flex-basis: 100%; }
+
+/* Discipleship */
+.ds-need { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; }
+.ds-need-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: var(--card); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.ds-need-item:hover { border-color: var(--primary); }
+.ds-link { color: var(--primary); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ds-log { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.ds-log li { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.ds-log li:last-child { border-bottom: 0; }
