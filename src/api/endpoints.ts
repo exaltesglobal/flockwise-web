@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub } from '@/core/types';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub, PublicRental, PublicRentals, RentalOffer, RentalView, RentalsHub, MyPractice, PracticeSong, PracticeView, PracticesHub, SongPartName } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
@@ -255,6 +255,12 @@ export const MemberApi = {
     leave: (planId: string) => m.del<MyReading>(`/me/reading/${planId}`),
     done: (planId: string, day: number, done = true) => m.post<MyReading>(`/me/reading/${planId}/done`, { day, done }),
   },
+  /** Choir practice: the next rehearsal, songs with part recordings, my attendance; leaders record who came. */
+  practice: {
+    get: (teamId?: string) => m.get<MyPractice>(`/me/practice${qs({ teamId })}`),
+    record: (input: PracticeInput & { teamId: string }) => m.post<PracticeView>('/me/practice', input),
+    update: (id: string, input: Partial<PracticeInput>) => m.patch<PracticeView>(`/me/practice/${id}`, input),
+  },
   rides: {
     get: (sunday?: string) => m.get<MyRides>(`/me/rides${qs({ sunday })}`),
     request: (input: { sunday?: string; people?: number; weekly?: boolean; note?: string }) => m.post<MyRides>('/me/rides/request', input),
@@ -340,6 +346,7 @@ export const PublicApi = {
   payRental: (token: string) => m.post<{ checkoutUrl: string; rental: PublicRental }>(`/public/rentals/${token}/pay`, {}),
   cancelRental: (token: string) => m.post<PublicRental>(`/public/rentals/${token}/cancel`, {}),
 };
+export type PracticeInput = { at: string; minutes?: number; eventId?: string | null; songIds?: string[]; presentIds?: string[]; notes?: string };
 export type RentalRequestInput = { resourceId: string; name: string; phone: string; email?: string; organisation?: string; purpose: string; guests?: number; startsAt: string; endsAt: string };
 
 // ---------- Many churches: lookup, sign-up and the Flockwise team panel ----------
@@ -504,6 +511,14 @@ export const AdminApi = {
     create: (input: { template: ReadingTemplate; name?: string; description?: string; startsOn: string; readings?: string }) => a.post<ReadingPlanView>('/admin/reading', input),
     update: (id: string, input: { name?: string; description?: string; status?: 'active' | 'archived' }) => a.patch<ReadingPlanView>(`/admin/reading/${id}`, input),
     readers: (id: string) => a.get<ReadingReader[]>(`/admin/reading/${id}/readers`),
+  },
+  practices: {
+    hub: (teamId?: string) => a.get<PracticesHub>(`/admin/practices${qs({ teamId })}`),
+    create: (input: PracticeInput & { teamId: string }) => a.post<PracticeView>('/admin/practices', input),
+    update: (id: string, input: Partial<PracticeInput>) => a.patch<PracticeView>(`/admin/practices/${id}`, input),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/practices/${id}`),
+    addPart: (songId: string, input: { part: SongPartName; url?: string; mediaId?: string; name?: string; replace?: boolean }) => a.post<PracticeSong>(`/admin/songs/${songId}/parts`, input),
+    removePart: (songId: string, partId: string) => a.del<PracticeSong>(`/admin/songs/${songId}/parts/${partId}`),
   },
   rides: {
     hub: (sunday?: string) => a.get<RidesHub>(`/admin/rides${qs({ sunday })}`),

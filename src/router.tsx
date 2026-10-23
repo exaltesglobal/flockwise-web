@@ -34,6 +34,7 @@ import { AssetsPage } from '@/admin/pages/assets';
 import { ReadingPlansPage } from '@/admin/pages/reading';
 import { FeastsPage } from '@/admin/pages/feasts';
 import { RentalsPage } from '@/admin/pages/rentals';
+import { PracticePage } from '@/admin/pages/practice';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
@@ -72,6 +73,7 @@ import { MemberCarolsPage } from '@/member/pages/carols';
 import { MemberRidesPage } from '@/member/pages/rides';
 import { MemberAidPage } from '@/member/pages/aid';
 import { MemberReadingPage } from '@/member/pages/reading';
+import { MemberPracticePage } from '@/member/pages/practice';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -129,6 +131,7 @@ const routes = [
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
+      { path: 'practice', element: <PracticePage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
@@ -174,6 +177,7 @@ const routes = [
       { path: 'rides', element: <MemberRidesPage /> },
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
+      { path: 'practice', element: <MemberPracticePage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },

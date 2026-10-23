@@ -111,6 +111,9 @@ function Band({ screenKey }: { screenKey?: string }) {
       <div className={`band-body ${hasColours(item?.colours) ? 'coloured' : ''}`} style={colourVars(item?.colours)} ref={body}>
         {!item ? <p className="muted" style={{ padding: 20 }}>Nothing is planned for this service yet.</p> : <Chart item={item} prefs={prefs} extra={extra} liveSection={liveSection} />}
         {item?.notes && <div className="band-notes"><b>Notes:</b> {item.notes}</div>}
+        {item?.parts?.length ? (
+          <div className="band-notes band-parts"><b>Listen:</b> {item.parts.map((p) => <a key={p.id} href={p.url} target="_blank" rel="noreferrer" className="btn sm">{p.name}</a>)}</div>
+        ) : null}
         <div className="band-end">
           <button className="btn" disabled={index === 0} onClick={() => go(index - 1)}><ChevronLeft size={16} /> Previous</button>
           <span className="small muted">{index + 1} / {data.charts.length}</span>
