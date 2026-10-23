@@ -2,9 +2,17 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
+export type AssetInput = {
+  name: string; tag?: string; category: AssetCategory; quantity: number; location: string; serial: string; vendor: string;
+  purchasedOn: string | null; cost: number | null; warrantyUntil: string | null;
+  amc: { vendor: string; phone: string; until: string | null; note: string } | null;
+  serviceEveryMonths: number | null; lastServicedOn: string | null; condition: AssetCondition; custodianId: string | null; notes: string; photoUrl: string | null;
+};
+
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
 export type ReportDelivery = { sent: number; failed: number; unreachable: number };
 export type CampaignInput = { name: string; kind: CampaignKind; description?: string; goal?: number | null; startsOn?: string; endsOn?: string | null; showPublic?: boolean };
@@ -443,6 +451,13 @@ export const AdminApi = {
   calendarLinks: {
     feeds: () => a.get<{ church: CalendarFeedLink; teams: CalendarFeedLink[] }>('/admin/calendar/feeds'),
     reset: (id: string) => a.post<CalendarFeedLink>(`/admin/calendar/feeds/${id}/reset`),
+  },
+  assets: {
+    hub: (q?: { status?: 'active' | 'retired' | 'all'; category?: string; q?: string }) => a.get<AssetsHub>(`/admin/assets${qs({ status: q?.status, category: q?.category, q: q?.q })}`),
+    create: (input: AssetInput) => a.post<AssetView>('/admin/assets', input),
+    update: (id: string, input: Partial<AssetInput> & { status?: 'active' }) => a.patch<AssetView>(`/admin/assets/${id}`, input),
+    log: (id: string, input: { kind: AssetLogEntry['kind']; text: string; date?: string; cost?: number | null; location?: string }) => a.post<AssetView>(`/admin/assets/${id}/log`, input),
+    retire: (id: string, reason: string) => a.del<{ ok: true }>(`/admin/assets/${id}${qs({ reason })}`),
   },
   benevolence: {
     hub: (status?: string) => a.get<BenevolenceHub>(`/admin/benevolence${qs({ status })}`),

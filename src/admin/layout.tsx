@@ -1,4 +1,4 @@
-import { BarChart3, BookMarked, BookOpen, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, BookOpen, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -67,6 +67,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/offerings', label: 'Special offerings', icon: Wheat, perm: ['giving.view'] },
       { to: '/admin/missions', label: 'Missions', icon: Globe, perm: ['giving.view'] },
       { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark },
+      { to: '/admin/assets', label: 'Assets', icon: Armchair },
     ],
   },
   {

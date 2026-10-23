@@ -30,6 +30,7 @@ import { TeamHubPage } from '@/admin/pages/team-hub';
 import { CarolsPage } from '@/admin/pages/carols';
 import { RidesPage } from '@/admin/pages/rides';
 import { BenevolencePage } from '@/admin/pages/benevolence';
+import { AssetsPage } from '@/admin/pages/assets';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
@@ -119,6 +120,7 @@ const routes = [
       { path: 'carols', element: <CarolsPage /> },
       { path: 'rides', element: <RidesPage /> },
       { path: 'benevolence', element: <BenevolencePage /> },
+      { path: 'assets', element: <AssetsPage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },

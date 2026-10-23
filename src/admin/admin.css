@@ -480,3 +480,8 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .count-amt { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
 .count-photo { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 .count-summary { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+
+/* Key/value facts in a side panel (asset detail and the like). */
+.kv { display: grid; grid-template-columns: minmax(90px, max-content) 1fr; gap: 6px 14px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
