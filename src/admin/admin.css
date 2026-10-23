@@ -537,3 +537,12 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
   .mc-print .mc-foot { font-size: 14px; color: #333; margin-top: 20px; }
   @page { size: A4; margin: 16mm; }
 }
+/* getting started */
+.gs { gap: 12px; }
+.gs-bar { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+.gs-bar > i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width .3s; }
+.gs-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+.gs-steps li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); min-width: 0; }
+.gs-steps li > svg { flex: none; margin-top: 2px; }
+.gs-steps li.done b { color: var(--muted); font-weight: 500; text-decoration: line-through; }
+@media (max-width: 800px) { .gs-steps { grid-template-columns: minmax(0, 1fr); } }

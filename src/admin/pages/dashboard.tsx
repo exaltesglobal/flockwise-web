@@ -1,4 +1,4 @@
-import { AlertTriangle, Cake, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
+import { AlertTriangle, Cake, CheckCircle2, Circle, Rocket, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { adminSession } from '@/api/client';
@@ -7,7 +7,7 @@ import { Avatar, BarChart, ErrorState, Loading } from '@/components/ui';
 import { formatDay, formatMoney, formatMoneyShort, formatNumber, formatRelative, formatTime, greetingKey } from '@/lib/format';
 import { useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
-import { useApi } from '@/lib/use-api';
+import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
 
@@ -32,6 +32,7 @@ export function DashboardPage() {
   return (
     <>
       {header}
+      <GettingStartedCard />
 
       <div className="grid cols-4">
         <div className="card kpi">
@@ -171,5 +172,45 @@ export function DashboardPage() {
         </div>
       </div>
     </>
+  );
+}
+
+/** The new-church checklist, worked out from the records. Hidden once everything is done or the office hides it. */
+function GettingStartedCard() {
+  const can = useCan();
+  const gs = useApi(() => AdminApi.gettingStarted.get(), []);
+  const dismiss = useAction(async (undo: boolean) => { const r = await AdminApi.gettingStarted.dismiss(undo); gs.setData(r); return r; });
+  const d = gs.data;
+  if (!d || d.done === d.total) return null;
+  if (d.dismissed) return null;
+  const pct = Math.round((d.done / d.total) * 100);
+  return (
+    <section className="card card-pad gs">
+      <div className="row between wrap" style={{ gap: 8, alignItems: 'flex-start' }}>
+        <div className="row" style={{ gap: 12 }}>
+          <div className="int-logo api"><Rocket size={20} /></div>
+          <div>
+            <h2 style={{ margin: 0 }}>Getting started</h2>
+            <p className="small muted" style={{ margin: '2px 0 0' }}>
+              {d.done} of {d.total} done.{d.trialDaysLeft !== null ? ` ${d.trialDaysLeft} days left of your free trial of everything.` : ''} Each step ticks itself when the records show it is done.
+            </p>
+          </div>
+        </div>
+        <button className="btn ghost sm" onClick={() => void dismiss.run(false)}>Hide this</button>
+      </div>
+      <div className="gs-bar"><i style={{ width: `${pct}%` }} /></div>
+      <ol className="gs-steps">
+        {d.steps.map((s) => (
+          <li key={s.id} className={s.done ? 'done' : ''}>
+            {s.done ? <CheckCircle2 size={18} color="var(--ok)" /> : <Circle size={18} className="muted" />}
+            <div className="grow" style={{ minWidth: 0 }}>
+              <b>{s.title}</b>
+              {!s.done && <p className="small muted" style={{ margin: '2px 0 0' }}>{s.body}</p>}
+            </div>
+            {!s.done && can(s.perm) && <Link to={s.link} className="btn sm">Do it</Link>}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }

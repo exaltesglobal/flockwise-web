@@ -90,6 +90,7 @@ import type {
   ImportSource,
   GiftImportResult,
   ExportBundle,
+  GettingStarted,
   ExportSummary,
   Insights,
   JoinRequest,
@@ -646,6 +647,10 @@ export const AdminApi = {
     recordMeeting: (id: string, input: { date: string; presentIds: string[]; guests: number; notes: string }) => a.post<GroupMeeting>(`/admin/groups/${id}/meetings`, input),
     joinRequests: () => a.get<Paginated<JoinRequest>>('/admin/groups/join-requests'),
     decide: (requestId: string, decision: 'approve' | 'decline') => a.post<void>(`/admin/groups/join-requests/${requestId}/${decision}`),
+  },
+  gettingStarted: {
+    get: () => a.get<GettingStarted>('/admin/getting-started'),
+    dismiss: (undo = false) => a.post<GettingStarted>('/admin/getting-started/dismiss', { undo }),
   },
   exportAll: {
     summary: () => a.get<ExportSummary>('/admin/export'),
