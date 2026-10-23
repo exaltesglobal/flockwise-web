@@ -373,7 +373,7 @@ function TemplateForm({ item, onClose, onSaved }: { item: Template | null; onClo
 
 // ---------- automations ----------
 
-type MessageAutomation = Exclude<keyof Automations, 'staffDigest' | 'smsDigest'>;
+type MessageAutomation = Exclude<keyof Automations, 'staffDigest' | 'smsDigest' | 'missedCall'>;
 const AUTOMATION_INFO: Record<MessageAutomation, { title: string; body: string }> = {
   birthday: { title: 'Birthday wishes', body: 'Sent on the morning of each person’s birthday.' },
   anniversary: { title: 'Wedding anniversaries', body: 'Sent to both spouses on their anniversary.' },

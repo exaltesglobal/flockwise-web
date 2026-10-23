@@ -125,6 +125,9 @@ import type {
   GreetingLinkView,
   AnnualReturnView,
   ReturnHeader,
+  MissedCall,
+  MissedCallHub,
+  MissedCallSettings,
   PublicGreeting,
   Recap,
   RecapFacts,
@@ -691,6 +694,12 @@ export const AdminApi = {
     submit: (template: string, year: number) => a.post<AnnualReturnView>('/admin/annual-return/submit', { template, year }),
     reopen: (template: string, year: number) => a.post<AnnualReturnView>('/admin/annual-return/reopen', { template, year }),
     exportCsv: (template: string, year: number) => a.get<{ csv: string }>(`/admin/annual-return/export.csv${qs({ template, year: String(year) })}`),
+  },
+  missedCall: {
+    hub: () => a.get<MissedCallHub>('/admin/missed-call'),
+    save: (input: Partial<MissedCallSettings> & { newKey?: boolean }) => a.put<MissedCallHub>('/admin/missed-call', input),
+    try: (from: string, to?: string) => a.post<MissedCall>('/admin/missed-call/try', { from, to }),
+    link: (id: string, personId: string) => a.post<MissedCall>(`/admin/missed-call/${id}/link`, { personId }),
   },
   recaps: {
     list: () => a.get<Recap[]>('/admin/recaps'),

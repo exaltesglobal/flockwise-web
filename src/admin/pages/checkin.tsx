@@ -283,7 +283,7 @@ function Desk({ event, desk }: { event: AdminEvent; desk: OfflineDesk }) {
                         <div className="small muted">{c.householdName ?? ''}{isLocal(c) && <span className="badge warn" style={{ marginLeft: 6 }}>Not sent yet</span>}{c.allergies && <span className="badge danger" style={{ marginLeft: 6 }}>{c.allergies}</span>}{c.volunteer && <span className="badge accent" style={{ marginLeft: 6 }}>Serving: {c.volunteer.teamName}</span>}</div>
                       </td>
                       <td className="small">{c.isChild ? c.roomName ?? 'No room' : <span className="muted">Adult</span>}</td>
-                      <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method === 'app' ? 'phone' : c.method}</span>}{c.method === 'app' && c.isChild && <div className="small muted">from phone</div>}</td>
+                      <td>{c.securityCode ? <span className="kbd">{c.securityCode}</span> : <span className="muted small">{c.method === 'app' ? 'phone' : c.method === 'phone' ? 'missed call' : c.method}</span>}{c.method === 'app' && c.isChild && <div className="small muted">from phone</div>}</td>
                       <td className="small muted">{formatTime(c.at)}{c.checkedOutAt ? ` → ${formatTime(c.checkedOutAt)}` : ''}</td>
                       <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                         {c.method === 'app' && c.isChild && c.securityCode && !c.checkedOutAt && <button className="btn sm ghost" title="Print name labels" disabled={!desk.online} onClick={async () => printLabels((await AdminApi.checkin.reprint(event.id, c.securityCode!)).labels)}><Printer size={14} /></button>}
