@@ -536,3 +536,7 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .notes-md h4 { margin: 8px 0 0; font-size: 14px; }
 .notes-md p, .notes-md ul { margin: 0; }
 .notes-md ul { padding-left: 20px; }
+
+/* A thin progress meter: the church-wide "we read together" bar and the like. */
+.meter { height: 10px; background: color-mix(in srgb, var(--primary) 14%, transparent); border-radius: 999px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.3s; }

@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, BookOpen, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -57,6 +57,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/calendar', label: 'Calendar & rooms', icon: CalendarRange },
       { to: '/admin/forms', label: 'Forms & sign-ups', icon: FileText, perm: ['events', 'people.edit'] },
       { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'] },
+      { to: '/admin/reading', label: 'Bible reading plan', icon: BookOpenCheck },
       { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'] },
     ],
   },

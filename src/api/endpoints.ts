@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub } from '@/core/types';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
@@ -247,6 +247,12 @@ export const MemberApi = {
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
   },
+  reading: {
+    get: () => m.get<MyReading>('/me/reading'),
+    join: (planId: string) => m.post<MyReading>(`/me/reading/${planId}/join`, {}),
+    leave: (planId: string) => m.del<MyReading>(`/me/reading/${planId}`),
+    done: (planId: string, day: number, done = true) => m.post<MyReading>(`/me/reading/${planId}/done`, { day, done }),
+  },
   rides: {
     get: (sunday?: string) => m.get<MyRides>(`/me/rides${qs({ sunday })}`),
     request: (input: { sunday?: string; people?: number; weekly?: boolean; note?: string }) => m.post<MyRides>('/me/rides/request', input),
@@ -466,6 +472,12 @@ export const AdminApi = {
     update: (id: string, input: { status?: 'reviewing' | 'approved' | 'declined' | 'withdrawn'; approved?: number; note?: string }) => a.patch<AidRequest>(`/admin/benevolence/${id}`, input),
     pay: (id: string, input: { via: string; reference?: string; date?: string; amount?: number }) => a.post<AidRequest>(`/admin/benevolence/${id}/pay`, input),
     addNote: (id: string, text: string) => a.post<AidRequest>(`/admin/benevolence/${id}/notes`, { text }),
+  },
+  reading: {
+    hub: (status?: 'active' | 'archived' | 'all') => a.get<ReadingHub>(`/admin/reading${qs({ status })}`),
+    create: (input: { template: ReadingTemplate; name?: string; description?: string; startsOn: string; readings?: string }) => a.post<ReadingPlanView>('/admin/reading', input),
+    update: (id: string, input: { name?: string; description?: string; status?: 'active' | 'archived' }) => a.patch<ReadingPlanView>(`/admin/reading/${id}`, input),
+    readers: (id: string) => a.get<ReadingReader[]>(`/admin/reading/${id}/readers`),
   },
   rides: {
     hub: (sunday?: string) => a.get<RidesHub>(`/admin/rides${qs({ sunday })}`),
