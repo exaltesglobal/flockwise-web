@@ -118,3 +118,31 @@ img { max-width: 100%; height: auto; display: block; }
 .nav .brand img { height: 30px; width: auto; }
 .foot img { height: 24px; width: auto; }
 .nav-links a { white-space: nowrap; }
+
+/* What's new */
+.section-head .eyebrow { display: block; margin-bottom: 10px; }
+.grid.new .feature { position: relative; padding-top: 22px; }
+.plan-tag { display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 999px; margin-bottom: 12px; background: #e6f2ee; color: var(--pasture); }
+.plan-tag.grow { background: #e6f2ee; color: var(--pasture); }
+.plan-tag.thrive { background: #fdf0d8; color: #8a5a06; }
+.plan-tag.cathedral { background: var(--deep); color: var(--mint); }
+.plan-tag.seed { background: #eef0f0; color: var(--muted); }
+.more-note { max-width: 860px; margin: 32px auto 0; text-align: center; color: var(--muted); font-size: 15.5px; }
+
+/* Pricing */
+.plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.plan { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 26px 22px; display: flex; flex-direction: column; }
+.plan.featured { border-color: var(--pasture); box-shadow: 0 20px 50px rgba(15,63,54,0.14); }
+.plan-flag { position: absolute; top: -13px; left: 22px; background: var(--saffron); color: var(--ink); font-size: 12.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.plan h3 { font-size: 22px; }
+.plan .tagline { margin: 4px 0 14px; color: var(--muted); font-size: 15px; min-height: 2.6em; }
+.plan .price { margin: 0 0 16px; display: flex; flex-direction: column; }
+.plan .price b { font-family: 'Outfit', system-ui, sans-serif; font-size: 34px; letter-spacing: -0.02em; line-height: 1.1; }
+.plan .price span { color: var(--muted); font-size: 14px; }
+.plan .limits { list-style: none; padding: 12px 0; margin: 0 0 14px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 14.5px; color: var(--muted); }
+.plan .limits b { color: var(--ink); font-weight: 700; }
+.plan .ticks { font-size: 15px; margin-bottom: 20px; flex: 1; }
+.plan .ticks li { font-weight: 400; }
+.plan .btn { width: 100%; }
+@media (max-width: 980px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } .plan-flag { top: -12px; } }
+@media (max-width: 600px) { .plans { grid-template-columns: minmax(0, 1fr); } }
