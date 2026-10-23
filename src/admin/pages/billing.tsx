@@ -117,6 +117,7 @@ export function PlanBilling() {
           <div className="stack-sm">
             <Meter label="People" used={b.usage.people} limit={b.limits.people} />
             <Meter label="Office logins" used={b.usage.staff} limit={b.limits.staff} />
+            <Meter label="Team app logins" used={b.usage.teamLogins} limit={b.limits.teamLogins} />
             <Meter label="Campuses" used={b.usage.campuses} limit={b.limits.campuses} />
             <Meter label="AI credits this month" used={b.usage.aiCredits} limit={b.limits.aiCredits + b.addons.ai.extraThisMonth} />
           </div>
@@ -143,7 +144,7 @@ export function PlanBilling() {
                 {money(price, b.currency)}
                 {price > 0 && <span className="small muted"> / {interval === 'yearly' ? 'year' : 'month'}</span>}
               </div>
-              <p className="small" style={{ margin: 0 }}>Up to {p.limits.people >= 1_000_000 ? 'unlimited' : p.limits.people.toLocaleString('en-IN')} people · {p.limits.staff >= 1_000_000 ? 'unlimited' : p.limits.staff} office logins · {p.limits.campuses >= 1_000_000 ? 'unlimited' : p.limits.campuses} {p.limits.campuses === 1 ? 'campus' : 'campuses'} · {p.limits.aiCredits.toLocaleString('en-IN')} AI credits a month</p>
+              <p className="small" style={{ margin: 0 }}>Up to {p.limits.people >= 1_000_000 ? 'unlimited' : p.limits.people.toLocaleString('en-IN')} people · {p.limits.staff >= 1_000_000 ? 'unlimited' : p.limits.staff} office logins · {p.limits.teamLogins >= 1_000_000 ? 'unlimited' : p.limits.teamLogins} Team app logins · {p.limits.campuses >= 1_000_000 ? 'unlimited' : p.limits.campuses} {p.limits.campuses === 1 ? 'campus' : 'campuses'} · {p.limits.aiCredits.toLocaleString('en-IN')} AI credits a month</p>
               <ul>
                 {p.highlights.map((h) => <li key={h}><Check size={14} /> {h}</li>)}
               </ul>
@@ -172,6 +173,7 @@ export function PlanBilling() {
             <tbody>
               <tr className="limits"><td>People</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.people >= 1_000_000 ? 'Unlimited' : p.limits.people.toLocaleString('en-IN')}</td>)}</tr>
               <tr className="limits"><td>Office logins</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.staff >= 1_000_000 ? 'Unlimited' : p.limits.staff}</td>)}</tr>
+              <tr className="limits"><td>Team app logins</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.teamLogins >= 1_000_000 ? 'Unlimited' : p.limits.teamLogins}</td>)}</tr>
               <tr className="limits"><td>Campuses</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.campuses >= 1_000_000 ? 'Unlimited' : p.limits.campuses}</td>)}</tr>
               <tr className="limits"><td>AI credits a month</td>{b.plans.map((p) => <td key={p.id} className={p.id === current ? 'current' : ''}>{p.limits.aiCredits.toLocaleString('en-IN')}</td>)}</tr>
               {FEATURES.map((g) => (
