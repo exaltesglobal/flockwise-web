@@ -621,3 +621,17 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .co-sess-row input:first-of-type { flex: 1; min-width: 0; }
 @media (max-width: 600px) { .co-sess-row { flex-wrap: wrap; } }
 .co-stat { display: flex; flex-direction: column; gap: 2px; }
+
+/* Prayer vigils */
+.vg-bar { height: 8px; border-radius: 99px; background: var(--tint); overflow: hidden; }
+.vg-bar > span { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+.vg-gap { color: var(--danger); }
+.vg-day { padding: 10px 16px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.vg-slot { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.vg-slot:last-child { border-bottom: 0; }
+.vg-slot.vg-open { background: var(--warn-tint); }
+.vg-time { width: 150px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.vg-people { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.vg-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 10px; border-radius: 99px; background: var(--tint); font-size: 13px; }
+.vg-chip button { border: 0; background: none; color: var(--muted); cursor: pointer; display: grid; place-items: center; padding: 2px; }
+.vg-add { width: 280px; max-width: 100%; }

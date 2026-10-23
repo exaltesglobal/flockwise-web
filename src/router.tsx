@@ -89,6 +89,8 @@ import { PublicQrPage } from '@/public/qr';
 import { ElectionsPage } from '@/admin/pages/elections';
 import { SafeguardingPage } from '@/admin/pages/safeguarding';
 import { CoursesPage } from '@/admin/pages/courses';
+import { VigilsPage } from '@/admin/pages/vigils';
+import { MemberVigilsPage } from '@/member/pages/vigils';
 import { MemberCoursesPage } from '@/member/pages/courses';
 
 const routes = [
@@ -151,6 +153,7 @@ const routes = [
       { path: 'elections', element: <ElectionsPage /> },
       { path: 'safeguarding', element: <SafeguardingPage /> },
       { path: 'courses', element: <CoursesPage /> },
+      { path: 'vigils', element: <VigilsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -209,6 +212,7 @@ const routes = [
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
+      { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },

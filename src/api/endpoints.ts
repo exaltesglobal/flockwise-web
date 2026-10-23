@@ -8,6 +8,7 @@ import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, Ca
 import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, BankLineView, BankUploadResult, BankView, AdminDonation as CoreAdminDonation } from '@/core/types';
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
+import type { MyVigil, Vigil, VigilDetail, VigilView } from '@/core/types';
 import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
@@ -289,6 +290,11 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  vigils: {
+    get: () => m.get<{ vigils: MyVigil[] }>('/me/vigils'),
+    take: (id: string, slotStart: string) => m.post<{ vigils: MyVigil[] }>(`/me/vigils/${id}/slots`, { slotStart }),
+    leave: (id: string, slotStart: string) => m.del<{ vigils: MyVigil[] }>(`/me/vigils/${id}/slots?slotStart=${encodeURIComponent(slotStart)}`),
   },
   courses: {
     get: () => m.get<{ courses: MyCourse[] }>('/me/courses'),
@@ -681,6 +687,15 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  vigils: {
+    list: () => a.get<{ vigils: VigilView[] }>('/admin/vigils'),
+    get: (id: string) => a.get<VigilDetail>(`/admin/vigils/${id}`),
+    create: (input: Partial<Omit<Vigil, 'id' | 'status' | 'createdAt' | 'createdBy'>>) => a.post<VigilDetail>('/admin/vigils', input),
+    update: (id: string, patch: Partial<Omit<Vigil, 'id' | 'createdAt' | 'createdBy'>>) => a.patch<VigilDetail>(`/admin/vigils/${id}`, patch),
+    remove: (id: string) => a.del<void>(`/admin/vigils/${id}`),
+    add: (id: string, personId: string, slotStart: string) => a.post<VigilDetail>(`/admin/vigils/${id}/signups`, { personId, slotStart }),
+    drop: (id: string, signupId: string) => a.del<VigilDetail>(`/admin/vigils/${id}/signups/${signupId}`),
   },
   bank: {
     view: (q: { account?: BankAccountId; from?: string; to?: string }) => a.get<BankView>(`/admin/bank${qs(q)}`),

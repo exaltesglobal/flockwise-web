@@ -526,6 +526,19 @@ export const en = {
   courseJoined: 'Signed up. See you there!',
   courseLeft: 'You have left the course.',
   courseTbc: 'Date to be announced',
+  vigilTitle: 'Prayer vigils',
+  vigilBody: 'Take an hour in a prayer chain or a day in a fasting chain, so every hour is covered. We will remind you before your slot.',
+  vigilNone: 'No prayer chain is running right now.',
+  vigilCovered: '{covered} of {total} covered',
+  vigilTake: 'Take',
+  vigilTaken: 'Yours',
+  vigilFull: 'Full',
+  vigilLeave: 'Give it up',
+  vigilMine: 'Your slots',
+  vigilThanks: 'Thank you. We will remind you before it starts.',
+  vigilPrayer: 'Prayer chain',
+  vigilFasting: 'Fasting chain',
+  vigilOpenOnly: 'Show open slots only',
 };
 
 export type Strings = typeof en;
