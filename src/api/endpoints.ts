@@ -2,7 +2,7 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols } from '@/core/types';
+import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type MissionaryInput = { name: string; field?: string; organisation?: string; work?: string; prayerPoints?: string; monthlyNeed?: number | null; since?: string | null; email?: string | null; phone?: string | null; photoUrl?: string | null; showPublic?: boolean };
@@ -234,6 +234,13 @@ export const MemberApi = {
     request: (input: { preferredDates: string[]; note?: string }) => m.post<NonNullable<MyCarols['request']>>('/me/carols/request', input),
     cancel: () => m.del<void>('/me/carols/request'),
   },
+  rides: {
+    get: (sunday?: string) => m.get<MyRides>(`/me/rides${qs({ sunday })}`),
+    request: (input: { sunday?: string; people?: number; weekly?: boolean; note?: string }) => m.post<MyRides>('/me/rides/request', input),
+    cancelRequest: (sunday?: string) => m.del<MyRides>(`/me/rides/request${qs({ sunday })}`),
+    offer: (input: { sunday?: string; seats?: number; weekly?: boolean; note?: string }) => m.post<MyRides>('/me/rides/offer', input),
+    cancelOffer: (sunday?: string) => m.del<MyRides>(`/me/rides/offer${qs({ sunday })}`),
+  },
   serving: {
     get: () => m.get<MyServing>('/me/serving'),
     respond: (id: string, status: 'accepted' | 'declined', note?: string) => m.post<Assignment>(`/me/serving/${id}/respond`, { status, note }),
@@ -431,6 +438,16 @@ export const AdminApi = {
   calendarLinks: {
     feeds: () => a.get<{ church: CalendarFeedLink; teams: CalendarFeedLink[] }>('/admin/calendar/feeds'),
     reset: (id: string) => a.post<CalendarFeedLink>(`/admin/calendar/feeds/${id}/reset`),
+  },
+  rides: {
+    hub: (sunday?: string) => a.get<RidesHub>(`/admin/rides${qs({ sunday })}`),
+    match: (sunday: string, anyZone = false) => a.post<RidesHub & { made: number }>('/admin/rides/match', { sunday, anyZone }),
+    addRequest: (input: { personId: string; sunday: string; people?: number; weekly?: boolean; note?: string }) => a.post<RideRequestView>('/admin/rides/requests', input),
+    updateRequest: (id: string, input: { offerId?: string | null; people?: number; note?: string; status?: 'cancelled' }) => a.patch<RideRequestView>(`/admin/rides/requests/${id}`, input),
+    removeRequest: (id: string) => a.del<void>(`/admin/rides/requests/${id}`),
+    addOffer: (input: { personId: string; sunday: string; seats?: number; weekly?: boolean; note?: string }) => a.post<RideOfferView>('/admin/rides/offers', input),
+    updateOffer: (id: string, input: { seats?: number; note?: string; weekly?: boolean }) => a.patch<RideOfferView>(`/admin/rides/offers/${id}`, input),
+    removeOffer: (id: string) => a.del<void>(`/admin/rides/offers/${id}`),
   },
   carols: {
     get: () => a.get<CarolsHub>('/admin/carols'),

@@ -28,6 +28,7 @@ import { LiveServicePage } from '@/admin/pages/live';
 import { MediaPage } from '@/admin/pages/media';
 import { TeamHubPage } from '@/admin/pages/team-hub';
 import { CarolsPage } from '@/admin/pages/carols';
+import { RidesPage } from '@/admin/pages/rides';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
@@ -62,6 +63,7 @@ import { MemberDoorPage } from '@/member/pages/door';
 import { MemberPrayerPage } from '@/member/pages/prayer';
 import { MemberServingPage } from '@/member/pages/serving';
 import { MemberCarolsPage } from '@/member/pages/carols';
+import { MemberRidesPage } from '@/member/pages/rides';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -113,6 +115,7 @@ const routes = [
       { path: 'media', element: <MediaPage /> },
       { path: 'team-hub', element: <TeamHubPage /> },
       { path: 'carols', element: <CarolsPage /> },
+      { path: 'rides', element: <RidesPage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
@@ -152,6 +155,7 @@ const routes = [
       { path: 'give', element: <MemberGivePage /> },
       { path: 'serving', element: <MemberServingPage /> },
       { path: 'carols', element: <MemberCarolsPage /> },
+      { path: 'rides', element: <MemberRidesPage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },
