@@ -7,6 +7,7 @@ import type { AtRiskPerson, CareCase, CareStatus, CareType } from '@/api/admin-t
 import { AdminApi, type AdminPrayer } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { formatDate, formatRelative } from '@/lib/format';
+import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { QrCode } from '@/components/qr';
@@ -39,6 +40,7 @@ export function CarePage() {
   const tab = (params.get('tab') as Tab) || 'cases';
   const openId = params.get('case');
   const [creating, setCreating] = useState<Partial<{ person: PickedPerson; type: CareType; title: string }> | null>(null);
+  useNewParam(() => setCreating({}));
   const [mine, setMine] = useState(false);
   const cases = useApi(() => AdminApi.care.list({ mine }), [mine]);
   const atRisk = useApi(AdminApi.care.atRisk);

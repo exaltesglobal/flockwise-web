@@ -75,7 +75,7 @@ function Plans() {
     <div className="split">
       <div className="card side-list">
         <div className="toolbar"><Segmented value={when} onChange={(v) => { setWhen(v); setSelected(null); }} options={[{ value: 'upcoming', label: 'Upcoming' }, { value: 'past', label: 'Past' }]} /></div>
-        {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : list.data.length === 0 ? <Empty icon={<ClipboardList size={28} />} title="No services" /> : list.data.map((s) => (
+        {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : list.data.length === 0 ? <Empty icon={<ClipboardList size={28} />} title="No services to plan yet" body="Plans hang off services on the calendar. Add your Sunday service once and set it to repeat." action={<Link className="btn primary" to="/admin/events?new=1"><Plus size={16} /> Add a service</Link>} /> : list.data.map((s) => (
           <div key={s.event.id} className={`list-row ${s.event.id === current ? 'on' : ''}`} onClick={() => setSelected(s.event.id)}>
             <div className="date-chip"><b>{new Date(s.event.startsAt).getDate()}</b><small>{new Date(s.event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}</small></div>
             <div className="grow" style={{ minWidth: 0 }}>
@@ -288,7 +288,7 @@ function Songs() {
         {can('services') && <button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> Add song</button>}
       </div>
       {importing && <ImportSongsModal existing={list.data ?? []} onClose={() => setImporting(false)} onDone={() => { setImporting(false); list.reload(); }} />}
-      {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : list.data.length === 0 ? <Empty icon={<Music size={28} />} title="No songs" /> : (
+      {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : list.data.length === 0 ? <Empty icon={<Music size={28} />} title="No songs yet" body="Add the songs your church sings, or pick hundreds of hymns from the Song database tab." action={can('services') ? <button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> Add a song</button> : undefined} /> : (
         <div className="table-wrap">
           <table className="table">
             <thead><tr><th>Title</th><th>Key</th><th>BPM</th><th>Tags</th><th className="num">Used</th><th>Last used</th><th /></tr></thead>

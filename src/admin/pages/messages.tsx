@@ -9,6 +9,7 @@ import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToas
 import { isUsingMocks } from '@/lib/config';
 import { formatDate, formatRelative, formatTime, toLocalInput } from '@/lib/format';
 import { useCan } from '@/lib/perms';
+import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { AiWriter } from '../ai';
@@ -50,6 +51,7 @@ export function MessagesPage() {
     const listId = new URLSearchParams(window.location.search).get('list');
     return listId ? { audience: { type: 'list', ids: [listId] } } : null;
   });
+  useNewParam(() => setComposing({}));
   const channels = useApi(AdminApi.messages.channels);
   const can = useCan();
   const list = useApi(AdminApi.messages.list);
@@ -328,7 +330,7 @@ function TemplatesPane({ onUse }: { onUse: (t: Template) => void }) {
         <button className="btn sm" onClick={() => setEditing('new')}><Plus size={14} /> New template</button>
       </div>
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? (
-        <Empty icon={<FileText size={32} />} title="No templates yet" />
+        <Empty icon={<FileText size={32} />} title="No templates yet" body="Save messages you send often, like the birthday wish or the Sunday reminder." action={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New template</button>} />
       ) : data.map((t) => {
         const Icon = CHANNEL_ICON[t.channel];
         return (

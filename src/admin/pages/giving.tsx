@@ -12,6 +12,7 @@ import { shrinkPhoto } from '@/lib/photo';
 import { useSession } from '@/lib/session';
 import { useCan } from '@/lib/perms';
 import { printHtml, statementHtml } from '@/lib/print';
+import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PersonField, type PickedPerson } from '../components/person-picker';
@@ -82,6 +83,7 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
   const [extra, setExtra] = useState<AdminDonation[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
+  useNewParam(() => setRecording(true));
   const [statementFor, setStatementFor] = useState<string | null>(null);
   const toast = useToast();
   const can = useCan();
@@ -156,7 +158,7 @@ function Donations({ funds, currency, onChanged }: { funds: AdminFund[]; currenc
           {can('giving.edit') && <button className="btn primary" onClick={() => setRecording(true)}><Plus size={16} /> Record cash or cheque</button>}
         </div>
         {list.error ? <ErrorState error={list.error} onRetry={list.reload} /> : !list.data ? <Loading /> : rows.length === 0 ? (
-          <Empty icon={<Gift size={32} />} title="No gifts in this period" />
+          <Empty icon={<Gift size={32} />} title="No gifts in this period" body="Online gifts appear by themselves. Record cash and cheques from the offering here." action={can('giving.edit') ? <button className="btn primary" onClick={() => setRecording(true)}><Plus size={16} /> Record cash or cheque</button> : undefined} />
         ) : (
           <div className="table-wrap">
             <table className="table">

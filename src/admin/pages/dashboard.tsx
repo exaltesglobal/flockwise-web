@@ -1,8 +1,9 @@
-import { AlertTriangle, Cake, CheckCircle2, Circle, Rocket, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
+import { AlertTriangle, Cake, CheckCircle2, ChevronRight, Circle, Rocket, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
+import type { Dashboard } from '@/core/types';
 import { Avatar, BarChart, ErrorState, Loading } from '@/components/ui';
 import { formatDay, formatMoney, formatMoneyShort, formatNumber, formatRelative, formatTime, greetingKey } from '@/lib/format';
 import { useCan } from '@/lib/perms';
@@ -32,6 +33,7 @@ export function DashboardPage() {
   return (
     <>
       {header}
+      <TodayPanel data={data} />
       <GettingStartedCard />
 
       <div className="grid cols-4">
@@ -176,6 +178,33 @@ export function DashboardPage() {
 }
 
 /** The new-church checklist, worked out from the records. Hidden once everything is done or the office hides it. */
+/** What needs doing now, worked out from the dashboard numbers; each line opens the place to act. */
+function TodayPanel({ data }: { data: Dashboard }) {
+  const can = useCan();
+  const items: { text: string; to: string; icon: typeof Users; tone?: 'warn' }[] = [];
+  if (can('care') && data.care.overdue) items.push({ text: `${data.care.overdue} care ${data.care.overdue === 1 ? 'case is' : 'cases are'} overdue`, to: '/admin/care', icon: AlertTriangle, tone: 'warn' });
+  if (can('care') && data.care.atRisk) items.push({ text: `Call ${data.care.atRisk} ${data.care.atRisk === 1 ? 'person' : 'people'} not seen for 3+ weeks`, to: '/admin/care?tab=at-risk', icon: HeartHandshake });
+  if (can('groups') && data.pendingJoinRequests) items.push({ text: `${data.pendingJoinRequests} ${data.pendingJoinRequests === 1 ? 'person wants' : 'people want'} to join a group`, to: '/admin/groups', icon: UsersRound });
+  if (can('volunteers') && data.serving.openSlots) items.push({ text: `${data.serving.openSlots} serving ${data.serving.openSlots === 1 ? 'slot needs' : 'slots need'} someone${data.serving.nextEventTitle ? ` for ${data.serving.nextEventTitle}` : ''}`, to: '/admin/volunteers', icon: HandHeart });
+  if (can('volunteers') && data.serving.pending) items.push({ text: `${data.serving.pending} volunteer ${data.serving.pending === 1 ? 'reply' : 'replies'} still awaited`, to: '/admin/volunteers', icon: HandHeart });
+  if (can('care') && data.care.prayer) items.push({ text: `${data.care.prayer} prayer ${data.care.prayer === 1 ? 'request' : 'requests'} to pray over`, to: '/admin/care?tab=prayer', icon: Sparkles });
+  if (data.birthdaysThisWeek.length) items.push({ text: `${data.birthdaysThisWeek.length} ${data.birthdaysThisWeek.length === 1 ? 'birthday' : 'birthdays'} this week: send a greeting`, to: '/admin/celebrations', icon: Cake });
+  return (
+    <div className="card today-panel">
+      <div className="today-head"><b>Today</b><span className="small muted">{items.length ? `${items.length} ${items.length === 1 ? 'thing' : 'things'} to do` : 'Nothing waiting'}</span></div>
+      {items.length === 0 ? (
+        <p className="today-done"><CheckCircle2 size={18} /> All caught up. Nobody is waiting on you right now.</p>
+      ) : (
+        <div className="today-list">
+          {items.map((i) => (
+            <Link key={i.text} to={i.to} className={`today-item ${i.tone ?? ''}`}><i.icon size={16} /> <span className="grow">{i.text}</span> <ChevronRight size={16} className="muted" /></Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GettingStartedCard() {
   const can = useCan();
   const gs = useApi(() => AdminApi.gettingStarted.get(), []);
