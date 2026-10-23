@@ -512,6 +512,20 @@ export const en = {
   calendarApple: 'Apple or Outlook calendar',
   calendarCopy: 'Copy the link',
   calendarCopied: 'Copied',
+  courseTitle: 'Classes and courses',
+  courseBody: 'Baptism and membership classes, marriage preparation and courses for growing in faith. Sign up here.',
+  courseNone: 'No classes are taking sign-ups right now. Ask the church office about the next one.',
+  courseSessions: '{n} sessions',
+  courseLed: 'Led by {name}',
+  courseJoin: 'Sign me up',
+  courseLeave: 'Leave this course',
+  courseFull: 'Full',
+  courseEnrolled: "You're signed up",
+  courseCompleted: 'Completed',
+  courseProgress: 'Attended {done} of {min} needed',
+  courseJoined: 'Signed up. See you there!',
+  courseLeft: 'You have left the course.',
+  courseTbc: 'Date to be announced',
 };
 
 export type Strings = typeof en;

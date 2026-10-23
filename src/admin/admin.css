@@ -594,3 +594,30 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .sg-warn { color: var(--danger); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
 .sg-history ul { margin: 6px 0 0; padding-left: 18px; }
 .sg-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; }
+
+/* Classes & courses */
+.co-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.co-card { display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.co-card:hover { border-color: var(--primary); }
+.co-nums { display: flex; gap: 16px; }
+.co-nums b { font-size: 20px; margin-right: 4px; }
+.co-h { margin: 8px 0 0; font-size: 15px; color: var(--muted); }
+.co-big { font-size: 22px; display: block; }
+.co-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.co-template { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.co-template input { position: absolute; opacity: 0; pointer-events: none; }
+.co-template.on { border-color: var(--primary); background: var(--tint); }
+.co-add { display: flex; flex-direction: column; gap: 6px; }
+.co-table th.co-sess { text-align: center; min-width: 52px; }
+.co-table th.co-sess > span { display: block; line-height: 1.2; }
+.co-all { padding: 0 6px; font-size: 11px; margin-top: 2px; }
+.co-cell { text-align: center; }
+.co-tick { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--card); color: var(--on-primary); display: inline-grid; place-items: center; cursor: pointer; }
+.co-tick.on { background: var(--primary); border-color: var(--primary); }
+.co-tick:disabled { cursor: default; }
+.co-actions { white-space: nowrap; }
+.co-legend { margin: 0; padding-left: 20px; columns: 2 260px; }
+.co-sess-row { align-items: center; gap: 8px; }
+.co-sess-row input:first-of-type { flex: 1; min-width: 0; }
+@media (max-width: 600px) { .co-sess-row { flex-wrap: wrap; } }
+.co-stat { display: flex; flex-direction: column; gap: 2px; }

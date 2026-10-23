@@ -8,6 +8,7 @@ import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, Ca
 import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, BankLineView, BankUploadResult, BankView, AdminDonation as CoreAdminDonation } from '@/core/types';
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
+import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
 export type ReturnTemplateSummary = { id: string; name: string; body: string; unit: string; above: string; lines: number };
@@ -288,6 +289,11 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  courses: {
+    get: () => m.get<{ courses: MyCourse[] }>('/me/courses'),
+    enroll: (id: string) => m.post<{ courses: MyCourse[] }>(`/me/courses/${id}/enroll`, {}),
+    leave: (id: string) => m.del<{ courses: MyCourse[] }>(`/me/courses/${id}`),
   },
   reading: {
     get: () => m.get<MyReading>('/me/reading'),
@@ -665,6 +671,16 @@ export const AdminApi = {
     settings: (patch: Partial<SafeguardSettings>) => a.patch<SafeguardHub>('/admin/safeguarding/settings', patch),
     addCheck: (personId: string, input: Pick<SafeguardCheck, 'kind' | 'issuedOn'> & { expiresOn?: string | null; reference?: string; note?: string }) => a.post<SafeguardPersonView>(`/admin/safeguarding/${personId}/checks`, input),
     removeCheck: (personId: string, checkId: string) => a.del<SafeguardPersonView>(`/admin/safeguarding/${personId}/checks/${checkId}`),
+  },
+  courses: {
+    hub: () => a.get<CoursesHub>('/admin/courses'),
+    get: (id: string) => a.get<CourseDetail>(`/admin/courses/${id}`),
+    create: (input: Partial<Omit<Course, 'id' | 'sessions' | 'status' | 'createdAt'>> & { sessions?: Partial<CourseSession>[] }) => a.post<CourseDetail>('/admin/courses', input),
+    update: (id: string, patch: Partial<Omit<Course, 'id' | 'createdAt'>>) => a.patch<CourseDetail>(`/admin/courses/${id}`, patch),
+    enroll: (id: string, personIds: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/enroll`, { personIds }),
+    attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
+    drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
+    complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
   },
   bank: {
     view: (q: { account?: BankAccountId; from?: string; to?: string }) => a.get<BankView>(`/admin/bank${qs(q)}`),

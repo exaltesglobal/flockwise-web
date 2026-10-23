@@ -88,6 +88,8 @@ import { GreetingPage } from '@/public/greeting';
 import { PublicQrPage } from '@/public/qr';
 import { ElectionsPage } from '@/admin/pages/elections';
 import { SafeguardingPage } from '@/admin/pages/safeguarding';
+import { CoursesPage } from '@/admin/pages/courses';
+import { MemberCoursesPage } from '@/member/pages/courses';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -148,6 +150,7 @@ const routes = [
       { path: 'rentals', element: <RentalsPage /> },
       { path: 'elections', element: <ElectionsPage /> },
       { path: 'safeguarding', element: <SafeguardingPage /> },
+      { path: 'courses', element: <CoursesPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -205,6 +208,7 @@ const routes = [
       { path: 'rides', element: <MemberRidesPage /> },
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
+      { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },
