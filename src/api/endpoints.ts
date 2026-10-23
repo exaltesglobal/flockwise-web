@@ -89,6 +89,8 @@ import type {
   ImportResult,
   ImportSource,
   GiftImportResult,
+  ExportBundle,
+  ExportSummary,
   Insights,
   JoinRequest,
   MemberPreferences,
@@ -644,6 +646,10 @@ export const AdminApi = {
     recordMeeting: (id: string, input: { date: string; presentIds: string[]; guests: number; notes: string }) => a.post<GroupMeeting>(`/admin/groups/${id}/meetings`, input),
     joinRequests: () => a.get<Paginated<JoinRequest>>('/admin/groups/join-requests'),
     decide: (requestId: string, decision: 'approve' | 'decline') => a.post<void>(`/admin/groups/join-requests/${requestId}/${decision}`),
+  },
+  exportAll: {
+    summary: () => a.get<ExportSummary>('/admin/export'),
+    bundle: () => a.post<ExportBundle>('/admin/export', {}),
   },
   giving: {
     donations: (q: DonationQuery) => a.get<DonationPage>(`/admin/giving/donations${qs(q)}`),

@@ -12,6 +12,7 @@
     "build:preview": "VITE_PREVIEW=true vite build --mode preview --outDir dist-preview"
   },
   "dependencies": {
+    "fflate": "^0.8.3",
     "lucide-react": "^1.61.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^5.7.284",

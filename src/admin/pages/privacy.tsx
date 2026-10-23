@@ -1,9 +1,9 @@
 // Settings › Privacy: India's DPDP Act. The grievance officer and notice members see, data requests with
 // due dates (correction, erasure, a copy of their data), and a quick check of consent across the church.
-import { Download, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Download, FolderArchive, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import type { DataRequest, DataRequestKind, PrivacyOverview } from '@/api/admin-types';
+import type { DataRequest, DataRequestKind, ExportSummary, PrivacyOverview } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -26,6 +26,7 @@ export function PrivacySettings() {
       <Summary d={data} />
       <Requests d={data} reload={reload} />
       {can('settings') && <Officer d={data} onSaved={setData} />}
+      {can('settings') && <ExportEverything />}
     </div>
   );
 }
@@ -181,6 +182,52 @@ function Officer({ d, onSaved }: { d: PrivacyOverview; onSaved: (d: PrivacyOverv
       </Field>
       <FormError error={save.error} />
       <div><button className="btn primary" disabled={save.busy} onClick={async () => { const r = await save.run(); if (r) { onSaved(r); toast('Saved'); } }}>Save</button></div>
+    </section>
+  );
+}
+
+/** The whole church as a zip: readable sheets, every table and a JSON copy. Built in the browser so nothing is stored on the server. */
+function ExportEverything() {
+  const summary = useApi(() => AdminApi.exportAll.summary(), []);
+  const toast = useToast();
+  const build = useAction(async () => {
+    const [{ zipSync, strToU8 }, bundle] = await Promise.all([import('fflate'), AdminApi.exportAll.bundle()]);
+    const files: Record<string, Uint8Array> = { 'README.txt': strToU8(bundle.readme) };
+    for (const f of bundle.files) files[f.name] = strToU8(f.csv);
+    const zip = zipSync(files, { level: 6 });
+    const name = `flockwise-export-${bundle.generatedAt.slice(0, 10)}.zip`;
+    const url = URL.createObjectURL(new Blob([zip as BlobPart], { type: 'application/zip' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    toast(`Downloaded ${name}`);
+    return bundle;
+  });
+  const s: ExportSummary | null = summary.data;
+  return (
+    <section className="card card-pad stack">
+      <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+        <div className="int-logo api"><FolderArchive size={22} /></div>
+        <div className="grow" style={{ minWidth: 0 }}>
+          <h3 style={{ margin: 0 }}>Export everything</h3>
+          <p className="muted small" style={{ margin: '4px 0 0' }}>Your data is yours. Download the whole church as a zip: people, gifts and attendance as spreadsheets with names, one sheet per table, and a complete JSON copy for moving to another system or keeping a backup. Passwords, payment keys and secret ballots are never included.</p>
+        </div>
+      </div>
+      {s && (
+        <div className="stat-row">
+          <div className="mini-stat"><b>{s.people.toLocaleString('en-IN')}</b><span>people</span></div>
+          <div className="mini-stat"><b>{s.gifts.toLocaleString('en-IN')}</b><span>gifts</span></div>
+          <div className="mini-stat"><b>{s.attendance.toLocaleString('en-IN')}</b><span>check-ins</span></div>
+          <div className="mini-stat"><b>{s.files}</b><span>files in the zip</span></div>
+        </div>
+      )}
+      <FormError error={build.error} />
+      <div className="row wrap" style={{ gap: 8 }}>
+        <button className="btn primary" disabled={build.busy || !s} onClick={() => void build.run()}><Download size={15} /> {build.busy ? 'Preparing…' : 'Download everything (.zip)'}</button>
+        <span className="small muted">Every export is noted in the audit log. Uploaded files are in the media library.</span>
+      </div>
     </section>
   );
 }
