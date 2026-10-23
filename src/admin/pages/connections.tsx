@@ -6,7 +6,7 @@ import { Link, useLocation } from 'react-router';
 
 import type { CanvaStatus, ConnectionsStatus, GcsStatus, ZoomStatus } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
-import { OBS_MOMENTS } from '@/core/types';
+import { OBS_MOMENTS, type CanvaExportFormat } from '@/core/types';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
@@ -198,7 +198,7 @@ function CanvaCard({ status: c, onChange }: { status: CanvaStatus; onChange: (s:
             <h3 style={{ margin: 0 }}>Canva</h3>
             {c.connected ? <span className="badge ok">Connected</span> : <span className="badge">Not connected</span>}
           </div>
-          <p className="muted small" style={{ margin: '4px 0 0' }}>Open invitations and social posts in the church’s Canva with the brand kit already applied: Events › Invitation › “Open in Canva”. The design starts from the card Flockwise drew, ready to tweak.</p>
+          <p className="muted small" style={{ margin: '4px 0 0' }}>Open invitations and social posts in the church’s Canva with the brand kit already applied: Events › Invitation › “Open in Canva”. The design starts from the card Flockwise drew, ready to tweak; when it is done, “Save to Flockwise” brings it back as a picture or PDF.</p>
         </div>
       </div>
       {!c.available ? (
@@ -213,6 +213,7 @@ function CanvaCard({ status: c, onChange }: { status: CanvaStatus; onChange: (s:
             <div><dt>Designs opened</dt><dd>{c.designs}</dd></div>
           </dl>
           {c.lastError && <div className="alert warn">Canva’s last answer was an error: {c.lastError}</div>}
+          <CanvaDesigns />
           <div className="row wrap" style={{ gap: 8 }}>
             <span className="grow" />
             <Disconnect note="Designs stay in Canva." onConfirm={async () => { onChange(await AdminApi.integrations.disconnectCanva()); toast('Canva disconnected'); }} />
@@ -220,6 +221,48 @@ function CanvaCard({ status: c, onChange }: { status: CanvaStatus; onChange: (s:
         </>
       )}
     </section>
+  );
+}
+
+/** Designs opened from Flockwise: open again in Canva, or save the finished one back to the media library. */
+function CanvaDesigns() {
+  const { data, setData } = useApi(() => AdminApi.canva.designs(), []);
+  const toast = useToast();
+  const [format, setFormat] = useState<CanvaExportFormat>('png');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [saved, setSaved] = useState<Record<string, string[]>>({});
+  const save = useAction(async (id: string) => {
+    setBusy(id);
+    try {
+      const r = await AdminApi.canva.save(id, format);
+      setData((data ?? []).map((d) => (d.id === id ? r.design : d)));
+      if (r.media.length) toast(`Saved to the media library (${r.media.length} file${r.media.length === 1 ? '' : 's'})`);
+      else { setSaved((s) => ({ ...s, [id]: r.urls })); toast('Ready to download'); }
+    } finally { setBusy(null); }
+  });
+  if (!data?.length) return null;
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <div className="row between wrap" style={{ gap: 8 }}>
+        <b className="small">Designs</b>
+        <label className="small row" style={{ gap: 6 }}>Save as <select value={format} onChange={(e) => setFormat(e.target.value as CanvaExportFormat)}><option value="png">PNG picture</option><option value="jpg">JPG picture</option><option value="pdf">PDF for printing</option></select></label>
+      </div>
+      <ul className="canva-designs">
+        {data.slice(0, 8).map((d) => (
+          <li key={d.id}>
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div className="ellipsis">{d.title}</div>
+              <div className="small muted">{d.lastExport ? `Saved ${formatRelative(d.lastExport.createdAt)} as ${d.lastExport.format.toUpperCase()}` : `Opened ${formatRelative(d.createdAt)}`}</div>
+              {saved[d.id] && <div className="small row wrap" style={{ gap: 8 }}>{saved[d.id].map((u, i) => <a key={u} href={u} target="_blank" rel="noreferrer">Download{saved[d.id].length > 1 ? ` page ${i + 1}` : ''}</a>)}<span className="muted">links work for 24 hours</span></div>}
+            </div>
+            <a className="btn sm ghost" href={d.editUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Edit</a>
+            <button className="btn sm" disabled={!!busy} onClick={() => void save.run(d.id)}>{busy === d.id ? 'Saving…' : 'Save to Flockwise'}</button>
+          </li>
+        ))}
+      </ul>
+      <p className="small muted" style={{ margin: 0 }}>Saved designs go to Communication › Media library when Cloud Storage is connected; otherwise you get a download link.</p>
+      <FormError error={save.error} />
+    </div>
   );
 }
 

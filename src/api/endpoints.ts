@@ -8,6 +8,7 @@ import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, Ca
 import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, BankLineView, BankUploadResult, BankView, AdminDonation as CoreAdminDonation } from '@/core/types';
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
+import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MyVigil, Vigil, VigilDetail, VigilView } from '@/core/types';
 import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
@@ -641,6 +642,8 @@ export const AdminApi = {
   canva: {
     designs: () => a.get<CanvaDesign[]>('/admin/canva/designs'),
     open: (input: { kind: string; title: string; imageDataUrl?: string }) => a.post<CanvaDesign>('/admin/canva/designs', input),
+    refresh: (id: string) => a.post<CanvaDesign>(`/admin/canva/designs/${id}/refresh`, {}),
+    save: (id: string, format: CanvaExportFormat) => a.post<CanvaExportResult>(`/admin/canva/designs/${id}/export`, { format }),
   },
   events: {
     list: (when: 'upcoming' | 'past' = 'upcoming') => a.get<Paginated<AdminEvent>>(`/admin/events${qs({ when })}`),
