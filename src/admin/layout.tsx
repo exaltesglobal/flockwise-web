@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, CalendarDays, CalendarRange, ClipboardList, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, Radio, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -43,6 +43,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/celebrations', label: 'Celebrations', icon: Cake, perm: ['people.view'] },
       { to: '/admin/carols', label: 'Carol rounds', icon: Music2, perm: ['care', 'services'] },
       { to: '/admin/registers', label: 'Registers', icon: BookMarked, perm: ['people.view'] },
+      { to: '/admin/elections', label: 'Elections & AGM', icon: Vote, perm: ['settings', 'people.edit'] },
     ],
   },
   {

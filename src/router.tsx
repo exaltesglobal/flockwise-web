@@ -77,6 +77,8 @@ import { MemberAidPage } from '@/member/pages/aid';
 import { MemberReadingPage } from '@/member/pages/reading';
 import { MemberPracticePage } from '@/member/pages/practice';
 import { MemberVersesPage } from '@/member/pages/verses';
+import { MemberVotePage } from '@/member/pages/vote';
+import { ElectionsPage } from '@/admin/pages/elections';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -134,6 +136,7 @@ const routes = [
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
+      { path: 'elections', element: <ElectionsPage /> },
       { path: 'practice', element: <PracticePage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
@@ -186,6 +189,7 @@ const routes = [
       { path: 'reading', element: <MemberReadingPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
+      { path: 'vote', element: <MemberVotePage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },

@@ -113,6 +113,11 @@ import type {
   SmsDigestPreview,
   SmsDigestStatus,
   MemberVerses,
+  ElectionRoll,
+  ElectionView,
+  MemberElection,
+  ReceiptCheck,
+  VoteReceipt,
   SsVerseBoards,
   VerseAnswerResult,
   VerseLevel,
@@ -262,6 +267,11 @@ export const MemberApi = {
     done: (planId: string, day: number, done = true) => m.post<MyReading>(`/me/reading/${planId}/done`, { day, done }),
   },
   /** Choir practice: the next rehearsal, songs with part recordings, my attendance; leaders record who came. */
+  elections: {
+    list: () => m.get<MemberElection[]>('/me/elections'),
+    vote: (id: string, choices: string[]) => m.post<VoteReceipt>(`/me/elections/${id}/vote`, { choices }),
+    receipt: (id: string, code: string) => m.get<ReceiptCheck>(`/me/elections/${id}/receipt/${encodeURIComponent(code)}`),
+  },
   verses: {
     get: () => m.get<MemberVerses>('/me/verses'),
     answer: (childId: string, input: { level: VerseLevel; answers?: string[]; text?: string }) => m.post<VerseAnswerResult>(`/me/verses/${childId}/answer`, input),
@@ -364,6 +374,7 @@ export const PublicApi = {
   cancelRental: (token: string) => m.post<PublicRental>(`/public/rentals/${token}/cancel`, {}),
 };
 export type PracticeInput = { at: string; minutes?: number; eventId?: string | null; songIds?: string[]; presentIds?: string[]; notes?: string };
+export type ElectionInput = { title: string; kind?: 'election' | 'resolution'; description?: string; seats?: number; candidates?: { id?: string; personId?: string | null; name: string; note?: string }[]; eligibility?: 'members' | 'members_18' | 'everyone_18'; meetingAt?: string | null; venue?: string; closesAt?: string | null; returningOfficer?: string };
 export type RentalRequestInput = { resourceId: string; name: string; phone: string; email?: string; organisation?: string; purpose: string; guests?: number; startsAt: string; endsAt: string };
 
 // ---------- Many churches: lookup, sign-up and the Flockwise team panel ----------
@@ -641,6 +652,19 @@ export const AdminApi = {
     addReport: (id: string, input: { title: string; body: string; prayerPoints: string; date?: string; published: boolean; send: boolean }) => a.post<MissionaryDetail & { delivery?: ReportDelivery }>(`/admin/missions/${id}/reports`, input),
     sendReport: (id: string, rid: string) => a.post<MissionaryDetail & { delivery: ReportDelivery }>(`/admin/missions/${id}/reports/${rid}/send`),
     removeReport: (id: string, rid: string) => a.del<MissionaryDetail>(`/admin/missions/${id}/reports/${rid}`),
+  },
+  elections: {
+    list: () => a.get<ElectionView[]>('/admin/elections'),
+    create: (input: ElectionInput) => a.post<ElectionView>('/admin/elections', input),
+    get: (id: string) => a.get<ElectionView>(`/admin/elections/${id}`),
+    update: (id: string, input: Partial<ElectionInput>) => a.patch<ElectionView>(`/admin/elections/${id}`, input),
+    remove: (id: string) => a.del<{ ok: boolean }>(`/admin/elections/${id}`),
+    open: (id: string, closesAt: string) => a.post<ElectionView>(`/admin/elections/${id}/open`, { closesAt }),
+    close: (id: string) => a.post<ElectionView>(`/admin/elections/${id}/close`, {}),
+    paper: (id: string, counts: Record<string, number>, invalid: number) => a.put<ElectionView>(`/admin/elections/${id}/paper`, { counts, invalid }),
+    roll: (id: string) => a.get<ElectionRoll>(`/admin/elections/${id}/roll`),
+    markRoll: (id: string, personId: string, voted: boolean) => a.post<{ voted: 'app' | 'paper' | null }>(`/admin/elections/${id}/roll/${personId}`, { voted }),
+    publish: (id: string) => a.post<ElectionView>(`/admin/elections/${id}/publish`, {}),
   },
   sundaySchool: {
     overview: () => a.get<SsOverview>('/admin/sunday-school'),

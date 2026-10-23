@@ -548,3 +548,10 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .link-btn { border: 0; background: none; padding: 0; color: var(--primary); font-weight: 600; cursor: pointer; }
 .link-btn:hover { text-decoration: underline; }
 .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+/* Election results: a labelled bar per candidate or option. */
+.result-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; font-size: 14px; }
+.result-row .result-bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--muted) 14%, transparent); overflow: hidden; }
+.result-row .result-bar i { display: block; height: 100%; background: var(--primary); border-radius: 4px; }
+.result-row.elected .result-bar i { background: var(--ok); }
+.result-row.elected .result-name { font-weight: 700; }
