@@ -1,4 +1,4 @@
-import { CheckCircle2, FileText, Globe, Plus, Printer, Repeat, Target, Trash2 } from 'lucide-react';
+import { CalendarClock, CheckCircle2, FileText, Globe, Plus, Printer, Repeat, Target, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
@@ -158,11 +158,60 @@ export function MemberGivePage() {
       </section>
 
       <MonthlyGifts tick={tick} />
+      <TitheReminder currency={church.currency} />
       <Pledges india={india} />
       {india && <Statement />}
       </div>
       </div>
     </>
+  );
+}
+
+/** Salary-day tithe reminder: pick the day the salary lands and the app nudges you that morning. Nothing is charged. */
+function TitheReminder({ currency }: { currency: string }) {
+  const { t, locale } = useT();
+  const prefs = useApi(MemberApi.me.preferences);
+  const [day, setDay] = useState('');
+  const [amount, setAmount] = useState('');
+  const [edit, setEdit] = useState(false);
+  const save = useAction((patch: { titheDay: number | null; titheAmount?: number | null }) => MemberApi.me.updatePreferences(patch));
+  useEffect(() => {
+    if (prefs.data) { setDay(prefs.data.titheDay ? String(prefs.data.titheDay) : ''); setAmount(prefs.data.titheAmount ? String(prefs.data.titheAmount / 100) : ''); }
+  }, [prefs.data]);
+  if (!prefs.data) return null;
+  const on = !!prefs.data.titheDay;
+  const dayLabel = (d: number) => (d === 31 ? t('titheDayLast') : String(d));
+  return (
+    <section className="stack">
+      <h2 className="row" style={{ gap: 8 }}><CalendarClock size={18} /> {t('titheTitle')}</h2>
+      <div className="card card-pad stack" style={{ gap: 10 }}>
+        {on && !edit ? (
+          <>
+            <p style={{ margin: 0 }}><b>{t('titheOn', { day: dayLabel(prefs.data.titheDay!) })}</b>{prefs.data.titheAmount ? <span className="muted"> · {formatMoney(prefs.data.titheAmount, currency as never, locale)}</span> : null}</p>
+            <div className="row wrap" style={{ gap: 8 }}>
+              <button className="btn sm" onClick={() => setEdit(true)}>{t('titheChange')}</button>
+              <button className="btn ghost sm" disabled={save.busy} onClick={async () => { if (await save.run({ titheDay: null })) prefs.reload(); }}>{t('titheOff')}</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="small muted" style={{ margin: 0 }}>{t('titheBody')}</p>
+            <div className="row wrap" style={{ gap: 8, alignItems: 'flex-end' }}>
+              <Field label={t('titheDay')}>
+                <select className="select" value={day} onChange={(e) => setDay(e.target.value)} aria-label={t('titheDay')}>
+                  <option value="">—</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{dayLabel(d)}</option>)}
+                </select>
+              </Field>
+              <Field label={`${t('titheAmount')} (${currency})`}><input className="input" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ width: 140 }} /></Field>
+              <button className="btn primary" disabled={!day || save.busy} onClick={async () => { if (await save.run({ titheDay: Number(day), titheAmount: amount ? Math.round(Number(amount) * 100) : null })) { setEdit(false); prefs.reload(); } }}>{t('save')}</button>
+              {on && <button className="btn ghost" onClick={() => setEdit(false)}>{t('cancel')}</button>}
+            </div>
+          </>
+        )}
+        <FormError error={save.error} />
+      </div>
+    </section>
   );
 }
 
