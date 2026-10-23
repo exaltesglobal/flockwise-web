@@ -1,10 +1,10 @@
 // Zones, prayer cells and family units with their leaders, and pastoral home visits: plan by
 // area, log what happened, and see which families have not been visited this year.
-import { CalendarCheck, Check, Home, MapPin, Pencil, Plus, Trash2, UserPlus, Users, X } from 'lucide-react';
+import { CalendarCheck, Check, Home, ListChecks, MapPin, Pencil, Plus, Sparkles, Trash2, UserPlus, Users, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
-import type { VisitPurpose, VisitView, ZoneFamily, ZoneView } from '@/api/admin-types';
+import type { VisitAction, VisitPurpose, VisitView, ZoneFamily, ZoneView } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -14,6 +14,7 @@ import { useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
 
+import { DictateButton } from '../components/dictate';
 import { PersonSearch, type PickedPerson } from '../components/person-picker';
 import { PageHeader } from '../layout';
 
@@ -32,6 +33,7 @@ export function ZonesPage() {
   const label = settings.data?.zoneLabel || 'Zone';
   const zones = useApi(AdminApi.zones.list);
   const [editing, setEditing] = useState<ZoneView | 'new' | null>(null);
+  const [visitVersion, setVisitVersion] = useState(0);
   const [visit, setVisit] = useState<{ family?: ZoneFamily; edit?: VisitView } | null>(null);
   const openZone = params.get('zone');
   const setOpenZone = (id: string | null) => {
@@ -88,13 +90,13 @@ export function ZonesPage() {
           ))}
         </div>
       ))}
-      {tab === 'visits' && <VisitsTab onEdit={(v) => setVisit({ edit: v })} zones={zones.data ?? []} />}
+      {tab === 'visits' && <VisitsTab onEdit={(v) => setVisit({ edit: v })} zones={zones.data ?? []} version={visitVersion} />}
       {tab === 'due' && <DueTab zones={zones.data ?? []} label={label} onPlan={(f) => setVisit({ family: f })} />}
       {tab === 'report' && <ReportTab label={label} />}
 
       {openZone && <ZoneDrawer id={openZone} label={label} onClose={() => setOpenZone(null)} onEdit={setEditing} onVisit={(family) => setVisit({ family })} onEditVisit={(v) => setVisit({ edit: v })} onChanged={zones.reload} />}
       {editing && <ZoneForm zone={editing === 'new' ? null : editing} zones={zones.data ?? []} label={label} onClose={() => setEditing(null)} onSaved={(z) => { setEditing(null); zones.reload(); setOpenZone(z.id); }} onDeleted={() => { setEditing(null); setOpenZone(null); zones.reload(); }} />}
-      {visit && <VisitForm family={visit.family} visit={visit.edit} onClose={() => setVisit(null)} onSaved={() => { setVisit(null); zones.reload(); }} />}
+      {visit && <VisitForm family={visit.family} visit={visit.edit} onClose={() => setVisit(null)} onSaved={() => { setVisit(null); zones.reload(); setVisitVersion((v) => v + 1); }} />}
     </>
   );
 }
@@ -216,11 +218,11 @@ function VisitRow({ v, onEdit }: { v: VisitView; onEdit: (v: VisitView) => void 
   );
 }
 
-function VisitsTab({ onEdit, zones }: { onEdit: (v: VisitView) => void; zones: ZoneView[] }) {
+function VisitsTab({ onEdit, zones, version = 0 }: { onEdit: (v: VisitView) => void; zones: ZoneView[]; version?: number }) {
   const [zoneId, setZoneId] = useState('');
   const [mine, setMine] = useState(false);
-  const planned = useApi(() => AdminApi.visits.list({ status: 'planned', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine]);
-  const done = useApi(() => AdminApi.visits.list({ status: 'done', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine]);
+  const planned = useApi(() => AdminApi.visits.list({ status: 'planned', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine, version]);
+  const done = useApi(() => AdminApi.visits.list({ status: 'done', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine, version]);
   return (
     <div className="stack">
       <div className="row wrap" style={{ gap: 10 }}>
@@ -230,6 +232,7 @@ function VisitsTab({ onEdit, zones }: { onEdit: (v: VisitView) => void; zones: Z
         </select>
         <label className="row small" style={{ gap: 6 }}><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Only my visits</label>
       </div>
+      <ActionItems mine={mine} version={version} />
       <div className="card">
         <div className="card-head"><h2>Planned</h2></div>
         {planned.error ? <ErrorState error={planned.error} onRetry={planned.reload} /> : !planned.data ? <Loading /> : planned.data.length === 0 ? <p className="small muted" style={{ padding: '0 16px 16px' }}>No visits planned. Use “Not visited this year” to plan some.</p> : planned.data.map((v) => <VisitRow key={v.id} v={v} onEdit={onEdit} />)}
@@ -369,13 +372,18 @@ function VisitForm({ family, visit, onClose, onSaved }: { family?: ZoneFamily; v
     followUp: visit?.followUp ?? '',
     others: visit?.visitorNames.join(', ') ?? '',
     confidential: visit?.confidential ?? false,
+    voiceNote: visit?.voiceNote ?? '',
+    actions: (visit?.actions ?? []) as VisitAction[],
   });
+  const [speak, setSpeak] = useState('en-IN');
+  const [voiceOpen, setVoiceOpen] = useState(!visit);
+  const writeUp = useAction(() => AdminApi.ai.visitNotes({ transcript: form.voiceNote, familyName: visit?.familyName ?? family?.name ?? person?.name, date: form.date, language: speak.slice(0, 2) }));
   useEffect(() => {
     if (!visit && form.date > today() && form.status === 'done') setForm((f) => ({ ...f, status: 'planned' }));
   }, [form.date, form.status, visit]);
   const save = useAction(async () => {
     const visitorNames = form.others.split(',').map((s) => s.trim()).filter(Boolean);
-    const body = { date: form.date, purpose: form.purpose, notes: form.notes, prayerPoints: form.prayerPoints, followUp: form.followUp, confidential: form.confidential, visitorNames };
+    const body = { date: form.date, purpose: form.purpose, notes: form.notes, prayerPoints: form.prayerPoints, followUp: form.followUp, confidential: form.confidential, visitorNames, voiceNote: form.voiceNote, actions: form.actions.filter((a) => a.text.trim()) };
     if (visit) return AdminApi.visits.update(visit.id, { ...body, status: form.status });
     return AdminApi.visits.create({ ...body, personId: person!.id, status: form.status === 'done' ? 'done' : undefined });
   });
@@ -418,14 +426,73 @@ function VisitForm({ family, visit, onClose, onSaved }: { family?: ZoneFamily; v
         <Field label="Who else is going (optional)" hint={`${session ? `${session.member.firstName} ${session.member.lastName}`.trim() : 'You'} are added automatically. Separate names with commas.`}><input className="input" value={form.others} onChange={(e) => setForm({ ...form, others: e.target.value })} placeholder="Elder Joseph, Cell leader Anita" /></Field>
         {done && (
           <>
+            <div className="card card-pad stack voice-panel" style={{ gap: 8, background: 'var(--tint)' }}>
+              <div className="row between wrap" style={{ gap: 8 }}>
+                <b><Sparkles size={14} /> Say what happened</b>
+                <button type="button" className="btn ghost sm" onClick={() => setVoiceOpen(!voiceOpen)}>{voiceOpen ? 'Hide' : 'Show'}</button>
+              </div>
+              {voiceOpen && (
+                <>
+                  <p className="small muted" style={{ margin: 0 }}>Talk it through on the way home, in any language. "Write it up" turns it into the diary entry, prayer points and action items below; your spoken words are kept with the visit.</p>
+                  <DictateButton lang={speak} onLang={setSpeak} onText={(t) => setForm((f) => ({ ...f, voiceNote: (f.voiceNote + ' ' + t).trimStart() }))} />
+                  <textarea className="input" rows={4} value={form.voiceNote} onChange={(e) => setForm({ ...form, voiceNote: e.target.value })} placeholder="Visited the Thomas family. Arun is back in hospital for his knee surgery on Friday. We prayed for the surgery. I will call the welfare committee about the fees next week…" />
+                  <div className="row wrap" style={{ gap: 8, alignItems: 'center' }}>
+                    <button type="button" className="btn primary sm" disabled={writeUp.busy || form.voiceNote.trim().split(/\s+/).length < 4} onClick={async () => {
+                      const r = await writeUp.run();
+                      if (r) setForm((f) => ({ ...f, notes: r.summary, prayerPoints: r.prayerPoints.join('\n'), followUp: r.actions.map((a) => a.text).join('; '), purpose: r.purpose, confidential: f.confidential || r.confidential, actions: r.actions.map((a) => ({ text: a.text, due: a.due, done: false })) }));
+                    }}><Sparkles size={14} /> {writeUp.busy ? 'Writing…' : 'Write it up'}</button>
+                    <span className="small muted">Uses one AI request.</span>
+                  </div>
+                  <FormError error={writeUp.error} />
+                </>
+              )}
+            </div>
             <Field label="What happened"><textarea className="input" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Prayed together; daughter starting college; father looking for work" /></Field>
             <Field label="Prayer points (optional)"><textarea className="input" rows={2} value={form.prayerPoints} onChange={(e) => setForm({ ...form, prayerPoints: e.target.value })} /></Field>
             <Field label="Follow-up (optional)"><input className="input" value={form.followUp} onChange={(e) => setForm({ ...form, followUp: e.target.value })} placeholder="Visit again after the surgery" /></Field>
+            <Field label="Action items" hint="Each one goes on the to-do list under Visits until it is ticked off.">
+              <div className="stack" style={{ gap: 6 }}>
+                {form.actions.map((a, i) => (
+                  <div key={i} className="row" style={{ gap: 6 }}>
+                    <input type="checkbox" checked={a.done} onChange={(e) => setForm({ ...form, actions: form.actions.map((x, j) => (j === i ? { ...x, done: e.target.checked } : x)) })} aria-label="Done" />
+                    <input className="input grow" value={a.text} onChange={(e) => setForm({ ...form, actions: form.actions.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) })} />
+                    <input className="input" type="date" style={{ width: 150 }} value={a.due ?? ''} onChange={(e) => setForm({ ...form, actions: form.actions.map((x, j) => (j === i ? { ...x, due: e.target.value || null } : x)) })} aria-label="Due" />
+                    <button type="button" className="btn ghost icon sm" aria-label="Remove" onClick={() => setForm({ ...form, actions: form.actions.filter((_, j) => j !== i) })}><X size={14} /></button>
+                  </div>
+                ))}
+                <button type="button" className="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => setForm({ ...form, actions: [...form.actions, { text: '', done: false, due: null }] })}><Plus size={14} /> Add an action</button>
+              </div>
+            </Field>
             <label className="row small" style={{ gap: 6 }}><input type="checkbox" checked={form.confidential} onChange={(e) => setForm({ ...form, confidential: e.target.checked })} /> Confidential: only pastors, admins and the visitors see the notes</label>
           </>
         )}
         <FormError error={save.error ?? cancel.error} />
       </form>
     </Modal>
+  );
+}
+
+
+/** The pastor's to-do list from logged visits: tick an item and it drops off. */
+function ActionItems({ mine, version }: { mine: boolean; version: number }) {
+  const can = useCan();
+  const { data, error, reload } = useApi(() => AdminApi.visits.actions({ mine: mine ? '1' : undefined }), [mine, version]);
+  const tick = useAction((visitId: string, index: number) => AdminApi.visits.toggleAction(visitId, index, true));
+  if (error) return <ErrorState error={error} onRetry={reload} />;
+  if (!data || data.length === 0) return null;
+  return (
+    <div className="card">
+      <div className="card-head"><h2><ListChecks size={16} /> To do from visits</h2><span className="small muted">{data.length} open</span></div>
+      {data.map((a) => (
+        <div key={`${a.visitId}:${a.index}`} className="list-row">
+          {can('care') ? <input type="checkbox" checked={false} disabled={tick.busy} onChange={async () => { if (await tick.run(a.visitId, a.index)) reload(); }} aria-label="Done" /> : <span />}
+          <div className="grow" style={{ minWidth: 0 }}>
+            <span>{a.text}</span>
+            <div className="small muted">{a.familyName}{a.visitedOn ? ` · visited ${day(a.visitedOn)}` : ''}{a.visitors.length ? ` · ${a.visitors.join(', ')}` : ''}</div>
+          </div>
+          {a.due && <span className={`badge ${a.due < today() ? 'danger' : 'warn'}`}>Due {day(a.due)}</span>}
+        </div>
+      ))}
+    </div>
   );
 }
