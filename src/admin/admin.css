@@ -492,3 +492,6 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 
 /* Weekly SMS digest preview: a phone-width bubble so the office sees the text as the member will. */
 .sms-preview { max-width: 360px; margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--tint); border: 1px solid var(--border); font: inherit; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+.verse-stars { display: inline-flex; gap: 1px; color: var(--fw-saffron, #e0a106); }
+.verse-stars .muted { color: var(--border); }
+.table.compact th, .table.compact td { padding: 8px 10px; }

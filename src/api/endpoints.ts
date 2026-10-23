@@ -112,6 +112,10 @@ import type {
   ServiceSummary,
   SmsDigestPreview,
   SmsDigestStatus,
+  MemberVerses,
+  SsVerseBoards,
+  VerseAnswerResult,
+  VerseLevel,
   Song,
   SongView,
   StaffMember,
@@ -258,6 +262,10 @@ export const MemberApi = {
     done: (planId: string, day: number, done = true) => m.post<MyReading>(`/me/reading/${planId}/done`, { day, done }),
   },
   /** Choir practice: the next rehearsal, songs with part recordings, my attendance; leaders record who came. */
+  verses: {
+    get: () => m.get<MemberVerses>('/me/verses'),
+    answer: (childId: string, input: { level: VerseLevel; answers?: string[]; text?: string }) => m.post<VerseAnswerResult>(`/me/verses/${childId}/answer`, input),
+  },
   practice: {
     get: (teamId?: string) => m.get<MyPractice>(`/me/practice${qs({ teamId })}`),
     record: (input: PracticeInput & { teamId: string }) => m.post<PracticeView>('/me/practice', input),
@@ -636,6 +644,7 @@ export const AdminApi = {
   },
   sundaySchool: {
     overview: () => a.get<SsOverview>('/admin/sunday-school'),
+    verses: (week?: string) => a.get<SsVerseBoards>(`/admin/sunday-school/verses${qs({ week })}`),
     setup: () => a.post<{ placed: number }>('/admin/sunday-school/setup'),
     enroll: () => a.post<{ placed: number }>('/admin/sunday-school/enroll'),
     promote: () => a.post<{ moved: number; graduated: SsPerson[] }>('/admin/sunday-school/promote'),

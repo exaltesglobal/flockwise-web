@@ -74,3 +74,26 @@ input.switch:checked::after { transform: translateX(18px); }
 .carol-dates { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip-toggle { border: 1px solid var(--border); background: var(--card, transparent); color: inherit; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .chip-toggle.on { background: var(--primary); color: var(--on-primary, #fff); border-color: var(--primary); }
+
+/* Memory verse game */
+.verse-text { font-size: 19px; line-height: 1.55; margin: 0; font-family: var(--font-heading, inherit); }
+.verse-stars { display: inline-flex; gap: 2px; color: var(--muted); }
+.verse-stars .lit { color: var(--fw-saffron, #e0a106); }
+.verse-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.verse-steps li { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.verse-steps li.now { color: var(--text); font-weight: 600; }
+.verse-steps li.done { color: var(--ok); }
+.verse-steps .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; display: inline-block; opacity: 0.5; }
+.verse-gap { font: inherit; border: 0; border-bottom: 2px dashed var(--primary); background: var(--tint); color: var(--primary); border-radius: 6px 6px 0 0; padding: 0 6px; margin-right: 4px; cursor: pointer; min-width: 60px; }
+.verse-gap.filled { border-bottom-style: solid; font-weight: 600; }
+.verse-chip { font: inherit; font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
+.verse-chip:disabled { opacity: 0.35; cursor: default; }
+.verse-msg { margin: 0; padding: 8px 12px; border-radius: 10px; font-size: 14px; }
+.verse-msg.ok { background: var(--ok-tint); color: var(--ok); }
+.verse-msg.warn { background: var(--warn-tint); }
+.verse-board { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.verse-board li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; font-size: 14px; }
+.verse-board li.mine { background: var(--tint); font-weight: 600; }
+.verse-board .rank { width: 22px; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.verse-board .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn.lg { padding: 12px 18px; font-size: 16px; }

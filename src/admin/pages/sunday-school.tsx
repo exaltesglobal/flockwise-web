@@ -5,7 +5,7 @@ import { ArrowLeft, Award, BookOpen, CalendarCheck, GraduationCap, Plus, Send, S
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
-import type { Currency, Room, SsClassDetail, SsExamResults, SsLesson, SsOverview, SsRegister } from '@/api/admin-types';
+import type { Currency, Room, SsClassDetail, SsExamResults, SsLesson, SsOverview, SsRegister, VerseLevel } from '@/api/admin-types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
@@ -16,7 +16,7 @@ import { useAction, useApi } from '@/lib/use-api';
 import { PersonSearch } from '../components/person-picker';
 import { PageHeader } from '../layout';
 
-type Tab = 'classes' | 'lessons' | 'exams' | 'prizes';
+type Tab = 'classes' | 'lessons' | 'exams' | 'verses' | 'prizes';
 const day = (date: string) => formatDate(`${date}T00:00:00Z`);
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -80,11 +80,12 @@ function Overview() {
             </div>
           )}
           <div className="seg-scroll" style={{ marginBottom: 14 }}>
-            <Segmented value={tab} onChange={setTab} options={[{ value: 'classes', label: 'Classes' }, { value: 'lessons', label: 'Lessons' }, { value: 'exams', label: 'Exams' }, { value: 'prizes', label: 'Annual day' }]} />
+            <Segmented value={tab} onChange={setTab} options={[{ value: 'classes', label: 'Classes' }, { value: 'lessons', label: 'Lessons' }, { value: 'exams', label: 'Exams' }, { value: 'verses', label: 'Memory verse board' }, { value: 'prizes', label: 'Annual day' }]} />
           </div>
           {tab === 'classes' && <Classes data={data} />}
           {tab === 'lessons' && <Lessons data={data} />}
           {tab === 'exams' && <Exams data={data} />}
+          {tab === 'verses' && <VerseBoards />}
           {tab === 'prizes' && <Prizes />}
         </>
       )}
@@ -523,6 +524,72 @@ function Marks({ exam, classId, onSaved }: { exam: SsExamResults; classId: strin
 }
 
 // ---------- annual day ----------
+
+// ---------- memory verse board ----------
+
+const ROUND: Record<VerseLevel, string> = { read: 'Read', blanks: 'Blanks', recite: 'Recited' };
+const Stars = ({ n }: { n: number }) => <span className="verse-stars" aria-label={`${n} stars`}>{[0, 1, 2].map((i) => <Star key={i} size={14} fill={i < n ? 'currentColor' : 'none'} className={i < n ? '' : 'muted'} />)}</span>;
+
+/** The week's class leaderboards from the kids' memory verse game, and the term's star table. */
+function VerseBoards() {
+  const [week, setWeek] = useState<string | undefined>();
+  const { data, error, reload } = useApi(() => AdminApi.sundaySchool.verses(week), [week]);
+  if (error) return <ErrorState error={error} onRetry={reload} />;
+  if (!data) return <Loading />;
+  return (
+    <div className="stack">
+      <div className="row wrap between" style={{ gap: 10 }}>
+        <p className="small muted" style={{ margin: 0, maxWidth: 640 }}>Parents play the week's verse with their child in the app: read it (10), put the words back (20), say it from memory (up to 30). Your register tick "said the verse" adds 40. Three stars is 60 points or more. The board starts again every Sunday.</p>
+        {data.weeks.length > 1 && (
+          <label className="row small" style={{ gap: 6 }}>Week of
+            <select className="select" value={data.week} onChange={(e) => setWeek(e.target.value)}>{data.weeks.map((w) => <option key={w} value={w}>{day(w)}</option>)}</select>
+          </label>
+        )}
+      </div>
+      {data.boards.length === 0 ? (
+        <div className="card"><Empty icon={<Star size={28} />} title="No memory verse this week" body="Add a lesson with a memory verse for the Sunday and the game appears in parents' apps on Monday." /></div>
+      ) : (
+        <div className="grid cols-2">
+          {data.boards.map((b) => (
+            <div key={b.classId} className="card stack" style={{ gap: 10 }}>
+              <div className="row between wrap" style={{ gap: 8 }}>
+                <h3>{b.className}</h3>
+                <span className="badge gray">{b.players} of {b.of} playing</span>
+              </div>
+              <p className="small" style={{ margin: 0 }}><em>“{b.verse}”</em> <span className="muted">{b.reference}</span></p>
+              {b.rows.length === 0 ? <p className="small muted">No children in this class.</p> : (
+                <table className="table compact">
+                  <thead><tr><th style={{ width: 32 }}>#</th><th>Child</th><th>Rounds</th><th style={{ textAlign: 'right' }}>Points</th><th>Stars</th></tr></thead>
+                  <tbody>
+                    {b.rows.map((r, i) => (
+                      <tr key={r.id} className={r.points === 0 ? 'muted' : ''}>
+                        <td>{r.points > 0 ? i + 1 : ''}</td>
+                        <td><Link to={`/admin/people/${r.id}`}>{r.name}</Link></td>
+                        <td className="small">{r.levels.map((l) => ROUND[l]).join(' · ')}{r.recitedInClass && <span className="badge ok" style={{ marginLeft: 6 }}>In class</span>}</td>
+                        <td style={{ textAlign: 'right' }}><b>{r.points}</b></td>
+                        <td><Stars n={r.stars} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {data.stars.length > 0 && (
+        <div className="card stack" style={{ gap: 8 }}>
+          <h3>Stars this term</h3>
+          <p className="small muted" style={{ margin: 0 }}>Every week's stars added up: the memory verse prize list for annual day.</p>
+          <table className="table compact">
+            <thead><tr><th style={{ width: 32 }}>#</th><th>Child</th><th>Class</th><th>Weeks</th><th>Stars</th></tr></thead>
+            <tbody>{data.stars.map((s, i) => <tr key={s.id}><td>{i + 1}</td><td><Link to={`/admin/people/${s.id}`}>{s.name}</Link></td><td>{s.className}</td><td>{s.weeks}</td><td><b>{s.stars}</b> <Star size={12} fill="currentColor" /></td></tr>)}</tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Prizes() {
   const year = new Date().getFullYear();

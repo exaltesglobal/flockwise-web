@@ -76,6 +76,7 @@ import { MemberRidesPage } from '@/member/pages/rides';
 import { MemberAidPage } from '@/member/pages/aid';
 import { MemberReadingPage } from '@/member/pages/reading';
 import { MemberPracticePage } from '@/member/pages/practice';
+import { MemberVersesPage } from '@/member/pages/verses';
 
 const routes = [
   { path: '/', element: <Landing /> },
@@ -184,6 +185,7 @@ const routes = [
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
+      { path: 'verses', element: <MemberVersesPage /> },
       { path: 'prayer', element: <MemberPrayerPage /> },
       { path: 'directory', element: <MemberDirectoryPage /> },
       { path: 'me', element: <MemberMePage /> },
