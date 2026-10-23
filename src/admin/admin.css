@@ -653,3 +653,8 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .lib-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .lib-list li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); }
 .lib-list li:last-child { border-bottom: 0; }
+.oc-progress { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.oc-progress .vg-bar { flex: 1; }
+.oc-chip { display: inline-flex; align-items: center; gap: 4px; }
+.oc-chip button { border: 0; background: none; padding: 0; display: inline-flex; color: inherit; cursor: pointer; }
+.ds-log li.oc-done span { color: var(--muted); text-decoration: line-through; }

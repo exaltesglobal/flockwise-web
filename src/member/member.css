@@ -136,3 +136,4 @@ input.switch:checked::after { transform: translateX(18px); }
 .lib-search { position: relative; display: flex; align-items: center; }
 .lib-search svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
 .lib-search .input { width: 100%; padding-left: 36px; }
+.oc-kinds { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }

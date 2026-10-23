@@ -10,6 +10,8 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
+import type { MyOccasion, OccasionKind, OccasionStatus, OccasionsHub, OccasionView } from '@/core/types';
+export type OccasionInput = { kind: OccasionKind; personIds: string[]; title: string; date: string | null; time: string | null; place: string; pastorId: string | null; contactName: string; contactPhone: string; notes: string };
 import type { DiscipleshipHub, MentorFocus, MentorshipDetail, MyMentoring } from '@/core/types';
 import type { MyVigil, Vigil, VigilDetail, VigilView } from '@/core/types';
 import type { Course, CourseDetail, CourseSession, CoursesHub, MyCourse } from '@/core/types';
@@ -293,6 +295,11 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  occasions: {
+    get: () => m.get<{ occasions: MyOccasion[] }>('/me/occasions'),
+    request: (input: { kind: OccasionKind; date?: string; time?: string; place?: string; phone?: string; title?: string; note?: string }) => m.post<{ occasions: MyOccasion[] }>('/me/occasions', input),
+    withdraw: (id: string) => m.del<{ occasions: MyOccasion[] }>(`/me/occasions/${id}`),
   },
   library: {
     get: () => m.get<MyLibrary>('/me/library'),
@@ -701,6 +708,13 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  occasions: {
+    hub: () => a.get<OccasionsHub>('/admin/occasions'),
+    create: (input: OccasionInput) => a.post<OccasionView>('/admin/occasions', input),
+    update: (id: string, patch: Partial<OccasionInput> & { status?: OccasionStatus }) => a.patch<OccasionView>(`/admin/occasions/${id}`, patch),
+    checklist: (id: string, op: { toggle: string } | { remove: string } | { label: string }) => a.post<OccasionView>(`/admin/occasions/${id}/checklist`, op),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/occasions/${id}`),
   },
   library: {
     hub: () => a.get<LibraryHub>('/admin/library'),

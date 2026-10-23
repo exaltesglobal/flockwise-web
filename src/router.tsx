@@ -93,6 +93,8 @@ import { VigilsPage } from '@/admin/pages/vigils';
 import { DiscipleshipPage } from '@/admin/pages/discipleship';
 import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
+import { OccasionsPage } from '@/admin/pages/occasions';
+import { MemberOccasionsPage } from '@/member/pages/occasions';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
 import { MemberVigilsPage } from '@/member/pages/vigils';
 import { MemberCoursesPage } from '@/member/pages/courses';
@@ -160,6 +162,7 @@ const routes = [
       { path: 'vigils', element: <VigilsPage /> },
       { path: 'discipleship', element: <DiscipleshipPage /> },
       { path: 'library', element: <LibraryPage /> },
+      { path: 'occasions', element: <OccasionsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -221,6 +224,7 @@ const routes = [
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },
       { path: 'library', element: <MemberLibraryPage /> },
+      { path: 'occasions', element: <MemberOccasionsPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },
