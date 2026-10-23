@@ -128,6 +128,8 @@ import type {
   MissedCall,
   MissedCallHub,
   MissedCallSettings,
+  CaptionLine,
+  CaptionsSettings,
   PublicGreeting,
   Recap,
   RecapFacts,
@@ -1032,9 +1034,12 @@ export const AdminApi = {
   },
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
-    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay',
-      extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean } = {}) =>
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions',
+      extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings> } = {}) =>
       a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),
+    caption: (eventId: string, text: string) => a.post<{ line: CaptionLine; count: number }>(`/admin/services/${eventId}/captions`, { text }),
+    captions: (eventId: string) => a.get<{ lines: CaptionLine[]; count: number }>(`/admin/services/${eventId}/captions`),
+    clearCaptions: (eventId: string) => a.del<{ ok: boolean }>(`/admin/services/${eventId}/captions`),
     theme: () => a.get<PresentationTheme>('/admin/presentation-theme'),
     saveTheme: (input: Partial<PresentationTheme>) => a.put<PresentationTheme>('/admin/presentation-theme', input),
     obs: () => a.get<ObsSettings>('/admin/presentation-obs'),

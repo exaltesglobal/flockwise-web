@@ -1,11 +1,12 @@
 // Presentation: the operator console (also the phone remote), the projector output and the
 // stage display and the OBS overlay. Every screen polls the same presentation state, so they all
 // follow the operator. Screens opened with ?key= (the church's screen key) need no sign-in.
-import { ArrowLeft, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Monitor, Music2, Palette, Plus, Radio, Send, Tv, Video, X } from 'lucide-react';
+import { ArrowLeft, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Trash2, Tv, Video, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
-import type { LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide } from '@/api/admin-types';
+import type { CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide } from '@/api/admin-types';
+import { canDictate, useDictation } from '@/admin/components/dictate';
 import { adminSession } from '@/api/client';
 import { AdminApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
@@ -89,7 +90,16 @@ function CountdownFace({ until, announcements }: { until: string; announcements:
 }
 
 /** One slide drawn at any size: the frame is a container, so text scales with it. */
-export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null }) {
+/** The last caption line as the screen shows it: the translation, with the original under it when asked. */
+export function captionText(c: CaptionsView | undefined): { main: string; sub: string | null } | null {
+  if (!c?.on || !c.lines.length) return null;
+  const last = c.lines[c.lines.length - 1]!;
+  if (c.show === 'original' || !last.translated) return { main: last.text, sub: null };
+  return { main: last.translated, sub: c.show === 'both' ? last.text : null };
+}
+
+export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo, captions }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null; captions?: CaptionsView }) {
+  const cap = mode === 'blank' ? null : captionText(captions);
   const t = view.theme;
   const style = {
     '--pres-bg': t.background,
@@ -112,6 +122,7 @@ export function SlideFrame({ view, slide, mode = 'live', message, className = ''
         </div>
       )}
       {message && mode !== 'blank' && <div className="pres-message">{message}</div>}
+      {cap && <div className="pres-captions" key={cap.main}><div className="tr">{cap.main}</div>{cap.sub && <div className="og">{cap.sub}</div>}</div>}
     </div>
   );
 }
@@ -196,7 +207,7 @@ function Presenter() {
 
         <aside className="pres-side">
           <div className="small muted lbl-now">On screen</div>
-          <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} />
+          <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} captions={data.captions} />
           <div className="small muted lbl-next">Next</div>
           <SlideFrame view={data} slide={next} className="dim pres-next-frame" />
           {control && (
@@ -207,6 +218,7 @@ function Presenter() {
             </form>
           )}
           <p className="small muted">Keys: → or space next, ← back, B blank, L logo.</p>
+          {control && <CaptionsPanel view={data} act={act} eventId={eventId} onChanged={() => void reload()} />}
           {control && <MediaPanel view={data} act={act} />}
           {control && <ObsPanel view={data} act={act} />}
         </aside>
@@ -229,6 +241,84 @@ function Presenter() {
 
 const screenUrl = (eventId: string, path: string, key?: string) =>
   `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}/present/${eventId}/${path}${key ? `?key=${key}` : ''}`;
+
+const SPEECH_LANG: Record<LanguageCode, string> = { en: 'en-IN', hi: 'hi-IN', te: 'te-IN', ta: 'ta-IN', ml: 'ml-IN', kn: 'kn-IN' };
+const LANG_NAME: Record<LanguageCode, string> = { en: 'English', hi: 'हिन्दी Hindi', te: 'తెలుగు Telugu', ta: 'தமிழ் Tamil', ml: 'മലയാളം Malayalam', kn: 'ಕನ್ನಡ Kannada' };
+const CAPTION_LANGS = Object.keys(LANG_NAME) as LanguageCode[];
+
+/**
+ * Live sermon captions. The media desk's browser listens to the preacher (the same browser speech
+ * recognition the office dictates with; nothing is recorded), each finished phrase goes to the
+ * server to be translated, and the projector shows it on its next poll. Typing a line works too.
+ */
+function CaptionsPanel({ view, act, eventId, onChanged }: { view: PresentationView; act: (a: Action, extra?: ActExtra) => Promise<void>; eventId: string; onChanged: () => void }) {
+  const c = view.captions;
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(0);
+  const [err, setErr] = useState<string | null>(null);
+  const buffer = useRef('');
+  const timer = useRef<number | null>(null);
+  const post = useCallback(async (text: string) => {
+    if (!text.trim()) return;
+    setBusy((n) => n + 1);
+    try { await AdminApi.presentation.caption(eventId, text); setErr(null); onChanged(); } catch (e) { setErr((e as Error).message); } finally { setBusy((n) => n - 1); }
+  }, [eventId, onChanged]);
+  const flush = useCallback(() => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    const t = buffer.current.trim();
+    buffer.current = '';
+    void post(t);
+  }, [post]);
+  // Phrases end at a full stop or after three seconds, so the screen keeps pace with the preacher.
+  const d = useDictation(SPEECH_LANG[c.from], (t) => {
+    buffer.current += t;
+    if (buffer.current.length > 160 || /[.!?।]\s*$/.test(buffer.current)) flush();
+    else if (!timer.current) timer.current = window.setTimeout(flush, 3000);
+  });
+  useEffect(() => { if (!c.on && d.listening) d.stop(); }, [c.on]); // eslint-disable-line react-hooks/exhaustive-deps
+  const set = (captions: Partial<CaptionsView>) => void act('captions', { captions });
+  const last = c.lines.slice(-4).reverse();
+  return (
+    <div className="card media-card cap-panel">
+      <div className="row between">
+        <b><Captions size={15} /> Live captions</b>
+        <label className="row small" style={{ gap: 6 }}><input type="checkbox" checked={c.on} onChange={(e) => set({ on: e.target.checked })} /> On screen</label>
+      </div>
+      <div className="row" style={{ gap: 6 }}>
+        <select className="select grow" value={c.from} disabled={d.listening} onChange={(e) => set({ from: e.target.value as LanguageCode })} aria-label="Preaching in">{CAPTION_LANGS.map((l) => <option key={l} value={l}>{LANG_NAME[l]}</option>)}</select>
+        <span className="small muted">→</span>
+        <select className="select grow" value={c.to} onChange={(e) => set({ to: e.target.value as LanguageCode })} aria-label="Show in">{CAPTION_LANGS.map((l) => <option key={l} value={l}>{LANG_NAME[l]}</option>)}</select>
+      </div>
+      <select className="select" value={c.show} onChange={(e) => set({ show: e.target.value as CaptionsView['show'] })} aria-label="Show">
+        <option value="both">Translation with the original under it</option>
+        <option value="translated">Translation only</option>
+        <option value="original">Original only</option>
+      </select>
+      {c.on && (
+        <>
+          {canDictate() ? (
+            <button type="button" className={`btn sm ${d.listening ? 'danger' : 'primary'}`} onClick={d.toggle} aria-pressed={d.listening}>{d.listening ? <><Square size={14} /> Stop listening</> : <><Mic size={14} /> Listen to the preacher</>}</button>
+          ) : (
+            <span className="small muted">Listening needs Chrome or Edge on this PC. You can still type lines below.</span>
+          )}
+          {d.listening && <div className="small muted cap-interim">{d.interim || 'Listening…'}{busy > 0 ? ' · translating' : ''}</div>}
+          {d.error && <div className="small danger-text">{d.error}</div>}
+          <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); const t = typed; setTyped(''); void post(t); }}>
+            <input className="input grow" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Or type a line and press Enter" maxLength={600} />
+            <button className="btn sm" type="submit" disabled={!typed.trim() || busy > 0}><Send size={14} /></button>
+          </form>
+          {err && <div className="small danger-text">{err}</div>}
+          {last.length > 0 && (
+            <div className="cap-lines">
+              {last.map((l) => <div key={l.id} className="cap-line"><div>{l.translated ?? l.text}</div>{l.translated && <div className="small muted">{l.text}</div>}</div>)}
+              <div className="row between small muted"><span>{c.count} lines this service</span><button className="btn ghost sm" type="button" onClick={async () => { await AdminApi.presentation.clearCaptions(eventId); onChanged(); }}><Trash2 size={13} /> Clear</button></div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 /** Livestream graphics: lyrics bar on the stream, and name straps fired with one tap. */
 export function MediaPanel({ view, act, lyricsToggle = true }: { view: PresentationView; act: (a: Action, extra?: ActExtra) => Promise<void>; lyricsToggle?: boolean }) {
@@ -420,7 +510,7 @@ function Screen({ screenKey }: { screenKey?: string }) {
   if (!data) return <div className="pres-screen" />;
   return (
     <div className="pres-screen" onDoubleClick={fullscreen} title="Double-click for full screen">
-      <SlideFrame view={data} slide={data.slides[data.state.index]} mode={data.state.mode} message={data.state.message} countdownTo={data.state.countdownTo} className="full" />
+      <SlideFrame view={data} slide={data.slides[data.state.index]} mode={data.state.mode} message={data.state.message} countdownTo={data.state.countdownTo} className="full" captions={data.captions} />
       {!document.fullscreenElement && <button className="pres-fs" onClick={fullscreen}><Maximize size={16} /> Full screen</button>}
     </div>
   );
@@ -508,6 +598,7 @@ function Overlay({ screenKey }: { screenKey?: string }) {
           {data.theme.showAlt && lyrics.alt.length > 0 && <div className="alt">{lyrics.alt.join(' / ')}</div>}
         </div>
       )}
+      {!lyrics && (() => { const cap = captionText(data.captions); return cap ? <div key={cap.main} className="ov-lyrics ov-captions"><div>{cap.main}</div>{cap.sub && <div className="alt">{cap.sub}</div>}</div> : null; })()}
     </div>
   );
 }
