@@ -232,6 +232,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 @keyframes fade { from { opacity: 0; } }
 .modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
 .overlay.right .modal { border-radius: 0; max-width: 520px; max-height: none; height: 100%; animation: slide 0.2s ease-out; }
+.overlay.right .modal.wide { max-width: 760px; }
 @keyframes slide { from { transform: translateX(30px); opacity: 0.5; } }
 .modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .modal-body { padding: 22px; overflow-y: auto; flex: 1; }

@@ -2,10 +2,12 @@
 import type { billingView } from '@/core/modules/billing';
 import type { ChurchEntry } from '@/core/platform';
 import type { BillingInterval, PlanId, Subscription } from '@/core/plans';
-import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate } from '@/core/types';
+import type { AssetCategory, AssetCondition, AssetLogEntry, AssetView, AssetsHub, MyReading, ReadingHub, ReadingPlanView, ReadingReader, ReadingTemplate, FeastDish, FeastSplit, FeastView, FeastsHub } from '@/core/types';
 import type { CalendarFeedLink, CarolNightView, CarolSeason, CarolSeasonView, CarolStopStatus, Currency, MyCarols, MyRides, RideOfferView, RideRequestView, RidesHub, AidKind, AidRequest, AidSummary, BenevolenceHub, MyAid } from '@/core/types';
 import type { ChitthiSetup, ChitthiSetupStatus, HubChannelDetail, HubChannelView, HubPost, HubView, MyTask } from '@/core/types';
 import type { ChurchOrgType, KycDocKind, RazorpaySetup, RazorpaySetupView, RecurringGift, RecurringSummary, WaBotStatus, AuctionLot, CampaignDetail, CampaignKind, CampaignView, InKindGift, MemberCampaign, OfferingEnvelope, PaymentMethod, ConsentEvent, DataRequest, DataRequestKind, DataRequestStatus, MemberPrivacy, PrivacyOverview, PrivacySettings, PageReason, ParentPage, Bulletin, BulletinSection, BulletinView, MemberSundaySchool, MemberMission, MissionaryDetail, MissionPayout, MissionsOverview, SsClass, SsClassDetail, SsExamResults, SsExamView, SsLesson, SsOverview, SsPerson, SsPrizes, SsRegister, OfflineItem, OfflinePack, OfflineSyncResult, LiveNow, LiveOverview, LiveSettings, LiveStatus, LiveStreamDetail, LiveStreamView, FamilyCheckinEvent, FamilyCheckinResult, FamilyMember, FamilyView, ChurchNetworkLink, NetworkKind, NetworkOverview, NetworkSummary } from '@/core/types';
+export type FeastMenuInput = (Omit<FeastDish, 'id' | 'cookName'> & { id?: string })[];
+
 export type AssetInput = {
   name: string; tag?: string; category: AssetCategory; quantity: number; location: string; serial: string; vendor: string;
   purchasedOn: string | null; cost: number | null; warrantyUntil: string | null;
@@ -472,6 +474,13 @@ export const AdminApi = {
     update: (id: string, input: { status?: 'reviewing' | 'approved' | 'declined' | 'withdrawn'; approved?: number; note?: string }) => a.patch<AidRequest>(`/admin/benevolence/${id}`, input),
     pay: (id: string, input: { via: string; reference?: string; date?: string; amount?: number }) => a.post<AidRequest>(`/admin/benevolence/${id}/pay`, input),
     addNote: (id: string, text: string) => a.post<AidRequest>(`/admin/benevolence/${id}/notes`, { text }),
+  },
+  feasts: {
+    hub: (all = false) => a.get<FeastsHub>(`/admin/feasts${qs({ all: all ? '1' : undefined })}`),
+    get: (id: string) => a.get<FeastView>(`/admin/feasts/${id}`),
+    create: (input: { eventId: string; template: string; name?: string; extraHeads?: number }) => a.post<FeastView>('/admin/feasts', input),
+    update: (id: string, input: { name?: string; menu?: FeastMenuInput; extraHeads?: number; headsOverride?: number | null; split?: FeastSplit; notes?: string }) => a.patch<FeastView>(`/admin/feasts/${id}`, input),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/feasts/${id}`),
   },
   reading: {
     hub: (status?: 'active' | 'archived' | 'all') => a.get<ReadingHub>(`/admin/reading${qs({ status })}`),
