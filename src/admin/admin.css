@@ -662,3 +662,53 @@ b.ce-chip { cursor: default; padding: 2px 8px; }
 .sk-tag span { color: var(--muted); font-size: 12px; }
 .sk-tag.on { background: var(--primary); border-color: var(--primary); color: #fff; }
 .sk-tag.on span { color: inherit; opacity: .8; }
+
+/* Menu entries that hold several pages: the count, and the tabs above the page. */
+.nav-count { flex: none; min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--sidebar-hover); color: var(--sidebar-muted); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.hub-tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: -4px 0 18px; padding-bottom: 2px; border-bottom: 1px solid var(--border); }
+.hub-tabs::-webkit-scrollbar { display: none; }
+.hub-tabs a { display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 9px 12px; margin-bottom: -3px; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 600; font-size: 14px; white-space: nowrap; }
+.hub-tabs a:hover { color: var(--text); text-decoration: none; }
+.hub-tabs a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* "+ New" at the top of the office menu. */
+.new-menu { position: relative; margin-bottom: 8px; }
+.new-menu-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 9px 12px; border: 0; border-radius: 9px; background: var(--fw-saffron); color: #14211f; font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; }
+.new-menu-btn:hover { filter: brightness(1.05); }
+.new-menu-pop { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 6px); display: flex; flex-direction: column; padding: 6px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); }
+.admin-nav .new-menu-pop a { color: var(--text); padding: 8px 10px; font-size: 14px; box-shadow: none; }
+.admin-nav .new-menu-pop a:hover { background: var(--tint); color: var(--text); }
+
+/* Settings › Features */
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 10px; }
+.feature-card { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; margin: 0; opacity: .78; transition: opacity .15s, border-color .15s; }
+.feature-card.on { opacity: 1; border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+.feature-card p { margin: 3px 0 0; }
+
+/* Dashboard › Today */
+.today-panel { padding: 14px 16px; margin-bottom: 16px; }
+.today-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.today-head b { font-size: 16px; }
+.today-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 6px; }
+.today-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; background: var(--tint); color: var(--text); font-weight: 600; font-size: 14px; }
+.today-item:hover { text-decoration: none; filter: brightness(.97); }
+.today-item > svg:first-child { color: var(--primary); flex: none; }
+.today-item.warn > svg:first-child { color: var(--danger, #c0392b); }
+.today-done { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--muted); }
+.today-done svg { color: var(--ok, #1f6b5c); }
+
+/* Phone: tabs along the bottom (the side menu still opens from "More"). */
+.admin-tabbar { display: none; }
+@media (max-width: 900px) {
+  .admin-tabbar { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; display: flex; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgba(0, 0, 0, .06); }
+  .admin-tabbar a, .admin-tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 48px; justify-content: center; padding: 4px 2px; border: 0; background: none; border-radius: 10px; color: var(--muted); font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+  .admin-tabbar a:hover { text-decoration: none; }
+  .admin-tabbar a.active { color: var(--primary); background: var(--tint); }
+  .admin-main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
+
+/* Page headers: the explanation stays to one line until "How this works" is pressed. */
+.page-sub { max-width: 920px; }
+.page-sub.clamped { display: flex; align-items: baseline; }
+.page-sub.clamped .page-sub-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.page-sub-more { flex: none; margin-left: 8px; padding: 0; border: 0; background: none; color: var(--primary); font: inherit; font-weight: 600; cursor: pointer; }

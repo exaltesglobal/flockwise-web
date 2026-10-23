@@ -10,6 +10,7 @@ import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToas
 import { downloadCsv, formatDay, formatMoney, formatTime, toLocalInput } from '@/lib/format';
 import { churchUrl } from '@/lib/church';
 import { useSession } from '@/lib/session';
+import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
@@ -18,6 +19,7 @@ export function EventsPage() {
   const [when, setWhen] = useState<'upcoming' | 'past'>('upcoming');
   const { data, error, reload } = useApi(() => AdminApi.events.list(when), [when]);
   const [editing, setEditing] = useState<AdminEvent | 'new' | null>(null);
+  useNewParam(() => setEditing('new'));
   const [counting, setCounting] = useState<AdminEvent | null>(null);
   const [viewing, setViewing] = useState<AdminEvent | null>(null);
   const [inviting, setInviting] = useState<AdminEvent | null>(null);

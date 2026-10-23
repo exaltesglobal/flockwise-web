@@ -1,4 +1,5 @@
-import { Baby, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, MapPinned, Palette, Pencil, Plug, Plus, ReceiptText, Search, Server, ShieldCheck, Trash2, UserPlus, UsersRound, Network } from 'lucide-react';
+import { FeaturesSettings } from './features';
+import { Baby, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, MapPinned, Palette, Pencil, Plug, Plus, ReceiptText, Search, Server, ShieldCheck, Trash2, UserPlus, UsersRound, Network, ToggleRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
@@ -40,13 +41,14 @@ const ROLE_HELP: Record<StaffRole, string> = {
   custom: 'A role this church made: see the Roles card',
 };
 
-type Tab = 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'appearance' | 'server';
+type Tab = 'features' | 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 'fields' | 'page' | 'integrations' | 'notifications' | 'networks' | 'privacy' | 'team' | 'audit' | 'appearance' | 'server';
 
 export function SettingsPage() {
   const can = useCan();
   // Grouped so fourteen sections read as a short menu, not a scrolling strip of tabs.
   const tabs: { value: Tab; label: string; show: boolean; icon: typeof Building2; group: string }[] = [
     { value: 'church', label: 'Church', show: can('settings'), icon: Building2, group: 'Your church' },
+    { value: 'features', label: 'Features', show: can('settings'), icon: ToggleRight, group: 'Your church' },
     { value: 'campuses', label: 'Campuses', show: can('settings'), icon: MapPinned, group: 'Your church' },
     { value: 'page', label: 'Public page', show: can('settings'), icon: Globe, group: 'Your church' },
     { value: 'fields', label: 'Custom fields', show: can('settings'), icon: ListPlus, group: 'Your church' },
@@ -96,6 +98,7 @@ export function SettingsPage() {
       <div className="settings-body">
       {tab === 'billing' && <PlanBilling />}
       {(tab === 'church' || tab === 'giving' || tab === 'kids') && <ChurchSettingsForm section={tab} />}
+      {tab === 'features' && <FeaturesSettings />}
       {tab === 'campuses' && <Campuses />}
       {tab === 'kids' && <Rooms />}
       {tab === 'fields' && <CustomFieldsSettings />}

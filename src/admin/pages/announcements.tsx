@@ -5,6 +5,7 @@ import type { AdminAnnouncement, AnnouncementInput } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { formatRelative } from '@/lib/format';
+import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { AiWriter } from '../ai';
@@ -13,6 +14,7 @@ import { PageHeader } from '../layout';
 export function AnnouncementsPage() {
   const { data, error, reload } = useApi(AdminApi.announcements.list);
   const [editing, setEditing] = useState<AdminAnnouncement | 'new' | null>(null);
+  useNewParam(() => setEditing('new'));
   const toast = useToast();
 
   return (
@@ -24,7 +26,7 @@ export function AnnouncementsPage() {
       />
       <div className="card">
         {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.data.length === 0 ? (
-          <Empty icon={<Megaphone size={32} />} title="No announcements yet" />
+          <Empty icon={<Megaphone size={32} />} title="No announcements yet" body="Notices you post here show on the member app home and can go out by WhatsApp or email." action={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> Post the first one</button>} />
         ) : data.data.map((a) => (
           <div key={a.id} className="list-row" style={{ alignItems: 'flex-start' }}>
             <div className="grow stack" style={{ gap: 4 }}>

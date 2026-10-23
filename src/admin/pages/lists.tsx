@@ -47,7 +47,7 @@ export function ListsPage() {
     <>
       <PageHeader title="Smart lists" subtitle="Lists that keep themselves up to date from rules. Use them to send messages or start follow-ups." actions={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} />
       <div className="card">
-        {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? <Empty icon={<Filter size={32} />} title="No lists yet" body="For example: visitors in the last 60 days, or members not in a group." /> : data.map((l) => (
+        {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? <Empty icon={<Filter size={32} />} title="No lists yet" body="For example: visitors in the last 60 days, or members not in a group." action={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} /> : data.map((l) => (
           <div key={l.id} className="list-row">
             <button className="grow link-btn" style={{ textAlign: 'left' }} onClick={() => setOpen(l)}>
               <div style={{ fontWeight: 600, color: 'var(--text)' }}>{l.name}</div>
