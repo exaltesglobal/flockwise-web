@@ -502,6 +502,12 @@ export const te: Strings = {
   recapTap: 'కొనసాగించడానికి నొక్కండి',
   recapBack: 'వెనుకకు',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} మీ కోసం పుట్టినరోజు శుభాకాంక్షలు రికార్డ్ చేశారు',
+  greetingForChild: '{from} {name} కోసం పుట్టినరోజు శుభాకాంక్షలు రికార్డ్ చేశారు',
+  greetingAnniversaryForYou: '{from} మీ కోసం వార్షికోత్సవ శుభాకాంక్షలు రికార్డ్ చేశారు',
+  greetingWatch: 'చూడండి',
+
   // Calendar subscribe
   calendarAdd: 'నా క్యాలెండర్\u200cకు జోడించు',
   calendarBody: 'సంఘ ఆరాధనలు, మీరు వెళ్లే కార్యక్రమాలు, మీరు సేవ చేసే ఆదివారాలు మీ క్యాలెండర్ యాప్\u200cలో వాటంతట అవే అప్\u200cడేట్ అవుతాయి.',

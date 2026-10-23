@@ -1,4 +1,4 @@
-import { BookOpen, BookOpenCheck, BookUser, Cake, Car, Clapperboard, ClipboardList, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { BookOpen, BookOpenCheck, BookUser, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -217,6 +217,15 @@ function Celebrations() {
           {data.myWishes.length > 0 && <span className="meta">{t('wishesCount', { count: data.myWishes.length })}</span>}
         </div>
       )}
+      {data.videoGreetings.map((g) => (
+        <a key={g.token} href={`/g/${g.token}`} className="card card-pad row" style={{ gap: 12, textDecoration: 'none', color: 'inherit' }}>
+          <PlayCircle size={28} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          <div className="grow" style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 600 }}>{t(g.kind === 'anniversary' ? 'greetingAnniversaryForYou' : g.forMe ? 'greetingForYou' : 'greetingForChild', { from: g.fromName, name: g.firstName })}</div>
+            <div className="small muted">{t('greetingWatch')}</div>
+          </div>
+        </a>
+      ))}
       {data.myWishes.length > 0 && (
         <div className="card card-pad stack" style={{ gap: 8 }}>
           <strong>{t('wishesForYou')}</strong>

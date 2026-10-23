@@ -502,6 +502,12 @@ export const kn: Strings = {
   recapTap: 'ಮುಂದುವರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
   recapBack: 'ಹಿಂದೆ',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} ನಿಮಗಾಗಿ ಹುಟ್ಟುಹಬ್ಬದ ಶುಭಾಶಯ ರೆಕಾರ್ಡ್ ಮಾಡಿದ್ದಾರೆ',
+  greetingForChild: '{from} {name} ಗಾಗಿ ಹುಟ್ಟುಹಬ್ಬದ ಶುಭಾಶಯ ರೆಕಾರ್ಡ್ ಮಾಡಿದ್ದಾರೆ',
+  greetingAnniversaryForYou: '{from} ನಿಮಗಾಗಿ ವಾರ್ಷಿಕೋತ್ಸವದ ಶುಭಾಶಯ ರೆಕಾರ್ಡ್ ಮಾಡಿದ್ದಾರೆ',
+  greetingWatch: 'ನೋಡಿ',
+
   // Calendar subscribe
   calendarAdd: 'ನನ್ನ ಕ್ಯಾಲೆಂಡರ್\u200cಗೆ ಸೇರಿಸಿ',
   calendarBody: 'ಚರ್ಚ್ ಆರಾಧನೆಗಳು, ನೀವು ಹೋಗುವ ಕಾರ್ಯಕ್ರಮಗಳು ಮತ್ತು ನೀವು ಸೇವೆ ಮಾಡುವ ಭಾನುವಾರಗಳು ನಿಮ್ಮ ಕ್ಯಾಲೆಂಡರ್ ಆ್ಯಪ್\u200cನಲ್ಲಿ ತಾವಾಗಿಯೇ ನವೀಕರಣಗೊಳ್ಳುತ್ತವೆ.',

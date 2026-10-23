@@ -502,6 +502,12 @@ export const ta: Strings = {
   recapTap: 'தொடர தட்டவும்',
   recapBack: 'பின்',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} உங்களுக்காக பிறந்தநாள் வாழ்த்தைப் பதிவு செய்துள்ளார்',
+  greetingForChild: '{from} {name}க்காக பிறந்தநாள் வாழ்த்தைப் பதிவு செய்துள்ளார்',
+  greetingAnniversaryForYou: '{from} உங்களுக்காக திருமண நாள் வாழ்த்தைப் பதிவு செய்துள்ளார்',
+  greetingWatch: 'பாருங்கள்',
+
   // Calendar subscribe
   calendarAdd: 'என் காலெண்டரில் சேர்',
   calendarBody: 'சபை ஆராதனைகள், நீங்கள் செல்லும் நிகழ்வுகள், நீங்கள் சேவை செய்யும் ஞாயிறுகள் உங்கள் காலெண்டர் ஆப்பில் தானாகப் புதுப்பிக்கப்படும்.',

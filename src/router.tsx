@@ -80,6 +80,8 @@ import { MemberVersesPage } from '@/member/pages/verses';
 import { MemberVotePage } from '@/member/pages/vote';
 import { MemberRecapPage, MemberRecapStoryPage, PublicRecapPage } from '@/member/pages/recap';
 import { RecapPage } from '@/admin/pages/recap';
+import { VideoGreetingsPage } from '@/admin/pages/video-greetings';
+import { GreetingPage } from '@/public/greeting';
 import { ElectionsPage } from '@/admin/pages/elections';
 
 const routes = [
@@ -140,6 +142,7 @@ const routes = [
       { path: 'rentals', element: <RentalsPage /> },
       { path: 'elections', element: <ElectionsPage /> },
       { path: 'recap', element: <RecapPage /> },
+      { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'practice', element: <PracticePage /> },
       { path: 'care', element: <CarePage /> },
       { path: 'insights', element: <InsightsPage /> },
@@ -163,6 +166,7 @@ const routes = [
   { path: '/rent', element: <PublicRentPage /> },
   { path: '/verify/:code', element: <VerifyCertificatePage /> },
   { path: '/r/:id', element: <PublicRecapPage /> },
+  { path: '/g/:token', element: <GreetingPage /> },
   { path: '/pray', element: <PrayPage /> },
   { path: '/pray/wall', element: <PrayerWallPage /> },
   { path: '/verify', element: <VerifyCertificatePage /> },

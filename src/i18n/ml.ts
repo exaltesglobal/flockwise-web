@@ -502,6 +502,12 @@ export const ml: Strings = {
   recapTap: 'തുടരാൻ ടാപ്പ് ചെയ്യുക',
   recapBack: 'തിരികെ',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} നിങ്ങൾക്കായി ഒരു ജന്മദിനാശംസ റെക്കോർഡ് ചെയ്തു',
+  greetingForChild: '{from} {name}-നായി ഒരു ജന്മദിനാശംസ റെക്കോർഡ് ചെയ്തു',
+  greetingAnniversaryForYou: '{from} നിങ്ങൾക്കായി ഒരു വിവാഹവാർഷികാശംസ റെക്കോർഡ് ചെയ്തു',
+  greetingWatch: 'കാണുക',
+
   // Calendar subscribe
   calendarAdd: 'എന്റെ കലണ്ടറിൽ ചേർക്കുക',
   calendarBody: 'സഭാ ആരാധനകൾ, നിങ്ങൾ പോകുന്ന പരിപാടികൾ, നിങ്ങൾ സേവിക്കുന്ന ഞായറാഴ്ചകൾ എന്നിവ നിങ്ങളുടെ കലണ്ടർ ആപ്പിൽ തനിയെ പുതുക്കപ്പെടും.',

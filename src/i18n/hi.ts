@@ -502,6 +502,12 @@ export const hi: Strings = {
   recapTap: 'जारी रखने के लिए टैप करें',
   recapBack: 'वापस',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} ने आपके लिए जन्मदिन की शुभकामना रिकॉर्ड की है',
+  greetingForChild: '{from} ने {name} के लिए जन्मदिन की शुभकामना रिकॉर्ड की है',
+  greetingAnniversaryForYou: '{from} ने आपके लिए सालगिरह की शुभकामना रिकॉर्ड की है',
+  greetingWatch: 'देखें',
+
   // Calendar subscribe
   calendarAdd: 'मेरे कैलेंडर में जोड़ें',
   calendarBody: 'चर्च की सेवाएँ, जिन कार्यक्रमों में आप जा रहे हैं और जिन रविवारों को आप सेवा करते हैं, आपके कैलेंडर ऐप में अपने आप अपडेट रहेंगे।',

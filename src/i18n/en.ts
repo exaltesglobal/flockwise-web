@@ -499,6 +499,12 @@ export const en = {
   recapTap: 'Tap to continue',
   recapBack: 'Back',
 
+  // Pastor's video greeting
+  greetingForYou: '{from} recorded a birthday greeting for you',
+  greetingForChild: '{from} recorded a birthday greeting for {name}',
+  greetingAnniversaryForYou: '{from} recorded an anniversary greeting for you',
+  greetingWatch: 'Watch it',
+
   // Calendar subscribe
   calendarAdd: 'Add to my calendar',
   calendarBody: 'Your church services, events you are going to and the Sundays you serve, kept up to date in your own calendar app.',

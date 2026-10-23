@@ -555,3 +555,20 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .result-row .result-bar i { display: block; height: 100%; background: var(--primary); border-radius: 4px; }
 .result-row.elected .result-bar i { background: var(--ok); }
 .result-row.elected .result-name { font-weight: 700; }
+
+/* The pastor's video greeting page (/g/:token) */
+.greet { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left, 0px)); background: linear-gradient(160deg, var(--brand-primary, var(--primary, #1f6b5c)), color-mix(in srgb, var(--brand-primary, var(--primary, #1f6b5c)) 55%, #000)); }
+.greet-card { width: 100%; max-width: 520px; background: var(--card, #fff); color: var(--text, #14211f); border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px rgba(0,0,0,0.3); }
+.greet-church { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--muted); font-size: 14px; }
+.greet-church img { width: 30px; height: 30px; border-radius: 8px; object-fit: contain; background: #fff; }
+.greet-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; color: var(--primary); padding: 6px 0; }
+.greet-head h1 { font-family: var(--font-heading, inherit); font-size: clamp(26px, 7vw, 36px); margin: 0; color: var(--text); text-wrap: balance; }
+.greet-sub { color: var(--accent, #f2a93b); font-weight: 600; letter-spacing: 0.04em; }
+.greet-video { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; background: #000; }
+.greet-video video, .greet-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.greet-message { font-size: 18px; line-height: 1.45; margin: 0; text-align: center; }
+.greet-from { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
+.greet-reply { display: flex; gap: 8px; }
+.greet-reply .input { flex: 1; min-width: 0; }
+.greet-reply.done { align-items: center; justify-content: center; color: var(--primary); font-weight: 500; background: var(--tint); border-radius: 12px; padding: 10px 12px; }
+.greet-powered { display: inline-flex; align-items: center; gap: 6px; justify-content: center; color: var(--muted); font-size: 12px; text-decoration: none; }
