@@ -33,7 +33,8 @@ export function PersonSearch({ onPick, placeholder = 'Search people by name, pho
         <input className="input" autoFocus={autoFocus} value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} />
       </div>
       {results.length > 0 && (
-        <div className="picker-menu card">
+        // Inside a <label> (Field), a click on a result would otherwise be retargeted to the search box.
+        <div className="picker-menu card" onClick={(e) => e.preventDefault()}>
           {results.map((p) => (
             <button
               key={p.id}
