@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -60,6 +60,7 @@ const NAV: { title: string | null; items: NavItem[] }[] = [
       { to: '/admin/events', label: 'Services & events', icon: CalendarDays, perm: ['events'] },
       { to: '/admin/rides', label: 'Sunday lifts', icon: Car, perm: ['care', 'people.view'] },
       { to: '/admin/feasts', label: 'Love feasts & kitchen', icon: CookingPot, perm: ['events', 'volunteers'] },
+      { to: '/admin/camps', label: 'Camps & retreats', icon: Tent, perm: ['events', 'people.view'] },
       { to: '/admin/rentals', label: 'Hall hire', icon: KeyRound, perm: ['events', 'settings'] },
       { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'] },
       { to: '/admin/practice', label: 'Choir practice', icon: MicVocal, perm: ['services', 'volunteers'] },

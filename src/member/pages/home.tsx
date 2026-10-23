@@ -1,4 +1,4 @@
-import { BookOpen, BookOpenCheck, BookUser, Library, Church, Handshake, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { BookOpen, BookOpenCheck, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -39,6 +39,7 @@ export function MemberHomePage() {
         <Link to="/app/library" className="card"><Library size={22} />{t('libraryTitle')}</Link>
         <Link to="/app/occasions" className="card"><Church size={22} />{t('occTitle')}</Link>
         <Link to="/app/skills" className="card"><Handshake size={22} />{t('skillTitle')}</Link>
+        <Link to="/app/camps" className="card"><Tent size={22} />{t('campTitle')}</Link>
         <Link to="/app/practice" className="card"><MicVocal size={22} />{t('practiceTitle')}</Link>
         <Link to="/app/verses" className="card"><Star size={22} />{t('verseTitle')}</Link>
         <Link to="/app/vote" className="card"><Vote size={22} />{t('voteTitle')}</Link>

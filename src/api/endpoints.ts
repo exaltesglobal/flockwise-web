@@ -11,6 +11,7 @@ import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettin
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
+import type { Camp, CampDetail, CampSignup, CampView, MyCamp } from '@/core/types';
 import type { MyOccasion, OccasionKind, OccasionStatus, OccasionsHub, OccasionView } from '@/core/types';
 export type OccasionInput = { kind: OccasionKind; personIds: string[]; title: string; date: string | null; time: string | null; place: string; pastorId: string | null; contactName: string; contactPhone: string; notes: string };
 import type { DiscipleshipHub, MentorFocus, MentorshipDetail, MyMentoring } from '@/core/types';
@@ -296,6 +297,11 @@ export const MemberApi = {
     get: () => m.get<MyAid>('/me/aid'),
     request: (input: { kind: AidKind; amount: number; reason: string }) => m.post<MyAid>('/me/aid', input),
     withdraw: (id: string) => m.del<MyAid>(`/me/aid/${id}`),
+  },
+  camps: {
+    get: () => m.get<{ camps: MyCamp[] }>('/me/camps'),
+    signUp: (id: string, input: { personIds: string[]; emergencyName: string; emergencyPhone: string; needsBus: boolean; medical: Record<string, string> }) => m.post<{ camps: MyCamp[] }>(`/me/camps/${id}`, input),
+    cancel: (id: string, personId: string) => m.del<{ camps: MyCamp[] }>(`/me/camps/${id}/${personId}`),
   },
   skills: {
     get: () => m.get<MySkills>('/me/skills'),
@@ -715,6 +721,16 @@ export const AdminApi = {
     attendance: (id: string, sessionId: string, present: string[]) => a.post<CourseDetail>(`/admin/courses/${id}/attendance`, { sessionId, present }),
     drop: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/drop`, {}),
     complete: (id: string, eid: string) => a.post<CourseDetail>(`/admin/courses/${id}/enrollments/${eid}/complete`, {}),
+  },
+  camps: {
+    list: () => a.get<{ camps: CampView[] }>('/admin/camps'),
+    get: (id: string) => a.get<CampDetail>(`/admin/camps/${id}`),
+    create: (input: Partial<Omit<Camp, 'id' | 'createdAt'>>) => a.post<CampDetail>('/admin/camps', input),
+    update: (id: string, patch: Partial<Omit<Camp, 'id' | 'createdAt'>>) => a.patch<CampDetail>(`/admin/camps/${id}`, patch),
+    remove: (id: string) => a.del<{ ok: true }>(`/admin/camps/${id}`),
+    add: (id: string, personIds: string[]) => a.post<CampDetail>(`/admin/camps/${id}/signups`, { personIds }),
+    setSignup: (id: string, signupId: string, patch: Partial<Pick<CampSignup, 'roomId' | 'busId' | 'paid' | 'status' | 'medical' | 'needsBus'>>) => a.patch<CampDetail>(`/admin/camps/${id}/signups/${signupId}`, patch),
+    assign: (id: string) => a.post<CampDetail>(`/admin/camps/${id}/assign`, {}),
   },
   skills: {
     hub: () => a.get<SkillsHub>('/admin/skills'),

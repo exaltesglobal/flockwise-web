@@ -97,6 +97,8 @@ import { OccasionsPage } from '@/admin/pages/occasions';
 import { MemberOccasionsPage } from '@/member/pages/occasions';
 import { SkillsPage } from '@/admin/pages/skills';
 import { MemberSkillsPage } from '@/member/pages/skills';
+import { CampsPage } from '@/admin/pages/camps';
+import { MemberCampsPage } from '@/member/pages/camps';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
 import { MemberVigilsPage } from '@/member/pages/vigils';
 import { MemberCoursesPage } from '@/member/pages/courses';
@@ -166,6 +168,7 @@ const routes = [
       { path: 'library', element: <LibraryPage /> },
       { path: 'occasions', element: <OccasionsPage /> },
       { path: 'skills', element: <SkillsPage /> },
+      { path: 'camps', element: <CampsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -229,6 +232,7 @@ const routes = [
       { path: 'library', element: <MemberLibraryPage /> },
       { path: 'occasions', element: <MemberOccasionsPage /> },
       { path: 'skills', element: <MemberSkillsPage /> },
+      { path: 'camps', element: <MemberCampsPage /> },
       { path: 'practice', element: <MemberPracticePage /> },
       { path: 'verses', element: <MemberVersesPage /> },
       { path: 'vote', element: <MemberVotePage /> },
