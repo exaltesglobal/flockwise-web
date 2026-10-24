@@ -685,6 +685,17 @@ export const ta: Strings = {
   bibleSaved: 'சேமிக்கப்பட்டது',
   bibleMarksNone: 'வசனத்தைத் தொட்டு வண்ணமிடுங்கள், குறியிடுங்கள் அல்லது குறிப்பு எழுதுங்கள்.',
   bibleAllMarks: 'அனைத்தும்',
+  bibleSearchTitle: "வேதாகமத்தில் தேடுங்கள்",
+  bibleSearchHint: "சொற்கள், அல்லது \"மேற்கோளில் சொற்றொடர்\"",
+  bibleSearchFirst: "ஒரு வேதாகமத்தில் முதல் தேடலுக்கு சில விநாடிகள் ஆகும்.",
+  bibleResults: "{count} வசனங்கள்",
+  bibleResultsMore: "முதல் 300 காட்டப்படுகின்றன. குறைக்க இன்னொரு சொல்லைச் சேர்க்கவும்.",
+  bibleNoResults: "வசனங்கள் இல்லை. குறைவான அல்லது சிறிய சொற்களை முயலுங்கள்.",
+  bibleThisBook: "இந்த புத்தகம்",
+  bibleGoTo: "{ref} க்குச் செல்லவும்",
+  bibleSeeAlso: "இவற்றையும் காண்க",
+  bibleSeeAlsoNone: "இந்த வசனத்திற்கு குறிப்புகள் இல்லை.",
+  bibleWhole: "முழு வேதாகமம்",
 };
 
 export default ta;

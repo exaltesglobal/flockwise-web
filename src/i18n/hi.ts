@@ -685,6 +685,17 @@ export const hi: Strings = {
   bibleSaved: 'सहेजा गया',
   bibleMarksNone: 'किसी पद पर टैप करके उसे हाइलाइट करें, बुकमार्क करें या नोट लिखें।',
   bibleAllMarks: 'सभी',
+  bibleSearchTitle: "बाइबल में खोजें",
+  bibleSearchHint: "शब्द, या \"उद्धरण में वाक्यांश\"",
+  bibleSearchFirst: "किसी बाइबल में पहली खोज में कुछ सेकंड लगते हैं।",
+  bibleResults: "{count} पद",
+  bibleResultsMore: "पहले 300 दिखाए जा रहे हैं। कम करने के लिए एक शब्द और जोड़ें।",
+  bibleNoResults: "कोई पद नहीं मिला। कम या छोटे शब्द आज़माएँ।",
+  bibleThisBook: "यह पुस्तक",
+  bibleGoTo: "{ref} पर जाएँ",
+  bibleSeeAlso: "यह भी देखें",
+  bibleSeeAlsoNone: "इस पद के लिए कोई संदर्भ नहीं।",
+  bibleWhole: "पूरी बाइबल",
 };
 
 export default hi;

@@ -685,6 +685,17 @@ export const kn: Strings = {
   bibleSaved: 'ಉಳಿಸಲಾಗಿದೆ',
   bibleMarksNone: 'ವಚನವನ್ನು ಸ್ಪರ್ಶಿಸಿ ಹೈಲೈಟ್ ಮಾಡಿ, ಬುಕ್\u200cಮಾರ್ಕ್ ಮಾಡಿ ಅಥವಾ ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ.',
   bibleAllMarks: 'ಎಲ್ಲಾ',
+  bibleSearchTitle: "ಬೈಬಲ್‌ನಲ್ಲಿ ಹುಡುಕಿ",
+  bibleSearchHint: "ಪದಗಳು, ಅಥವಾ \"ಉದ್ಧರಣದಲ್ಲಿ ವಾಕ್ಯ\"",
+  bibleSearchFirst: "ಒಂದು ಬೈಬಲ್‌ನಲ್ಲಿ ಮೊದಲ ಹುಡುಕಾಟಕ್ಕೆ ಕೆಲವು ಸೆಕೆಂಡುಗಳು ಬೇಕು.",
+  bibleResults: "{count} ವಚನಗಳು",
+  bibleResultsMore: "ಮೊದಲ 300 ತೋರಿಸಲಾಗುತ್ತಿದೆ. ಕಡಿಮೆ ಮಾಡಲು ಇನ್ನೊಂದು ಪದ ಸೇರಿಸಿ.",
+  bibleNoResults: "ವಚನಗಳು ಸಿಗಲಿಲ್ಲ. ಕಡಿಮೆ ಅಥವಾ ಚಿಕ್ಕ ಪದಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ.",
+  bibleThisBook: "ಈ ಪುಸ್ತಕ",
+  bibleGoTo: "{ref} ಗೆ ಹೋಗಿ",
+  bibleSeeAlso: "ಇವನ್ನೂ ನೋಡಿ",
+  bibleSeeAlsoNone: "ಈ ವಚನಕ್ಕೆ ಸಂಬಂಧಿತ ವಚನಗಳಿಲ್ಲ.",
+  bibleWhole: "ಸಂಪೂರ್ಣ ಬೈಬಲ್",
 };
 
 export default kn;

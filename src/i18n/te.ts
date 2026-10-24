@@ -685,6 +685,17 @@ export const te: Strings = {
   bibleSaved: 'సేవ్ అయింది',
   bibleMarksNone: 'వచనాన్ని తాకి హైలైట్ చేయండి, బుక్\u200cమార్క్ చేయండి లేదా నోట్ రాయండి.',
   bibleAllMarks: 'అన్నీ',
+  bibleSearchTitle: "బైబిల్‌లో వెతకండి",
+  bibleSearchHint: "పదాలు, లేదా \"కోట్స్‌లో వాక్యం\"",
+  bibleSearchFirst: "ఒక బైబిల్‌లో మొదటి వెతుకులాటకు కొన్ని సెకన్లు పడుతుంది.",
+  bibleResults: "{count} వచనాలు",
+  bibleResultsMore: "మొదటి 300 చూపిస్తున్నాం. తగ్గించడానికి ఇంకో పదం జోడించండి.",
+  bibleNoResults: "వచనాలు దొరకలేదు. తక్కువ లేదా చిన్న పదాలతో ప్రయత్నించండి.",
+  bibleThisBook: "ఈ పుస్తకం",
+  bibleGoTo: "{ref} కు వెళ్ళండి",
+  bibleSeeAlso: "ఇవి కూడా చూడండి",
+  bibleSeeAlsoNone: "ఈ వచనానికి సంబంధిత వచనాలు లేవు.",
+  bibleWhole: "పూర్తి బైబిల్",
 };
 
 export default te;

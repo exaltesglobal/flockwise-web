@@ -682,6 +682,17 @@ export const en = {
   bibleSaved: 'Saved',
   bibleMarksNone: 'Tap a verse to highlight it, bookmark it or write a note.',
   bibleAllMarks: 'All',
+  bibleSearchTitle: "Search the Bible",
+  bibleSearchHint: "Words, or a \"phrase in quotes\"",
+  bibleSearchFirst: "The first search in a Bible takes a few seconds while it loads.",
+  bibleResults: "{count} verses",
+  bibleResultsMore: "Showing the first 300. Add a word to narrow it down.",
+  bibleNoResults: "No verses found. Try fewer or shorter words.",
+  bibleThisBook: "This book",
+  bibleGoTo: "Go to {ref}",
+  bibleSeeAlso: "See also",
+  bibleSeeAlsoNone: "No cross references for this verse.",
+  bibleWhole: "Whole Bible",
 };
 
 export type Strings = typeof en;

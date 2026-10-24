@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { BibleBookInfo, BibleChapter, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { BibleBookInfo, BibleChapter, BibleCrossRef, BibleSearch, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -438,6 +438,8 @@ export const PublicApi = {
   bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
   bibleBooks: (tr: string) => m.get<BibleBookInfo[]>(`/public/bible/${encodeURIComponent(tr)}/books`),
   bibleChapter: (tr: string, book: string, chapter: number) => m.get<BibleChapter>(`/public/bible/${encodeURIComponent(tr)}/${book}/${chapter}`),
+  bibleSearch: (tr: string, q: string, scope?: string) => m.get<BibleSearch>(`/public/bible/${encodeURIComponent(tr)}/search${qs({ q, scope })}`),
+  bibleRefs: (tr: string, book: string, chapter: number, verse: number) => m.get<{ refs: BibleCrossRef[]; source: string }>(`/public/bible/${encodeURIComponent(tr)}/refs/${book}/${chapter}/${verse}`),
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
   recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),

@@ -1209,6 +1209,11 @@ export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
 /** A member's own highlight, bookmark or note on one verse. Private to them; not in the office export. */
 export type BibleMark = { id: string; personId: string; book: string; chapter: number; verse: number; color: BibleMarkColor | null; bookmark: boolean; note: string; updatedAt: string };
 export type BibleBookInfo = { code: string; name: string; en: string; chapters: number; testament: 'ot' | 'nt' };
+/** One verse found by a Bible search. */
+export type BibleHit = { book: string; chapter: number; verse: number; text: string };
+export type BibleSearch = { translation: string; q: string; total: number; results: BibleHit[]; books: { book: string; count: number }[]; reference?: { book: string; chapter: number; verse: number | null } | null };
+/** A "see also" verse from the Treasury of Scripture Knowledge (via OpenBible.info), with its words in the chosen Bible. */
+export type BibleCrossRef = { book: string; chapter: number; verse: number; endChapter: number; endVerse: number; votes: number; text: string };
 export type BibleChapter = {
   translation: BibleTranslationInfo; book: string; bookName: string; en: string; chapter: number;
   /** A psalm's title line ("A Psalm by David."). */

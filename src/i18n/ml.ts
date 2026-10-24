@@ -685,6 +685,17 @@ export const ml: Strings = {
   bibleSaved: 'സേവ് ചെയ്തു',
   bibleMarksNone: 'ഒരു വാക്യം തൊട്ട് ഹൈലൈറ്റ് ചെയ്യുക, ബുക്ക്മാർക്ക് ചെയ്യുക അല്ലെങ്കിൽ കുറിപ്പ് എഴുതുക.',
   bibleAllMarks: 'എല്ലാം',
+  bibleSearchTitle: "ബൈബിളിൽ തിരയുക",
+  bibleSearchHint: "വാക്കുകൾ, അല്ലെങ്കിൽ \"ഉദ്ധരണിയിൽ വാക്യം\"",
+  bibleSearchFirst: "ഒരു ബൈബിളിലെ ആദ്യ തിരച്ചിലിന് കുറച്ച് സെക്കൻഡ് എടുക്കും.",
+  bibleResults: "{count} വാക്യങ്ങൾ",
+  bibleResultsMore: "ആദ്യ 300 കാണിക്കുന്നു. ചുരുക്കാൻ ഒരു വാക്ക് കൂടി ചേർക്കുക.",
+  bibleNoResults: "വാക്യങ്ങൾ കണ്ടില്ല. കുറച്ചോ ചെറുതോ ആയ വാക്കുകൾ ശ്രമിക്കുക.",
+  bibleThisBook: "ഈ പുസ്തകം",
+  bibleGoTo: "{ref} ലേക്ക് പോകുക",
+  bibleSeeAlso: "ഇതും കാണുക",
+  bibleSeeAlsoNone: "ഈ വാക്യത്തിന് പരാമർശങ്ങളില്ല.",
+  bibleWhole: "മുഴുവൻ ബൈബിൾ",
 };
 
 export default ml;

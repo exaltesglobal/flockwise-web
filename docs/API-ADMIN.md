@@ -1296,3 +1296,8 @@ Every free-to-share Bible on eBible.org (about 1,100 translations in 890 languag
 - `GET /public/bible/:tr/books` → `BibleBookInfo[]` (book code, name in that language, English name, chapters, testament)
 - `GET /public/bible/:tr/:book/:chapter` → `BibleChapter` (verses with headings, paragraph and poetry marks, a psalm's title line, footnotes, previous/next chapter, and the copyright `source` line to show under the text). `book` is the USFM code, e.g. `JHN`.
 - `GET /admin/bible?ref=John 3:16-18&tr=hin2017` (staff) → `BiblePassage` for the presenter. References work in English, short forms (`jn`, `ps`, `1 cor`) and the Indian-language book names (`యోహాను 3:16`). `tr=kjv` and `tr=web` still work.
+
+## Bible search and cross references (public)
+
+- `GET /public/bible/:tr/search?q=&scope=` searches a whole Bible. Every word must appear; "quoted phrases" stay together. Case and Latin accents are ignored; Indian scripts match as written. `scope` is `ot`, `nt` or a book code such as `JHN`. Returns `{translation, q, total, results: [{book, chapter, verse, text}] (first 300), books: [{book, count}], reference}`; `reference` is set when the words read as a reference ("John 3:16") so the app can offer to go there. The first search in a translation downloads its verse-per-line file from eBible.org (a few seconds); the server keeps four Bibles in memory.
+- `GET /public/bible/:tr/refs/:book/:chapter/:verse` gives "see also" verses for one verse: `{refs: [{book, chapter, verse, endChapter, endVerse, votes, text}], source}`, best first, up to 40. From the Treasury of Scripture Knowledge as shared by OpenBible.info (CC BY); `text` is in the chosen translation when it can be searched, otherwise empty.

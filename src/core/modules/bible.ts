@@ -34,7 +34,7 @@ export function tidyReference(ref: string): string {
 export function bibleList(ctx: Ctx): BibleTranslationInfo[] {
   return ctx.env.bibleCatalog?.length ? ctx.env.bibleCatalog : FEATURED_BIBLES;
 }
-function translation(ctx: Ctx, id: string): BibleTranslationInfo {
+export function translation(ctx: Ctx, id: string): BibleTranslationInfo {
   const want = LEGACY[id] ?? id;
   const t = bibleList(ctx).find((x) => x.id === want) ?? FEATURED_BIBLES.find((x) => x.id === want);
   if (!t) throw new ApiError(404, 'not_found', 'That Bible translation is not available.');
@@ -46,7 +46,7 @@ const MAX_CHAPTERS = 3000;
 const chapters = new Map<string, Promise<BibleChapter>>();
 const bookLists = new Map<string, Promise<BibleBookInfo[]>>();
 
-function remember<T>(map: Map<string, Promise<T>>, key: string, max: number, load: () => Promise<T>): Promise<T> {
+export function remember<T>(map: Map<string, Promise<T>>, key: string, max: number, load: () => Promise<T>): Promise<T> {
   const hit = map.get(key);
   if (hit) { map.delete(key); map.set(key, hit); return hit; }
   const p = load();
