@@ -146,6 +146,8 @@ import type {
   MissedCallHub,
   MissedCallSettings,
   CaptionLine,
+  AddedItem,
+  BiblePassage,
   CaptionsSettings,
   PublicGreeting,
   Recap,
@@ -1179,8 +1181,9 @@ export const AdminApi = {
   },
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
-    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions',
-      extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings> } = {}) =>
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background',
+      extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings>;
+        added?: Partial<AddedItem>; live?: boolean; id?: string; minutes?: number; label?: string; stopwatch?: boolean; clear?: boolean; itemId?: string; url?: string } = {}) =>
       a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),
     caption: (eventId: string, text: string) => a.post<{ line: CaptionLine; count: number }>(`/admin/services/${eventId}/captions`, { text }),
     captions: (eventId: string) => a.get<{ lines: CaptionLine[]; count: number }>(`/admin/services/${eventId}/captions`),
@@ -1191,6 +1194,7 @@ export const AdminApi = {
     saveObs: (input: Partial<ObsSettings>) => a.put<ObsSettings>('/admin/presentation-obs', input),
     resetKey: () => a.post<{ screenKey: string }>('/admin/presentation-key/reset'),
   },
+  bible: (ref: string, tr: 'kjv' | 'web' = 'kjv') => a.get<BiblePassage>(`/admin/bible${qs({ ref, tr })}`),
   songStats: () => a.get<SongStats>('/admin/songs/stats'),
   ccli: (from?: string, to?: string) => a.get<{ from: string; to: string; rows: CcliRow[] }>(`/admin/songs/ccli-report${qs({ from, to })}`),
   headcounts: {

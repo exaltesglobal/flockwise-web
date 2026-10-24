@@ -220,3 +220,33 @@ html.pres-transparent, html.pres-transparent body, html.pres-transparent #root {
 .cap-lines { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
 .cap-line { font-size: 14px; line-height: 1.3; }
 .ov-captions { text-transform: none; }
+
+/* Background layer (picture or silent video loop) and slide transitions */
+.pres-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: center / cover no-repeat; }
+.pres-frame.has-bg::before { content: ''; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 1; }
+.pres-frame.blank .pres-bg { display: none; }
+.pres-content { position: relative; z-index: 2; width: 100%; height: 100%; display: grid; place-items: center; }
+.pres-content.fade { animation: pres-fade 0.35s ease-out; }
+@keyframes pres-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pres-content.fade { animation: none; } }
+.pres-frame .pres-message, .pres-frame .pres-captions { z-index: 3; }
+
+/* Presenter: item rows with tools, live-add and stage panels */
+.pres-item-row { display: flex; align-items: stretch; gap: 2px; border-radius: 8px; }
+.pres-item-row .pres-item { flex: 1; min-width: 0; text-align: left; }
+.pres-item-row.on .pres-item { background: var(--tint); border-color: var(--primary); font-weight: 600; }
+.pres-item-tool { flex: none; border: 0; background: transparent; color: var(--muted); padding: 0 6px; border-radius: 6px; cursor: pointer; opacity: 0.55; }
+.pres-item-tool:hover, .pres-item-tool.set { opacity: 1; color: var(--primary); }
+.pres-added { display: inline-block; margin-right: 6px; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: var(--tint); color: var(--primary); vertical-align: 1px; }
+.pres-panel { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--card); }
+.pres-tabs { display: flex; gap: 4px; }
+.pres-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: inherit; font-size: 12px; cursor: pointer; }
+.pres-tabs button.on { background: var(--tint); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.pres-passage { font-size: 12px; line-height: 1.45; max-height: 140px; overflow: auto; padding: 6px 8px; border-radius: 6px; background: var(--tint); }
+.pres-songs { display: grid; gap: 4px; max-height: 220px; overflow: auto; }
+
+/* Stage display: the operator's private note and timer */
+.stage-note { background: #b45309 !important; color: #fff; }
+.pres-stage .big-timer { font-size: 1.4em; font-weight: 800; }
+.pres-side > * { flex-shrink: 0; }
+@media (max-width: 720px) { .pres-side > .pres-panel { display: none; } }

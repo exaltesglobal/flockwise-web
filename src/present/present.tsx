@@ -1,11 +1,11 @@
 // Presentation: the operator console (also the phone remote), the projector output and the
 // stage display and the OBS overlay. Every screen polls the same presentation state, so they all
 // follow the operator. Screens opened with ?key= (the church's screen key) need no sign-in.
-import { ArrowLeft, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Trash2, Tv, Video, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eraser, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Timer, Trash2, Tv, Type, Video, Wallpaper, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
-import type { CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide } from '@/api/admin-types';
+import type { BiblePassage, CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide, SongView } from '@/api/admin-types';
 import { canDictate, useDictation } from '@/admin/components/dictate';
 import { adminSession } from '@/api/client';
 import { AdminApi, PublicApi } from '@/api/endpoints';
@@ -98,18 +98,25 @@ export function captionText(c: CaptionsView | undefined): { main: string; sub: s
   return { main: last.translated, sub: c.show === 'both' ? last.text : null };
 }
 
-export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo, captions }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null; captions?: CaptionsView }) {
+const isVideo = (url: string) => /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url);
+
+/** The picture or moving loop behind the words. Thumbnails show a still frame so the grid stays light. */
+function Backdrop({ url, still }: { url: string; still?: boolean }) {
+  if (isVideo(url)) return <video key={url} className="pres-bg" src={url} muted loop playsInline autoPlay={!still} preload={still ? 'metadata' : 'auto'} />;
+  return <div className="pres-bg" style={{ backgroundImage: `url("${url}")` }} />;
+}
+
+export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo, captions, still }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null; captions?: CaptionsView; still?: boolean }) {
   const cap = mode === 'blank' ? null : captionText(captions);
   const t = view.theme;
-  const style = {
-    '--pres-bg': t.background,
-    '--pres-fg': t.textColor,
-    '--pres-scale': t.fontScale,
-    backgroundImage: t.imageUrl && mode !== 'blank' ? `linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url("${t.imageUrl}")` : undefined,
-  } as CSSProperties;
+  const bg = mode === 'blank' ? '' : (slide?.bg || t.imageUrl || '');
+  const style = { '--pres-bg': t.background, '--pres-fg': t.textColor, '--pres-scale': t.fontScale } as CSSProperties;
+  const fade = t.transition !== 'cut';
   return (
-    <div className={`pres-frame ${mode === 'blank' ? 'blank' : ''} ${t.uppercase ? 'upper' : ''} ${className}`} style={style}>
-      {mode === 'blank' ? null : mode === 'countdown' ? (
+    <div className={`pres-frame ${mode === 'blank' ? 'blank' : ''} ${t.uppercase ? 'upper' : ''} ${bg ? 'has-bg' : ''} ${className}`} style={style}>
+      {bg && <Backdrop url={bg} still={still} />}
+      <div key={mode === 'live' ? slide?.id ?? 'none' : mode} className={`pres-content ${fade ? 'fade' : ''}`}>
+      {mode === 'blank' || mode === 'clear' ? null : mode === 'countdown' ? (
         <CountdownFace until={countdownTo || view.event?.startsAt || new Date().toISOString()} announcements={view.announcements ?? []} />
       ) : mode === 'logo' || !slide ? (
         <div className="pres-logo">{view.logoUrl ? <img src={view.logoUrl} alt="" /> : null}<div>{view.churchName}</div></div>
@@ -121,6 +128,7 @@ export function SlideFrame({ view, slide, mode = 'live', message, className = ''
           {t.showAlt && slide.alt.length > 0 && <div className="alt">{slide.alt.map((l, i) => <div key={i}>{l}</div>)}</div>}
         </div>
       )}
+      </div>
       {message && mode !== 'blank' && <div className="pres-message">{message}</div>}
       {cap && <div className="pres-captions" key={cap.main}><div className="tr">{cap.main}</div>{cap.sub && <div className="og">{cap.sub}</div>}</div>}
     </div>
@@ -142,6 +150,7 @@ function Presenter() {
   const [message, setMessage] = useState('');
   const [themeOpen, setThemeOpen] = useState(false);
   const [linksOpen, setLinksOpen] = useState(false);
+  const [bgItem, setBgItem] = useState<{ id: string; title: string; url: string } | null>(null);
   const current = useRef<HTMLButtonElement>(null);
 
   const act = useCallback(async (action: Action, extra: ActExtra = {}) => {
@@ -157,6 +166,7 @@ function Presenter() {
       else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); void act('prev'); }
       else if (e.key === 'b' || e.key === 'B' || e.key === '.') void act(data?.state.mode === 'blank' ? 'live' : 'blank');
       else if (e.key === 'l' || e.key === 'L') void act(data?.state.mode === 'logo' ? 'live' : 'logo');
+      else if (e.key === 'c' || e.key === 'C') void act(data?.state.mode === 'clear' ? 'live' : 'clear');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -171,6 +181,8 @@ function Presenter() {
   const slide = slides[state.index];
   const next = slides[state.index + 1];
   const items = [...new Map(slides.map((s) => [s.itemIndex, s.itemTitle])).entries()];
+  const addedIds = new Set((state.added ?? []).map((a) => a.id));
+  const bgs = state.backgrounds ?? {};
   const open = (path: string) => window.open(screenUrl(eventId, path, data.screenKey), `fw-${path}-${eventId}`, 'popup=yes,width=1280,height=720');
 
   return (
@@ -179,7 +191,7 @@ function Presenter() {
         <Link className="btn ghost sm" to="/admin/services"><ArrowLeft size={15} /> <span className="hide-sm">Services</span></Link>
         <div className="grow" style={{ minWidth: 0 }}>
           <div className="ellipsis" style={{ fontWeight: 700 }}>{data.event.title}</div>
-          <div className="small muted">{state.mode === 'live' ? `Slide ${state.index + 1} of ${slides.length}` : state.mode === 'blank' ? 'Screens blank' : state.mode === 'countdown' ? 'Countdown showing' : 'Showing logo'}</div>
+          <div className="small muted">{state.mode === 'live' ? `Slide ${state.index + 1} of ${slides.length}` : state.mode === 'blank' ? 'Screens blank' : state.mode === 'clear' ? 'Words cleared' : state.mode === 'countdown' ? 'Countdown showing' : 'Showing logo'}</div>
         </div>
         <button className="btn sm" onClick={() => open('screen')}><Tv size={15} /> <span className="hide-sm">Projector</span></button>
         <button className="btn sm" onClick={() => open('stage')}><Monitor size={15} /> <span className="hide-sm">Stage display</span></button>
@@ -190,15 +202,23 @@ function Presenter() {
 
       <div className="pres-main">
         <aside className="pres-items">
-          {items.map(([i, title]) => (
-            <button key={i} className={`pres-item ${slide?.itemIndex === i ? 'on' : ''}`} disabled={!control} onClick={() => void act('item', { index: i })}>{title}</button>
-          ))}
+          {items.map(([i, title]) => {
+            const id = data.charts[i]?.id ?? '';
+            const added = addedIds.has(id);
+            return (
+              <div key={i} className={`pres-item-row ${slide?.itemIndex === i ? 'on' : ''}`}>
+                <button className="pres-item" disabled={!control} onClick={() => void act('item', { index: i })}>{added && <span className="pres-added">Live</span>}{title}</button>
+                {control && <button className={`pres-item-tool ${bgs[id] ? 'set' : ''}`} title="Background for this item" aria-label={`Background for ${title}`} onClick={() => setBgItem({ id, title, url: bgs[id] ?? '' })}><Wallpaper size={13} /></button>}
+                {control && added && <button className="pres-item-tool" title="Remove" aria-label={`Remove ${title}`} onClick={() => void act('removeAdded', { id })}><X size={13} /></button>}
+              </div>
+            );
+          })}
         </aside>
 
         <section className="pres-grid">
           {slides.map((s, i) => (
             <button key={s.id} ref={i === state.index ? current : undefined} className={`pres-thumb ${i === state.index ? 'on' : ''} ${i === state.index && state.mode !== 'live' ? 'muted-out' : ''}`} disabled={!control} onClick={() => void act('goto', { index: i })}>
-              <SlideFrame view={data} slide={s} />
+              <SlideFrame view={data} slide={s} still />
               <span className="cap">{i + 1}. {s.itemTitle} · {s.label}</span>
             </button>
           ))}
@@ -209,7 +229,7 @@ function Presenter() {
           <div className="small muted lbl-now">On screen</div>
           <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} captions={data.captions} />
           <div className="small muted lbl-next">Next</div>
-          <SlideFrame view={data} slide={next} className="dim pres-next-frame" />
+          <SlideFrame view={data} slide={next} className="dim pres-next-frame" still />
           {control && (
             <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); void act('message', { message }); }}>
               <input className="input grow" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message on screen, e.g. Parent of Aarav to kids room" maxLength={200} />
@@ -217,7 +237,9 @@ function Presenter() {
               {state.message && <button className="btn sm ghost icon" type="button" aria-label="Clear message" onClick={() => { setMessage(''); void act('message', { message: '' }); }}><X size={14} /></button>}
             </form>
           )}
-          <p className="small muted">Keys: → or space next, ← back, B blank, L logo.</p>
+          <p className="small muted">Keys: → or space next, ← back, C clear words, B blank, L logo.</p>
+          {control && <AddLivePanel act={act} />}
+          {control && <StagePanel view={data} act={act} />}
           {control && <CaptionsPanel view={data} act={act} eventId={eventId} onChanged={() => void reload()} />}
           {control && <MediaPanel view={data} act={act} />}
           {control && <ObsPanel view={data} act={act} />}
@@ -228,14 +250,140 @@ function Presenter() {
         <footer className="pres-remote">
           <button className="btn big" onClick={() => void act('prev')} aria-label="Previous slide"><ChevronLeft size={26} /></button>
           <button className={`btn ${state.mode === 'blank' ? 'on' : ''}`} onClick={() => void act(state.mode === 'blank' ? 'live' : 'blank')}>{state.mode === 'blank' ? <Eye size={16} /> : <EyeOff size={16} />} {state.mode === 'blank' ? 'Show' : 'Blank'}</button>
+          <button className={`btn ${state.mode === 'clear' ? 'on' : ''}`} onClick={() => void act(state.mode === 'clear' ? 'live' : 'clear')} title="Clear the words, keep the background (C)"><Eraser size={16} /> {state.mode === 'clear' ? 'Words' : 'Clear'}</button>
           <button className={`btn ${state.mode === 'logo' ? 'on' : ''}`} onClick={() => void act(state.mode === 'logo' ? 'live' : 'logo')}><Image size={16} /> Logo</button>
           <button className={`btn hide-sm ${state.mode === 'countdown' ? 'on' : ''}`} onClick={() => void act(state.mode === 'countdown' ? 'live' : 'countdown')}><Clock size={16} /> Countdown</button>
           <button className="btn big primary" onClick={() => void act('next')} aria-label="Next slide"><ChevronRight size={26} /></button>
         </footer>
       )}
       {linksOpen && <LinksModal eventId={eventId} screenKey={data.screenKey ?? ''} canReset={can('services', 'settings')} onClose={() => setLinksOpen(false)} onReset={() => void reload()} />}
+      {bgItem && <BackgroundModal item={bgItem} onClose={() => setBgItem(null)} onSave={async (url) => { await act('background', { itemId: bgItem.id, url }); setBgItem(null); }} />}
       {themeOpen && <ThemeModal theme={data.theme} onClose={() => setThemeOpen(false)} onSaved={() => { setThemeOpen(false); void reload(); toast('Slide style saved'); }} />}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- live additions, stage tools, backgrounds
+
+type Act = (a: Action, extra?: ActExtra) => Promise<void>;
+
+/** Put something up that is not in the plan: a Bible passage, a song from the library, or a few lines. */
+function AddLivePanel({ act }: { act: Act }) {
+  const [tab, setTab] = useState<'bible' | 'song' | 'text'>('bible');
+  const [ref, setRef] = useState('');
+  const [tr, setTr] = useState<'kjv' | 'web'>('kjv');
+  const [passage, setPassage] = useState<BiblePassage | null>(null);
+  const [q, setQ] = useState('');
+  const [songs, setSongs] = useState<SongView[] | null>(null);
+  const [title, setTitle] = useState('');
+  const [text, setText] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const run = async (f: () => Promise<unknown>) => { setBusy(true); setErr(null); try { await f(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } };
+  const find = () => run(async () => setPassage(await AdminApi.bible(ref, tr)));
+  useEffect(() => {
+    if (tab !== 'song') return;
+    const t = setTimeout(() => { void AdminApi.services.songs(q || undefined).then(setSongs).catch(() => setSongs([])); }, 250);
+    return () => clearTimeout(t);
+  }, [q, tab]);
+  const passageText = (p: BiblePassage) => p.verses.map((v) => `${v.verse} ${v.text}`).join('\n\n');
+  const addPassage = (live: boolean) => passage && run(async () => { await act('add', { added: { kind: 'reading', title: `${passage.reference} (${tr.toUpperCase()})`, text: passageText(passage) }, live }); setPassage(null); setRef(''); });
+  const addText = (live: boolean) => run(async () => { await act('add', { added: { kind: 'announcement', title: title.trim() || 'Text', text }, live }); setTitle(''); setText(''); });
+  return (
+    <div className="pres-panel stack" style={{ gap: 8 }}>
+      <div className="row" style={{ justifyContent: 'space-between' }}><b className="small">Add during the service</b></div>
+      <div className="pres-tabs" role="tablist">
+        <button role="tab" aria-selected={tab === 'bible'} className={tab === 'bible' ? 'on' : ''} onClick={() => setTab('bible')}><BookOpen size={13} /> Bible</button>
+        <button role="tab" aria-selected={tab === 'song'} className={tab === 'song' ? 'on' : ''} onClick={() => setTab('song')}><Music2 size={13} /> Song</button>
+        <button role="tab" aria-selected={tab === 'text'} className={tab === 'text' ? 'on' : ''} onClick={() => setTab('text')}><Type size={13} /> Text</button>
+      </div>
+      {tab === 'bible' && (
+        <>
+          <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); void find(); }}>
+            <input className="input grow" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="John 3:16-18 or Ps 23" aria-label="Bible reference" />
+            <select className="input" style={{ width: 'auto' }} value={tr} onChange={(e) => setTr(e.target.value as 'kjv' | 'web')} aria-label="Translation"><option value="kjv">KJV</option><option value="web">WEB</option></select>
+            <button className="btn sm" disabled={busy || !ref.trim()}>Find</button>
+          </form>
+          {passage && (
+            <div className="stack" style={{ gap: 6 }}>
+              <div className="pres-passage"><b>{passage.reference}</b> <span className="muted">· {passage.translation}</span>{passage.verses.slice(0, 3).map((v) => <div key={v.verse}><sup>{v.verse}</sup> {v.text}</div>)}{passage.verses.length > 3 && <div className="muted">and {passage.verses.length - 3} more verses</div>}</div>
+              <div className="row" style={{ gap: 6 }}><button className="btn sm primary" disabled={busy} onClick={() => void addPassage(true)}>Show now</button><button className="btn sm" disabled={busy} onClick={() => void addPassage(false)}><Plus size={13} /> Add to end</button></div>
+            </div>
+          )}
+          <p className="small muted" style={{ margin: 0 }}>English public-domain Bibles. For Telugu, Hindi and other languages, paste the verses under Text.</p>
+        </>
+      )}
+      {tab === 'song' && (
+        <>
+          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your songs" aria-label="Search songs" />
+          <div className="pres-songs">
+            {songs?.slice(0, 8).map((sg) => (
+              <div key={sg.id} className="row" style={{ gap: 6, justifyContent: 'space-between' }}>
+                <span className="ellipsis small" style={{ minWidth: 0 }}>{sg.title}</span>
+                <span className="row" style={{ gap: 4, flex: 'none' }}>
+                  <button className="btn sm primary" disabled={busy} onClick={() => void run(() => act('add', { added: { kind: 'song', songId: sg.id }, live: true }))}>Show</button>
+                  <button className="btn sm ghost icon" disabled={busy} title="Add to end" aria-label={`Add ${sg.title} to the end`} onClick={() => void run(() => act('add', { added: { kind: 'song', songId: sg.id } }))}><Plus size={13} /></button>
+                </span>
+              </div>
+            ))}
+            {songs && !songs.length && <p className="small muted" style={{ margin: 0 }}>No songs found.</p>}
+          </div>
+        </>
+      )}
+      {tab === 'text' && (
+        <>
+          <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (only you see it)" maxLength={120} aria-label="Title" />
+          <textarea className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Words to show. A blank line starts a new slide.'} aria-label="Words to show" />
+          <div className="row" style={{ gap: 6 }}><button className="btn sm primary" disabled={busy || !text.trim()} onClick={() => void addText(true)}>Show now</button><button className="btn sm" disabled={busy || !text.trim()} onClick={() => void addText(false)}><Plus size={13} /> Add to end</button></div>
+        </>
+      )}
+      {err && <p className="small" style={{ color: 'var(--danger, #c0392b)', margin: 0 }}>{err}</p>}
+    </div>
+  );
+}
+
+/** Notes and timers only the stage display shows: for the preacher and the band, never the congregation. */
+function StagePanel({ view, act }: { view: PresentationView; act: Act }) {
+  const [msg, setMsg] = useState(view.state.stageMessage ?? '');
+  const [mins, setMins] = useState('');
+  useEffect(() => { setMsg(view.state.stageMessage ?? ''); }, [view.state.stageMessage]);
+  const t = view.state.stageTimer;
+  const now = useNow(1000);
+  const shown = t ? (t.endsAt ? countdown(new Date(t.endsAt).getTime() - now) : countdown(-(now - new Date(t.startedAt ?? now).getTime())).replace('+', '')) : null;
+  return (
+    <div className="pres-panel stack" style={{ gap: 8 }}>
+      <b className="small">Stage display only</b>
+      <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); void act('stageMessage', { message: msg }); }}>
+        <input className="input grow" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Note for the preacher, e.g. 5 minutes" maxLength={200} aria-label="Stage note" />
+        <button className="btn sm" type="submit" title="Show on stage"><Send size={14} /></button>
+        {view.state.stageMessage && <button className="btn sm ghost icon" type="button" aria-label="Clear stage note" onClick={() => { setMsg(''); void act('stageMessage', { message: '' }); }}><X size={14} /></button>}
+      </form>
+      <div className="row wrap" style={{ gap: 6 }}>
+        {[5, 10, 30].map((m) => <button key={m} className="btn sm" onClick={() => void act('timer', { minutes: m })}><Timer size={13} /> {m} min</button>)}
+        <form className="row" style={{ gap: 4 }} onSubmit={(e) => { e.preventDefault(); if (Number(mins) > 0) void act('timer', { minutes: Number(mins) }); setMins(''); }}>
+          <input className="input" style={{ width: 64 }} inputMode="numeric" value={mins} onChange={(e) => setMins(e.target.value.replace(/\D/g, ''))} placeholder="min" aria-label="Timer minutes" />
+        </form>
+        <button className="btn sm" onClick={() => void act('timer', { stopwatch: true })}><Clock size={13} /> Stopwatch</button>
+        {t && <button className="btn sm ghost" onClick={() => void act('timer', { clear: true })}><X size={13} /> {shown}</button>}
+      </div>
+    </div>
+  );
+}
+
+function BackgroundModal({ item, onClose, onSave }: { item: { id: string; title: string; url: string }; onClose: () => void; onSave: (url: string) => Promise<void> }) {
+  const [url, setUrl] = useState(item.url);
+  const [busy, setBusy] = useState(false);
+  const save = async (u: string) => { setBusy(true); try { await onSave(u.trim()); } finally { setBusy(false); } };
+  return (
+    <Modal title={`Background · ${item.title}`} onClose={onClose}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button>{item.url && <button className="btn ghost" disabled={busy} onClick={() => void save('')}>Use the slide style</button>}<button className="btn primary" disabled={busy} onClick={() => void save(url)}>Save</button></>}>
+      <div className="stack">
+        <Field label="Picture or video link" hint="A JPG or PNG, or an MP4 or WebM loop that plays silently behind the words. Upload to the media library and paste the link here.">
+          <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />
+        </Field>
+        {url.trim().startsWith('https://') && <SlideFrame view={{ theme: { background: '#0f1f1c', textColor: '#fff', imageUrl: '', fontScale: 1, linesPerSlide: 4, showAlt: false, titleSlides: false, uppercase: false }, churchName: '', logoUrl: null }} slide={{ id: 'p', itemIndex: 0, itemTitle: item.title, kind: 'lyrics', label: '', lines: [item.title], alt: [], chords: [], roman: [], bg: url.trim() }} />}
+      </div>
+    </Modal>
   );
 }
 
@@ -484,7 +632,8 @@ function ThemeModal({ theme, onClose, onSaved }: { theme: PresentationTheme; onC
           <Field label="Lines per slide"><input type="number" min={1} max={8} className="input" value={t.linesPerSlide} onChange={(e) => set('linesPerSlide', Number(e.target.value))} /></Field>
           <Field label="Text size"><input type="range" min={0.6} max={1.6} step={0.05} value={t.fontScale} onChange={(e) => set('fontScale', Number(e.target.value))} /></Field>
         </div>
-        <Field label="Background image" hint="Optional link to a JPG or PNG. The text gets a dark overlay so it stays readable."><input className="input" value={t.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} placeholder="https://" /></Field>
+        <Field label="Background picture or video" hint="Optional https link to a JPG, PNG, or an MP4 or WebM loop. The words get a dark overlay so they stay readable. Each item can have its own background in the presenter."><input className="input" value={t.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} placeholder="https://" /></Field>
+        <Field label="Between slides"><select className="input" value={t.transition ?? 'fade'} onChange={(e) => set('transition', e.target.value as 'fade' | 'cut')}><option value="fade">Fade</option><option value="cut">Cut (instant)</option></select></Field>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={t.showAlt} onChange={(e) => set('showAlt', e.target.checked)} /> Show second-language lyrics under the main lyrics</label>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={!!t.transliterate} onChange={(e) => set('transliterate', e.target.checked)} /> Telugu, Hindi, Tamil and other Indian-script words also in English letters, so everyone can sing along</label>
         <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={t.titleSlides} onChange={(e) => set('titleSlides', e.target.checked)} /> Title slide before each song and item</label>
@@ -537,6 +686,8 @@ function Stage({ screenKey }: { screenKey?: string }) {
   const next = slides[state.index + 1];
   const itemLeft = timer.itemEndsAt ? new Date(timer.itemEndsAt).getTime() - now : null;
   const showChords = chords && slide?.chords.some((c) => c.includes('['));
+  const st = state.stageTimer;
+  const stLeft = st ? (st.endsAt ? new Date(st.endsAt).getTime() - now : now - new Date(st.startedAt ?? now).getTime()) : null;
   return (
     <div className="pres-stage" onDoubleClick={fullscreen}>
       <div className="stage-top">
@@ -544,9 +695,11 @@ function Stage({ screenKey }: { screenKey?: string }) {
         {timer.itemTitle && <span className="item">{timer.itemTitle}</span>}
         {itemLeft !== null && <span className={`left ${itemLeft < 0 ? 'over' : itemLeft < 60_000 ? 'soon' : ''}`}>{countdown(itemLeft)}</span>}
         <span className="grow" />
-        {state.mode !== 'live' && <span className="mode">{state.mode === 'blank' ? 'SCREEN BLANK' : state.mode === 'countdown' ? 'COUNTDOWN' : 'LOGO'}</span>}
+        {st && stLeft !== null && <span className={`left big-timer ${st.endsAt && stLeft < 0 ? 'over' : st.endsAt && stLeft < 60_000 ? 'soon' : ''}`} title={st.label}>{st.label} {st.endsAt ? countdown(stLeft) : countdown(-stLeft).replace('+', '')}</span>}
+        {state.mode !== 'live' && <span className="mode">{state.mode === 'blank' ? 'SCREEN BLANK' : state.mode === 'clear' ? 'WORDS CLEARED' : state.mode === 'countdown' ? 'COUNTDOWN' : 'LOGO'}</span>}
         <button className={`btn sm ${chords ? 'on' : ''}`} onClick={() => setChords(!chords)}><Music2 size={14} /> Chords</button>
       </div>
+      {state.stageMessage && <div className="stage-msg stage-note">{state.stageMessage}</div>}
       {state.message && <div className="stage-msg">{state.message}</div>}
       <div className="stage-now">
         {slide && <div className="label">{slide.itemTitle} · {slide.label}</div>}
