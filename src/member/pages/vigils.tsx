@@ -1,6 +1,6 @@
 // Prayer vigils from the member's side: take an hour in a prayer chain or a day in a fasting chain,
 // see how much of it is covered, and give a slot up if plans change.
-import { Check, Hourglass } from 'lucide-react';
+import { Check, Hourglass, HandHeart } from 'lucide-react';
 import { useState } from 'react';
 
 import { MemberApi } from '@/api/endpoints';
@@ -82,7 +82,7 @@ function VigilCard({ v, onData }: { v: MyVigil; onData: (d: { vigils: MyVigil[] 
                 onClick={() => void (s.mine ? leave.run(s.start) : take.run(s.start))}
               >
                 <span>{label(s)}</span>
-                <span className="small">{s.mine ? <Check size={14} /> : s.full ? t('vigilFull') : s.count ? `🙏 ${s.count}` : t('vigilTake')}</span>
+                <span className="small">{s.mine ? <Check size={14} /> : s.full ? t('vigilFull') : s.count ? <><HandHeart size={14} className="inline-icon" /> {s.count}</> : t('vigilTake')}</span>
               </button>
             ))}
           </div>

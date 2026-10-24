@@ -1,5 +1,6 @@
 // The Sunday bulletin as people read it: in the member app, from the share link, and as the office's preview.
 import type { BulletinView, Currency, PlanItemKind } from '@/api/admin-types';
+import { Cake, Heart } from 'lucide-react';
 import { formatDay, formatMoney, formatTime } from '@/lib/format';
 
 const KIND: Partial<Record<PlanItemKind, string>> = { song: 'Song', reading: 'Reading', sermon: 'Message', prayer: 'Prayer', offering: 'Offering', announcement: 'Notices', video: 'Video' };
@@ -61,7 +62,7 @@ export function BulletinDoc({ b, currency = 'INR' }: { b: BulletinView; currency
         <section>
           <h2>Birthdays and anniversaries</h2>
           <ul className="bulletin-list">
-            {b.celebrations.map((c, i) => <li key={i}>{c.kind === 'birthday' ? '🎂' : '💍'} <b>{c.name}</b> · {new Date(`${c.date}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' })}{c.years ? ` · ${c.years} years` : ''}</li>)}
+            {b.celebrations.map((c, i) => <li key={i}>{c.kind === 'birthday' ? <Cake size={14} className="inline-icon" aria-label="Birthday" /> : <Heart size={14} className="inline-icon" aria-label="Anniversary" />} <b>{c.name}</b> · {new Date(`${c.date}T00:00:00Z`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' })}{c.years ? ` · ${c.years} years` : ''}</li>)}
           </ul>
         </section>
       )}

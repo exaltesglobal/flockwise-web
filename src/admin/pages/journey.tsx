@@ -1,7 +1,7 @@
 // People › Journey map: how many people are at each step of their walk with the church, who has
 // been stuck at one step for six months or more, and what seems to help people move on. Any
 // person's timeline opens from here, and the office can add steps records cannot know.
-import { Flag, Footprints, Plus, Search, Trash2 } from 'lucide-react';
+import { Flag, Footprints, Plus, Search, Trash2, PartyPopper } from 'lucide-react';
 import { useState } from 'react';
 
 import { AdminApi } from '@/api/endpoints';
@@ -57,7 +57,7 @@ export function JourneyPage() {
         </section>
       </div>
       <h3 style={{ margin: '20px 0 8px' }}>Stuck for six months or more</h3>
-      {!d.stuck.length ? <div className="card card-pad muted">No one has been stuck at a step for six months. 🎉</div> : (
+      {!d.stuck.length ? <div className="card card-pad muted"><PartyPopper size={16} className="inline-icon" /> No one has been stuck at a step for six months.</div> : (
         <div className="stack">
           {d.stuck.map((s) => (
             <details key={s.stage} className="card card-pad" open={s.stage === 'regular'}>

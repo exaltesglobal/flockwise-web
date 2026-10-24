@@ -1,4 +1,5 @@
 import { Route, Building2, ShieldAlert, ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Flame, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { HeroArt } from '@/components/art';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -26,7 +27,8 @@ export function MemberHomePage() {
 
   return (
     <>
-      <div>
+      <div className="hero">
+        <HeroArt />
         <p className="muted">{t(greetingKey())},</p>
         <h1>{session?.member.firstName}</h1>
       </div>

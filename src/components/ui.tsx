@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { EmptyArt } from './art';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import type { ApiError } from '@/api/errors';
@@ -77,7 +78,7 @@ export function FormError({ error }: { error: ApiError | null }) {
 export function Empty({ icon, title, body, action }: { icon?: ReactNode; title: string; body?: string; action?: ReactNode }) {
   return (
     <div className="empty">
-      {icon ?? <span className="empty-mark"><Mark size={40} /></span>}
+      <span className="empty-icon"><EmptyArt />{icon ?? <span className="empty-mark"><Mark size={40} /></span>}</span>
       <div>
         <h3 style={{ color: 'var(--text)' }}>{title}</h3>
         {body && <p className="small">{body}</p>}

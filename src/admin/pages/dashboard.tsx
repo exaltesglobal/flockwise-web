@@ -1,4 +1,5 @@
 import { AlertTriangle, Cake, CheckCircle2, ChevronRight, Circle, Rocket, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
+import { HeroArt } from '@/components/art';
 import { useOfficeT } from '../i18n';
 import { SeasonNudge } from '../seasons';
 import { Link } from 'react-router';
@@ -22,7 +23,7 @@ export function DashboardPage() {
   const can = useCan();
   const { tr } = useOfficeT();
 
-  const header = <PageHeader title={`${tr(GREETING[greetingKey()])}, ${session?.member.firstName ?? ''}`} subtitle={tr('Here is how your church is doing this week.')} />;
+  const header = <div className="hero"><HeroArt /><PageHeader title={`${tr(GREETING[greetingKey()])}, ${session?.member.firstName ?? ''}`} subtitle={tr('Here is how your church is doing this week.')} /></div>;
   if (error) return (<>{header}<ErrorState error={error} onRetry={reload} /></>);
   if (!data) return (<>{header}<Loading /></>);
 

@@ -908,3 +908,11 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 .hs-day { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
 .hs-slot { display: grid; padding: 6px 8px; border-radius: 8px; background: var(--surface-2, color-mix(in srgb, var(--border) 35%, transparent)); }
 .hs-slot.taken { background: color-mix(in srgb, var(--ok, #16a34a) 14%, transparent); }
+
+/* premium: glass sidebar and bars over the ambient background */
+.admin-side { background: linear-gradient(180deg, color-mix(in srgb, var(--sidebar) 92%, var(--primary)) 0%, var(--sidebar) 38%, color-mix(in srgb, var(--sidebar) 94%, #000) 100%); box-shadow: 1px 0 0 var(--sidebar-line), 8px 0 30px -18px rgba(0, 0, 0, 0.5); }
+.admin-tabbar, .new-menu-pop, .palette, .net-top { background: color-mix(in srgb, var(--card) 84%, transparent); -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); }
+.hub-tabs a { border-radius: 8px 8px 0 0; transition: color 0.15s ease, background 0.15s ease; }
+.hub-tabs a:hover { background: color-mix(in srgb, var(--tint) 60%, transparent); }
+.stat-row > .card { position: relative; overflow: hidden; }
+.stat-row > .card::after { content: ''; position: absolute; right: -30px; top: -30px; width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%); pointer-events: none; }
