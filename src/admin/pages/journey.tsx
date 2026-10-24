@@ -15,7 +15,7 @@ import { PageHeader } from '../layout';
 import '../journey.css';
 
 const dateOf = (d: string) => formatDate(`${d}T12:00:00`);
-const span = (days: number) => (days < 14 ? `${days} days` : days < 70 ? `${Math.round(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${(days / 365).toFixed(1)} years`);
+const span = (days: number) => (days < 14 ? `${days} days` : days < 70 ? `${Math.round(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${(days / 365).toFixed(1).replace(/\.0$/, '')} years`);
 
 export function JourneyPage() {
   const q = useApi(AdminApi.journey.get);
