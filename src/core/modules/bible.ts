@@ -58,9 +58,9 @@ function remember<T>(map: Map<string, Promise<T>>, key: string, max: number, loa
 
 async function fetchPage(ctx: Ctx, url: string): Promise<string | null> {
   if (!ctx.env.http || ctx.env.demo) throw new ApiError(503, 'offline', 'The Bible reader needs the internet. It works in the live app.');
-  const r = await ctx.env.http({ method: 'GET', url, timeoutMs: 15_000 }).catch(() => null);
-  if (!r || r.status >= 500) throw new ApiError(502, 'bible_unreachable', 'Could not reach the Bible library. Try again in a minute.');
+  const r = await ctx.env.http({ method: 'GET', url, timeoutMs: 15_000, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Flockwise/1.0; +https://flockwise.church)', Accept: 'text/html' } }).catch((e: Error) => ({ status: 0, headers: {}, text: e.message }));
   if (r.status === 404) return null;
+  if (r.status !== 200) throw new ApiError(502, 'bible_unreachable', `Could not reach the Bible library (${r.status || r.text.slice(0, 80)}). Try again in a minute.`);
   return r.text;
 }
 
@@ -87,7 +87,8 @@ export function bibleChapter(ctx: Ctx, id: string, book: string, chapter: number
   return remember(chapters, `${t.id}/${code}/${chapter}`, MAX_CHAPTERS, async () => {
     const html = await fetchPage(ctx, chapterUrl(t.id, code, chapter));
     const parsed = html ? parseEbibleChapter(html) : null;
-    if (!parsed?.verses.length) throw new ApiError(404, 'not_found', `${t.name} does not have ${BOOKS[i].en} ${chapter}.`);
+    if (!html) throw new ApiError(404, 'not_found', `${t.name} does not have ${BOOKS[i].en} ${chapter}.`);
+    if (!parsed?.verses.length) throw new ApiError(502, 'bible_unreadable', `Could not read ${BOOKS[i].en} ${chapter} from the Bible library (${html.length} bytes: ${html.replace(/\s+/g, ' ').slice(0, 120)}).`);
     return {
       translation: t, book: code, bookName: parsed.bookName || BOOKS[i].en, en: BOOKS[i].en, chapter,
       intro: parsed.intro, verses: parsed.verses, notes: parsed.notes, prev: parsed.prev, next: parsed.next,
