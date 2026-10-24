@@ -5,7 +5,7 @@ import { ApiError } from './errors.js';
 import { withChurchMail } from './mail.js';
 import { permsOf, scopeOf, type Scope } from './perms.js';
 import { atLeast, checkPlan, effectivePlan, getSubscription, type BillingInterval, type PlanId } from './plans.js';
-import type { CatalogSong, Channel, ChannelStatus, ChurchNetworkHost, Collections, DonationRecord, Kind, Permission, StaffRole } from './types.js';
+import type { BibleTranslationInfo, CatalogSong, Channel, ChannelStatus, ChurchNetworkHost, Collections, DonationRecord, Kind, Permission, StaffRole } from './types.js';
 
 export type BillingCheckout = { churchId: string; churchName: string; plan: PlanId; interval: BillingInterval; currency: 'INR' | 'USD'; amount: number; email: string; name: string; /** Add-ons billed with the plan, e.g. ['chitthi']. */ addons?: string[] };
 /** `html` is the branded version of `text`; providers send both when it is there. */
@@ -111,6 +111,8 @@ export type Env = {
   push?: (batch: PushMessage[]) => Promise<PushResult[]>;
   /** Plain HTTPS for the church's connections (Zoom, Google Cloud Storage, Canva). The demo answers with stand-ins. */
   http?: (req: HttpRequest) => Promise<HttpResponse>;
+  /** Every free-to-share Bible the server offers (the full eBible.org list). Absent in the demo, which offers the featured few. */
+  bibleCatalog?: BibleTranslationInfo[];
   /** Google service-account signing (access tokens and V4 signed URLs). Absent when the host cannot sign. */
   google?: {
     accessToken(key: GoogleKey, scope: string): Promise<string>;

@@ -1,4 +1,4 @@
-import { ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -88,6 +88,7 @@ const MAIN_LINKS = [
   { to: '/app/give', key: 'tabGive', icon: Gift },
   { to: '/app/prayer', key: 'tabPrayer', icon: Sparkles, feature: 'care' },
   { to: '/app/serving', key: 'tabServing', icon: HandHeart, feature: 'volunteers' },
+  { to: '/app/bible', key: 'bibleTitle', icon: BookText },
   { to: '/app/me#qr', key: 'myQr', icon: QrCode },
 ] as const;
 const MORE_LINKS = [

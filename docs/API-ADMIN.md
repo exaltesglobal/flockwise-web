@@ -1287,3 +1287,12 @@ Each morning, the few people most worth a call today, each with a one-line reaso
 - `POST /admin/morning-list/:personId/done` (care): `{ outcome: called|no_answer|visited|messaged, note? }`. A note is added to the person's open care case. Returns the list.
 - `POST /admin/morning-list/:personId/undo` (care). `PUT /admin/morning-list/settings` (care): `{ enabled, count 1-20, hour 4-12 }`.
 - Push `morning.list` to each staff member with care access once a day after `hour` (church time). The push never mentions giving. Grow plan and up.
+
+## Bible reader (public)
+
+Every free-to-share Bible on eBible.org (about 1,100 translations in 890 languages, including the Indian Revised Version in 12 Indian languages). Chapters are read from eBible.org on demand and cached in memory on the server.
+
+- `GET /public/bible/translations` → `{ featured: string[], translations: BibleTranslationInfo[] }`
+- `GET /public/bible/:tr/books` → `BibleBookInfo[]` (book code, name in that language, English name, chapters, testament)
+- `GET /public/bible/:tr/:book/:chapter` → `BibleChapter` (verses with headings, paragraph and poetry marks, a psalm's title line, footnotes, previous/next chapter, and the copyright `source` line to show under the text). `book` is the USFM code, e.g. `JHN`.
+- `GET /admin/bible?ref=John 3:16-18&tr=hin2017` (staff) → `BiblePassage` for the presenter. References work in English, short forms (`jn`, `ps`, `1 cor`) and the Indian-language book names (`యోహాను 3:16`). `tr=kjv` and `tr=web` still work.

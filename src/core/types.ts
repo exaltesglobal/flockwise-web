@@ -1200,6 +1200,21 @@ export type AddedItem = { id: string; kind: 'reading' | 'song' | 'announcement';
 export type StageTimer = { label: string; endsAt: string | null; startedAt: string | null };
 /** A Bible passage looked up for the screen. */
 export type BiblePassage = { reference: string; translation: string; verses: { verse: number; text: string }[] };
+/** A free-to-share Bible the reader offers (from eBible.org). `lang` is the ISO 639-3 code; `app` the app language it serves. */
+export type BibleTranslationInfo = { id: string; lang: string; language: string; native: string; name: string; ot: boolean; nt: boolean; partial?: boolean; rtl?: boolean; copyright: string; app?: string };
+/** One verse in the reader. Poetry lines are split by "\n"; `heading` is the section heading above it; `para` starts a paragraph. */
+export type BibleVerse = { n: number; text: string; label?: string; heading?: string; para?: boolean; poetry?: boolean };
+export type BibleChapterNote = { verse: number; text: string };
+export type BibleBookInfo = { code: string; name: string; en: string; chapters: number; testament: 'ot' | 'nt' };
+export type BibleChapter = {
+  translation: BibleTranslationInfo; book: string; bookName: string; en: string; chapter: number;
+  /** A psalm's title line ("A Psalm by David."). */
+  intro: string | null;
+  verses: BibleVerse[]; notes: BibleChapterNote[];
+  prev: { book: string; chapter: number } | null; next: { book: string; chapter: number } | null;
+  /** Where the text comes from, shown under the chapter. */
+  source: string;
+};
 /** A name strap for the livestream: speaker, reader, Bible reference or announcement. */
 export type LowerThird = { id: string; title: string; subtitle: string };
 export type PresentationState = {

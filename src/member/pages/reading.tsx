@@ -1,6 +1,7 @@
 // Bible reading plan, from the member's side: today's passage in their own language, a tick for
 // "I read it", a streak, and the church-wide bar that shows everyone reading together.
-import { BookOpenCheck, Check, ExternalLink, Flame, Users } from 'lucide-react';
+import { BookOpen, BookOpenCheck, Check, Flame, Users } from 'lucide-react';
+import { Link } from 'react-router';
 import { useState } from 'react';
 
 import type { MyReadingPlan } from '@/api/admin-types';
@@ -11,7 +12,8 @@ import { formatDay } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
 const day = (d: string, locale: string) => formatDay(`${d}T12:00:00`, locale);
-const bibleLink = (ref: string) => `https://www.bible.com/search/bible?query=${encodeURIComponent(ref)}`;
+// The first passage of the day, opened in the app's own Bible ("Genesis 1-3; Psalm 1" opens Genesis 1).
+const bibleLink = (ref: string) => `/app/bible?ref=${encodeURIComponent(ref.split(';')[0].trim().replace(/\s*-\s*\d+$/, ''))}`;
 
 export function MemberReadingPage() {
   const { t } = useT();
@@ -59,7 +61,7 @@ function Plan({ p, onData }: { p: MyReadingPlan; onData: (d: { plans: MyReadingP
             <button className={`btn ${p.todayDone ? '' : 'primary'}`} disabled={tick.busy} onClick={async () => { const d = await tick.run(p.today!, !p.todayDone); if (d) onData(d); }}>
               <Check size={16} /> {p.todayDone ? t('readUndo') : t('readDone')}
             </button>
-            <a className="btn ghost" href={bibleLink(today.ref)} target="_blank" rel="noreferrer"><ExternalLink size={15} /> {t('readOpen')}</a>
+            <Link className="btn ghost" to={bibleLink(today.ref)}><BookOpen size={15} /> {t('readOpen')}</Link>
           </div>
         </div>
       )}

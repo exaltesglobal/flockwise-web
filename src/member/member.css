@@ -145,3 +145,37 @@ input.switch:checked::after { transform: translateX(18px); }
 .sk-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--tint); }
 .sk-tabs button { flex: 1; border: 0; background: none; color: inherit; font: inherit; font-size: 14px; padding: 8px 6px; border-radius: 9px; cursor: pointer; }
 .sk-tabs button.on { background: var(--card); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+/* Bible reader */
+.bib-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 0; background: var(--bg); border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.bib-bar .btn { max-width: 100%; }
+.bib-read { line-height: 1.75; max-width: 46em; margin: 0 auto; position: relative; padding-bottom: 72px; }
+.bib-read.bib-two { max-width: none; }
+.bib-title { font-size: 1.5em; margin: 4px 0 8px; }
+.bib-intro { font-style: italic; color: var(--muted); margin: 0 0 8px; }
+.bib-head { font-size: 0.95em; font-weight: 700; margin: 18px 0 4px; }
+.bib-p { margin: 0 0 12px; }
+.bib-poetry { white-space: pre-line; padding-inline-start: 1em; }
+.bib-v { cursor: pointer; border-radius: 4px; transition: background 0.15s; }
+.bib-v sup { font-size: 0.6em; color: var(--muted); margin-inline-end: 3px; font-weight: 600; }
+.bib-v.on, .bib-cols.on .bib-v { background: color-mix(in srgb, var(--primary) 18%, transparent); }
+.bib-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 4px 0; border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent); cursor: pointer; }
+.bib-cols > * { min-width: 0; }
+.bib-colhead { border: 0; font-size: 13px; font-weight: 600; cursor: default; }
+.bib-notes { padding-inline-start: 1.2em; line-height: 1.5; }
+.bib-source { margin-top: 20px; line-height: 1.5; }
+.bib-actions { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 20; display: flex; gap: 6px; align-items: center; padding: 8px 10px; width: min(560px, calc(100vw - 24px)); font-size: 14px; line-height: 1.3; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18); }
+.bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.bib-grid.chapters { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); }
+.bib-book { justify-content: flex-start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bib-trs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; max-height: 60vh; overflow: auto; }
+.bib-tr { display: flex; flex-direction: column; gap: 2px; text-align: start; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: inherit; cursor: pointer; font: inherit; }
+.bib-tr:hover { border-color: var(--primary); }
+.bib-tr.on { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+@media (max-width: 640px) {
+  .bib-cols { grid-template-columns: 1fr; gap: 4px; }
+  .bib-colhead { display: none; }
+  .bib-cols > :nth-child(2) { color: var(--muted); }
+  .bib-hide-sm { display: none; }
+}
+@media (min-width: 900px) { .bib-actions { bottom: 24px; } }

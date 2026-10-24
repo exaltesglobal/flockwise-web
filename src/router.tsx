@@ -76,6 +76,7 @@ import { MemberCarolsPage } from '@/member/pages/carols';
 import { MemberRidesPage } from '@/member/pages/rides';
 import { MemberAidPage } from '@/member/pages/aid';
 import { MemberReadingPage } from '@/member/pages/reading';
+import { MemberBiblePage } from '@/member/pages/bible';
 import { MemberPracticePage } from '@/member/pages/practice';
 import { MemberVersesPage } from '@/member/pages/verses';
 import { MemberVotePage } from '@/member/pages/vote';
@@ -232,6 +233,7 @@ const routes = [
       { path: 'rides', element: <MemberRidesPage /> },
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
+      { path: 'bible', element: <MemberBiblePage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },

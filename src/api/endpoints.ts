@@ -10,6 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
+import type { BibleBookInfo, BibleChapter, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -432,6 +433,9 @@ export type FamilyMemberInput = { firstName: string; lastName?: string; birthDat
 
 // ---------- Public pages (no sign-in) ----------
 export const PublicApi = {
+  bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
+  bibleBooks: (tr: string) => m.get<BibleBookInfo[]>(`/public/bible/${encodeURIComponent(tr)}/books`),
+  bibleChapter: (tr: string, book: string, chapter: number) => m.get<BibleChapter>(`/public/bible/${encodeURIComponent(tr)}/${book}/${chapter}`),
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
   recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),
@@ -1219,7 +1223,7 @@ export const AdminApi = {
     saveObs: (input: Partial<ObsSettings>) => a.put<ObsSettings>('/admin/presentation-obs', input),
     resetKey: () => a.post<{ screenKey: string }>('/admin/presentation-key/reset'),
   },
-  bible: (ref: string, tr: 'kjv' | 'web' = 'kjv') => a.get<BiblePassage>(`/admin/bible${qs({ ref, tr })}`),
+  bible: (ref: string, tr = 'kjv') => a.get<BiblePassage>(`/admin/bible${qs({ ref, tr })}`),
   songStats: () => a.get<SongStats>('/admin/songs/stats'),
   faces: () => a.get<Record<string, { p: string | null; a: number | null }>>('/admin/faces'),
   ccli: (from?: string, to?: string) => a.get<{ from: string; to: string; rows: CcliRow[] }>(`/admin/songs/ccli-report${qs({ from, to })}`),

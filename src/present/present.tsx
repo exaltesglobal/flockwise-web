@@ -9,6 +9,7 @@ import { Link, Navigate, useLocation, useParams } from 'react-router';
 import type { BiblePassage, CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide, SongView } from '@/api/admin-types';
 import { canDictate, useDictation } from '@/admin/components/dictate';
 import { adminSession } from '@/api/client';
+import { FEATURED_BIBLES } from '@/core/bible-texts';
 import { AdminApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { transliterateLines } from '@/core/transliterate';
@@ -272,7 +273,8 @@ type Act = (a: Action, extra?: ActExtra) => Promise<void>;
 function AddLivePanel({ act }: { act: Act }) {
   const [tab, setTab] = useState<'bible' | 'song' | 'text'>('bible');
   const [ref, setRef] = useState('');
-  const [tr, setTr] = useState<'kjv' | 'web'>('kjv');
+  const [tr, setTrState] = useState(() => { try { return localStorage.getItem('fw.present.tr') || 'eng-kjv2006'; } catch { return 'eng-kjv2006'; } });
+  const setTr = (v: string) => { setTrState(v); try { localStorage.setItem('fw.present.tr', v); } catch { /* private window */ } };
   const [passage, setPassage] = useState<BiblePassage | null>(null);
   const [q, setQ] = useState('');
   const [songs, setSongs] = useState<SongView[] | null>(null);
@@ -288,7 +290,7 @@ function AddLivePanel({ act }: { act: Act }) {
     return () => clearTimeout(t);
   }, [q, tab]);
   const passageText = (p: BiblePassage) => p.verses.map((v) => `${v.verse} ${v.text}`).join('\n\n');
-  const addPassage = (live: boolean) => passage && run(async () => { await act('add', { added: { kind: 'reading', title: `${passage.reference} (${tr.toUpperCase()})`, text: passageText(passage) }, live }); setPassage(null); setRef(''); });
+  const addPassage = (live: boolean) => passage && run(async () => { await act('add', { added: { kind: 'reading', title: `${passage.reference} (${passage.translation})`, text: passageText(passage) }, live }); setPassage(null); setRef(''); });
   const addText = (live: boolean) => run(async () => { await act('add', { added: { kind: 'announcement', title: title.trim() || 'Text', text }, live }); setTitle(''); setText(''); });
   return (
     <div className="pres-panel stack" style={{ gap: 8 }}>
@@ -302,7 +304,7 @@ function AddLivePanel({ act }: { act: Act }) {
         <>
           <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); void find(); }}>
             <input className="input grow" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="John 3:16-18 or Ps 23" aria-label="Bible reference" />
-            <select className="input" style={{ width: 'auto' }} value={tr} onChange={(e) => setTr(e.target.value as 'kjv' | 'web')} aria-label="Translation"><option value="kjv">KJV</option><option value="web">WEB</option></select>
+            <select className="input" style={{ width: 'auto', maxWidth: 170 }} value={tr} onChange={(e) => setTr(e.target.value)} aria-label="Translation">{FEATURED_BIBLES.map((b) => <option key={b.id} value={b.id}>{b.language} · {b.name.replace('Indian Revised Version (IRV)', 'IRV')}</option>)}</select>
             <button className="btn sm" disabled={busy || !ref.trim()}>Find</button>
           </form>
           {passage && (
@@ -311,7 +313,7 @@ function AddLivePanel({ act }: { act: Act }) {
               <div className="row" style={{ gap: 6 }}><button className="btn sm primary" disabled={busy} onClick={() => void addPassage(true)}>Show now</button><button className="btn sm" disabled={busy} onClick={() => void addPassage(false)}><Plus size={13} /> Add to end</button></div>
             </div>
           )}
-          <p className="small muted" style={{ margin: 0 }}>English public-domain Bibles. For Telugu, Hindi and other languages, paste the verses under Text.</p>
+          <p className="small muted" style={{ margin: 0 }}>Type the book in English or in the Bible's language, like యోహాను 3:16.</p>
         </>
       )}
       {tab === 'song' && (
