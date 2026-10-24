@@ -1371,3 +1371,9 @@ Leadership pipeline (feature `leader-pipeline`): `GET /admin/leader-pipeline` �
 Counselling notes (feature `counselling`): encrypted in the browser (PBKDF2-SHA256 → AES-GCM) with the pastor's passphrase; the server stores only base64 ciphertext and each staff login sees only its own notes, whatever its role.
 - `GET /admin/counsel/key` → `{ salt, iv, check } | null`; `PUT /admin/counsel/key` `{ salt, iv, check, reset? }` (reset removes the old notes).
 - `GET|POST /admin/counsel/notes`, `PUT|DELETE /admin/counsel/notes/:id` with `{ iv, data, followUp? }`. Follow-ups send `counsel.followup` without saying who it is about. Not included in exports.
+
+## My day, visit route, monthly report
+
+- `GET /admin/my-day` (any staff) → `MyDay`: the signed-in staff member's calls (top 5 from the morning list, care only), today's services and their rota, visits planned for them today, today's meetings and their open action items (by their person record), care cases assigned to them, counselling follow-ups due (count), the next sermon they are preparing (with unresolved comments from others), and `waiting` queues (registrations, join requests, help requests, wedding/funeral requests, open prayer, unassigned care) with links.
+- `GET /admin/visits/route?date=YYYY-MM-DD&mine=1` → `{ date, start, stops }`: planned visits that day with the family's address and phone, grouped by area; `start` is the church address. The web builds a Google Maps directions link from it.
+- `GET /admin/monthly-report?month=YYYY-MM` (permission `insights`; default last month) → `MonthlyReport`: attendance per service with average and last month's average, people joined, rites from the registers, giving by fund and expenses (only with `giving.view`), care and visits, cell-group meetings, mentoring and the leadership pipeline, sermons, meeting decisions (only with `care`).

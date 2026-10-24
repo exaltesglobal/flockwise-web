@@ -1754,6 +1754,9 @@ export type Visit = {
 export type VisitAction = { text: string; done: boolean; due: string | null };
 export type VisitActionItem = VisitAction & { visitId: string; index: number; familyKey: string; familyName: string; visitedOn: string | null; visitors: string[] };
 export type VisitView = Visit & { zoneName: string | null; visitors: string[] };
+/** A day's planned visits in order, with addresses for a map route that starts and ends at the church. */
+export type VisitRouteStop = { visitId: string; familyName: string; address: string | null; phone: string | null; purpose: VisitPurpose; zoneName: string | null };
+export type VisitRoute = { date: string; start: string | null; stops: VisitRouteStop[] };
 export type ZoneReportRow = { zoneId: string | null; zoneName: string; families: number; visited: number; percent: number; visitsDone: number; planned: number };
 
 /** An expense head in the church accounts (Salaries, Electricity, Missions support...). */
@@ -3159,3 +3162,36 @@ export type MorningCall = { at: string; by: string; outcome: MorningCallOutcome;
 export type MorningListSettings = { enabled: boolean; count: number; hour: number };
 export type MorningRow = { personId: string; name: string; phone: string | null; photoUrl: string | null; avatar: number | null; householdName: string | null; reasons: MorningReason[]; score: number; lastCall: MorningCall | null; doneToday: boolean };
 export type MorningListView = { date: string; settings: MorningListSettings; today: MorningRow[]; more: MorningRow[]; doneCount: number };
+/** One month for the church board or the denomination: attendance, people, rites, giving and care. */
+export type MonthlyReport = {
+  month: string;
+  church: { name: string; city: string; logoUrl: string | null };
+  currency: string;
+  attendance: { services: { date: string; title: string; count: number; children: number }[]; average: number; highest: number; previousAverage: number };
+  people: { total: number; members: number; joined: number; newVisitors: number; joinedNames: string[] };
+  rites: { baptisms: number; marriages: number; burials: number; dedications: number };
+  giving: { total: number; previous: number; gifts: number; givers: number; byFund: { fund: string; amount: number }[] } | null;
+  expenses: { total: number } | null;
+  care: { opened: number; closed: number; open: number; hospital: number; visits: number; prayer: number };
+  groups: { meetings: number; averagePresent: number };
+  growth: { mentorMeetings: number; leaders: number; inTraining: number };
+  sermons: { date: string; title: string; speaker: string; scripture: string }[];
+  meetings: { date: string; title: string; decisions: string[] }[];
+  otherEvents: number;
+  preparedAt: string;
+};
+/** The pastor's day on one page: their own calls, services, visits, meetings, sermon and what is waiting on them. */
+export type MyDay = {
+  date: string;
+  name: string;
+  calls: { personId: string; name: string; phone: string | null; reason: string }[] | null;
+  events: { id: string; title: string; startsAt: string; location: string | null }[];
+  serving: { eventTitle: string; startsAt: string; team: string; position: string }[];
+  visits: VisitRouteStop[];
+  meetings: { id: string; title: string; time: string; place: string }[];
+  actions: { meetingId: string; actionId: string; text: string; due: string | null; overdue: boolean; meetingTitle: string }[];
+  careCases: { id: string; title: string; personName: string; dueAt: string | null; overdue: boolean; urgent: boolean }[];
+  counselFollowUps: number;
+  sermon: { id: string; title: string; date: string; status: SermonPrepStatus; points: number; comments: number } | null;
+  waiting: { key: string; label: string; count: number; link: string }[];
+};

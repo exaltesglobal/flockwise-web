@@ -231,6 +231,9 @@ import type {
   MeetingKind,
   MeetingView,
   MeetingsHub,
+  MonthlyReport,
+  MyDay,
+  VisitRoute,
   GroupKit,
   SermonFill,
   Celebration,
@@ -621,6 +624,8 @@ export const AdminApi = {
   auth: authApi(adminSession),
   me: () => a.get<{ staff: StaffMember; permissions: Permission[]; roles: RoleInfo[] }>('/admin/me'),
   dashboard: () => a.get<Dashboard>('/admin/dashboard'),
+  myDay: () => a.get<MyDay>('/admin/my-day'),
+  monthlyReport: (month?: string) => a.get<MonthlyReport>(`/admin/monthly-report${qs({ month })}`),
   insights: () => a.get<Insights>('/admin/insights'),
   people: {
     list: (q: PeopleQuery) => a.get<PeoplePage>(`/admin/people${qs(q)}`),
@@ -1355,6 +1360,7 @@ export const AdminApi = {
   },
   visits: {
     list: (f: { status?: 'planned' | 'done' | 'cancelled'; zoneId?: string; mine?: '1'; familyKey?: string }) => a.get<VisitView[]>(`/admin/visits${qs(f)}`),
+    route: (date: string, mine: boolean) => a.get<VisitRoute>(`/admin/visits/route${qs({ date, mine: mine ? '1' : undefined })}`),
     due: (f: { since?: string; zoneId?: string }) => a.get<{ since: string; families: ZoneFamily[] }>(`/admin/visits/due${qs(f)}`),
     actions: (f: { mine?: '1'; all?: '1' } = {}) => a.get<VisitActionItem[]>(`/admin/visits/actions${qs(f)}`),
     toggleAction: (id: string, index: number, done?: boolean) => a.post<VisitView>(`/admin/visits/${id}/actions/${index}`, done === undefined ? {} : { done }),

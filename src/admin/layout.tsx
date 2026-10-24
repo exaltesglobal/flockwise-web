@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -55,6 +55,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       ] },
       one({ to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'], feature: 'groups' }),
       { label: 'Care', icon: HeartHandshake, pages: [
+        { to: '/admin/my-day', label: 'My day', icon: Sun, feature: 'my-day' },
         { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'], feature: 'care' },
         { to: '/admin/morning-list', label: "Today's calls", icon: Sunrise, perm: ['care'], feature: 'morninglist' },
         { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'], feature: 'workflows' },
@@ -143,7 +144,10 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
   {
     title: 'Office',
     hubs: [
-      one({ to: '/admin/insights', label: 'Reports', icon: BarChart3, perm: ['insights'], feature: 'insights' }),
+      { label: 'Reports', icon: BarChart3, pages: [
+        { to: '/admin/insights', label: 'Reports', icon: BarChart3, perm: ['insights'], feature: 'insights' },
+        { to: '/admin/monthly-report', label: 'Monthly report', icon: FileText, perm: ['insights'], feature: 'monthly-report' },
+      ] },
       one({ to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] }),
     ],
   },

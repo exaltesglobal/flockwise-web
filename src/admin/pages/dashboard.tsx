@@ -204,7 +204,7 @@ function TodayPanel({ data }: { data: Dashboard }) {
   if (data.birthdaysThisWeek.length) items.push({ text: n(data.birthdaysThisWeek.length, '{n} birthday this week: send a greeting', '{n} birthdays this week: send a greeting'), to: '/admin/celebrations', icon: Cake });
   return (
     <div className="card today-panel">
-      <div className="today-head"><b>{tr('Today')}</b><span className="small muted">{items.length ? n(items.length, '{n} thing to do', '{n} things to do') : tr('Nothing waiting')}</span></div>
+      <div className="today-head"><b>{tr('Today')}</b><span className="small muted grow">{items.length ? n(items.length, '{n} thing to do', '{n} things to do') : tr('Nothing waiting')}</span><Link to="/admin/my-day" className="small">{tr('Your day')} →</Link></div>
       {items.length === 0 ? (
         <p className="today-done"><CheckCircle2 size={18} /> {tr('All caught up. Nobody is waiting on you right now.')}</p>
       ) : (

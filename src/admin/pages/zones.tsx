@@ -1,6 +1,6 @@
 // Zones, prayer cells and family units with their leaders, and pastoral home visits: plan by
 // area, log what happened, and see which families have not been visited this year.
-import { CalendarCheck, Check, Home, ListChecks, MapPin, Pencil, Plus, Sparkles, Trash2, UserPlus, Users, X } from 'lucide-react';
+import { CalendarCheck, Check, Home, ListChecks, MapPin, MapPinned, Pencil, Plus, Sparkles, Trash2, UserPlus, Users, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
@@ -16,6 +16,7 @@ import { useAction, useApi } from '@/lib/use-api';
 
 import { DictateButton } from '../components/dictate';
 import { PersonSearch, type PickedPerson } from '../components/person-picker';
+import { VisitRouteModal } from '../components/visit-route';
 import { PageHeader } from '../layout';
 
 const LABELS = ['Zone', 'Prayer cell', 'Family unit', 'Kudumba unit', 'Ward', 'Area', 'Cell group'];
@@ -221,6 +222,7 @@ function VisitRow({ v, onEdit }: { v: VisitView; onEdit: (v: VisitView) => void 
 function VisitsTab({ onEdit, zones, version = 0 }: { onEdit: (v: VisitView) => void; zones: ZoneView[]; version?: number }) {
   const [zoneId, setZoneId] = useState('');
   const [mine, setMine] = useState(false);
+  const [route, setRoute] = useState(false);
   const planned = useApi(() => AdminApi.visits.list({ status: 'planned', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine, version]);
   const done = useApi(() => AdminApi.visits.list({ status: 'done', zoneId: zoneId || undefined, mine: mine ? '1' : undefined }), [zoneId, mine, version]);
   return (
@@ -233,8 +235,9 @@ function VisitsTab({ onEdit, zones, version = 0 }: { onEdit: (v: VisitView) => v
         <label className="row small" style={{ gap: 6 }}><input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} /> Only my visits</label>
       </div>
       <ActionItems mine={mine} version={version} />
+      {route && <VisitRouteModal date={planned.data?.[0]?.plannedFor ?? undefined} onClose={() => setRoute(false)} />}
       <div className="card">
-        <div className="card-head"><h2>Planned</h2></div>
+        <div className="card-head"><h2>Planned</h2>{!!planned.data?.length && <button className="btn sm" onClick={() => setRoute(true)}><MapPinned size={14} /> Route for a day</button>}</div>
         {planned.error ? <ErrorState error={planned.error} onRetry={planned.reload} /> : !planned.data ? <Loading /> : planned.data.length === 0 ? <p className="small muted" style={{ padding: '0 16px 16px' }}>No visits planned. Use “Not visited this year” to plan some.</p> : planned.data.map((v) => <VisitRow key={v.id} v={v} onEdit={onEdit} />)}
       </div>
       <div className="card">

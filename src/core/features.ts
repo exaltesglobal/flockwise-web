@@ -41,6 +41,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'vigils', label: 'Prayer vigils', body: 'Fill a 24-hour or night prayer chain, slot by slot.', group: 'care', on: false },
   { key: 'benevolence', label: 'Benevolence', body: 'Requests for help, approvals and payments from the welfare fund.', group: 'care', on: false },
   { key: 'occasions', label: 'Weddings & funerals', body: 'Plan weddings, funerals and dedications with checklists.', group: 'care', on: false },
+  { key: 'my-day', label: 'My day', body: 'A page for each pastor and leader: their calls, visits with a map route, meetings, action items, sermon and what is waiting on them.', group: 'care', on: true },
   { key: 'morninglist', label: "Pastor's morning list", body: 'Each morning, the few people most worth a call today and why: hospital, grief, missed Sundays, new visitors, prayer, birthdays.', group: 'care', on: true },
   { key: 'discipleship', label: 'Discipleship', body: 'Mentors and the people they walk with.', group: 'care', on: false },
   { key: 'meetings', label: 'Meetings & minutes', body: 'Elders, deacons and committee meetings: agenda, minutes, decisions and action items with owners.', group: 'care', on: true },
@@ -80,6 +81,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'media', label: 'Media library', body: 'Photos, videos and files in one place.', group: 'comms', on: true },
   { key: 'bulletin', label: 'Bulletin', body: 'A printable Sunday bulletin made from the plan and notices.', group: 'comms', on: false },
   { key: 'insights', label: 'Reports', body: 'Attendance, giving and growth over time.', group: 'comms', on: true, core: true },
+  { key: 'monthly-report', label: 'Monthly report', body: 'One page for the board or the denomination: attendance, new people, baptisms, giving, care and decisions for the month.', group: 'comms', on: true },
   // Seasonal and occasional
   { key: 'celebrations', label: 'Celebrations', body: 'Birthdays and anniversaries with a greeting in one tap.', group: 'seasonal', on: true },
   { key: 'video-greetings', label: 'Video greetings', body: 'Short video wishes recorded by the pastor.', group: 'seasonal', on: false },

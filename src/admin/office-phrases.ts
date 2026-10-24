@@ -149,4 +149,5 @@ export const OFFICE_PHRASES = [
   "{n} things to do",
   "{n} volunteer replies still awaited",
   "{n} volunteer reply still awaited",
+  "Your day",
 ];

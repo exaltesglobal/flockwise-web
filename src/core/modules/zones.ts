@@ -2,8 +2,8 @@
 // pastoral home visits: plan by area, log what happened, and see families not visited this year.
 import { ApiError } from '../errors.js';
 import type { Ctx, Router } from '../engine.js';
-import type { Collections, Visit, VisitAction, VisitActionItem, VisitPurpose, VisitView, Zone, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView } from '../types.js';
-import { age, find, fullName, localDate } from '../util.js';
+import type { Collections, Visit, VisitAction, VisitActionItem, VisitPurpose, VisitRoute, VisitView, Zone, ZoneDetail, ZoneFamily, ZoneReportRow, ZoneView } from '../types.js';
+import { age, find, fullName, localDate, settings } from '../util.js';
 
 export const VISIT_PURPOSES: Record<VisitPurpose, string> = {
   home: 'Home visit',
@@ -229,6 +229,28 @@ export function registerZones(r: Router) {
       .sort((a, b) => (status === 'planned' ? (a.plannedFor ?? '').localeCompare(b.plannedFor ?? '') : (b.visitedOn ?? b.plannedFor ?? '').localeCompare(a.visitedOn ?? a.plannedFor ?? '')))
       .slice(0, 300)
       .map((v) => visitView(ctx, v));
+  });
+
+  /** One day's planned visits (mine, or everyone's), grouped by area, with addresses for the map. */
+  r.get('/admin/visits/route', { perm: 'people.view' }, (ctx): VisitRoute => {
+    const date = DATE_RE.test(String(ctx.query.date)) ? String(ctx.query.date) : localDate(ctx, ctx.now);
+    const mine = ctx.query.mine === '1' && ctx.staff ? ctx.staff.id : null;
+    const stops = ctx.db.all('visits')
+      .filter((v) => v.status === 'planned' && v.plannedFor === date && (!mine || v.visitorIds.includes(mine)))
+      .map((v) => {
+        const people = v.personIds.map((id) => ctx.db.get('people', id)).filter((p): p is Collections['people'] => !!p);
+        return {
+          visitId: v.id, familyName: v.familyName, purpose: v.purpose,
+          address: people.find((p) => p.address?.trim())?.address?.trim() ?? null,
+          phone: people.find((p) => p.phone)?.phone ?? null,
+          zoneName: v.zoneId ? (ctx.db.get('zones', v.zoneId)?.name ?? null) : null,
+        };
+      })
+      .sort((a, b) => (a.zoneName ?? '~').localeCompare(b.zoneName ?? '~') || a.familyName.localeCompare(b.familyName));
+    const s = settings(ctx);
+    const address = s.address?.trim() ?? '';
+    const start = (s.city && !address.toLowerCase().includes(s.city.toLowerCase()) ? [address, s.city].filter(Boolean).join(', ') : address) || null;
+    return { date, start, stops };
   });
 
   /** Families with no visit since `since` (default 1 January), longest unvisited first. */
