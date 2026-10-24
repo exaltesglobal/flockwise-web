@@ -1324,3 +1324,10 @@ Greek and Hebrew behind every verse, from STEPBible.org's open data (CC BY 4.0) 
 
 - `GET /public/bible/words/:book/:chapter/:verse` returns `{book, chapter, verse, language: greek|hebrew, words: [{word, translit, gloss, strong, grammar, parsing}], source}`. `parsing` is the grammar in plain English ("Verb · aorist active indicative · 3rd person singular").
 - `GET /public/bible/strongs/:id` (G25, G0025, H7462B…) returns `{entry: {strong, lemma, translit, gloss, definition, language}, total, uses: [{book, chapter, verse, gloss}] (first 300), books: [{book, count}], source}`.
+
+## Bible commentaries
+
+Classic commentaries beside each chapter, read from the Free Use Bible API (bible.helloao.org) and kept in memory (600 chapters).
+
+- `GET /public/bible/commentaries` lists them: Matthew Henry, Jamieson-Fausset-Brown, Tyndale Open Study Notes (CC BY-SA), Adam Clarke, John Gill, Keil & Delitzsch (Old Testament only) and Calvin.
+- `GET /public/bible/commentary/:id/:book/:chapter` returns `{ commentary, book, chapter, intro, notes: [{ verse, text }], source }`. A note starts at its verse and covers the verses up to the next note. Chapter 1 also carries the book introduction. A chapter the commentary skips returns empty notes. Show `source` under the notes.

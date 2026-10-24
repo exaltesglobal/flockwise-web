@@ -704,6 +704,11 @@ export const hi: Strings = {
   bibleWordUses: "{count} पदों में प्रयुक्त",
   bibleWordBack: "पद पर वापस",
   bibleWordNone: "इस पद के लिए यूनानी या इब्रानी शब्द नहीं।",
+  bibleCommentary: "टीका",
+  bibleCommentaryIntro: "परिचय",
+  bibleCommentaryNone: "इस टीका में इस अध्याय पर कोई टिप्पणी नहीं है।",
+  bibleCommentaryVerse: "पद {n}",
+  bibleCommentaryEnglish: "टीकाएँ अंग्रेज़ी में हैं।",
 };
 
 export default hi;

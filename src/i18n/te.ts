@@ -704,6 +704,11 @@ export const te: Strings = {
   bibleWordUses: "{count} వచనాల్లో వాడబడింది",
   bibleWordBack: "వచనానికి తిరిగి",
   bibleWordNone: "ఈ వచనానికి గ్రీకు లేదా హీబ్రూ పదాలు లేవు.",
+  bibleCommentary: "వ్యాఖ్యానం",
+  bibleCommentaryIntro: "పరిచయం",
+  bibleCommentaryNone: "ఈ వ్యాఖ్యానంలో ఈ అధ్యాయంపై వివరణ లేదు.",
+  bibleCommentaryVerse: "వచనం {n}",
+  bibleCommentaryEnglish: "వ్యాఖ్యానాలు ఆంగ్లంలో ఉన్నాయి.",
 };
 
 export default te;

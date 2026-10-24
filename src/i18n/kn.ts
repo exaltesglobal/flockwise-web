@@ -704,6 +704,11 @@ export const kn: Strings = {
   bibleWordUses: "{count} ವಚನಗಳಲ್ಲಿ ಬಳಸಲಾಗಿದೆ",
   bibleWordBack: "ವಚನಕ್ಕೆ ಹಿಂತಿರುಗಿ",
   bibleWordNone: "ಈ ವಚನಕ್ಕೆ ಗ್ರೀಕ್ ಅಥವಾ ಹೀಬ್ರೂ ಪದಗಳಿಲ್ಲ.",
+  bibleCommentary: "ವ್ಯಾಖ್ಯಾನ",
+  bibleCommentaryIntro: "ಪರಿಚಯ",
+  bibleCommentaryNone: "ಈ ವ್ಯಾಖ್ಯಾನದಲ್ಲಿ ಈ ಅಧ್ಯಾಯಕ್ಕೆ ಟಿಪ್ಪಣಿಗಳಿಲ್ಲ.",
+  bibleCommentaryVerse: "ವಚನ {n}",
+  bibleCommentaryEnglish: "ವ್ಯಾಖ್ಯಾನಗಳು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿವೆ.",
 };
 
 export default kn;

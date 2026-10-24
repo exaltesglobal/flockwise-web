@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { BibleBookInfo, BibleChapter, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -445,6 +445,8 @@ export const PublicApi = {
   bibleChapter: (tr: string, book: string, chapter: number) => m.get<BibleChapter>(`/public/bible/${encodeURIComponent(tr)}/${book}/${chapter}`),
   bibleWords: (book: string, chapter: number, verse: number) => m.get<BibleWords>(`/public/bible/words/${book}/${chapter}/${verse}`),
   strongs: (id: string) => m.get<StrongsStudy>(`/public/bible/strongs/${id}`),
+  commentaries: () => m.get<BibleCommentaryInfo[]>('/public/bible/commentaries'),
+  commentary: (id: string, book: string, chapter: number) => m.get<BibleCommentary>(`/public/bible/commentary/${id}/${book}/${chapter}`),
   bibleReady: (tr: string) => m.get<{ ready: boolean; failed?: string }>(`/public/bible/${encodeURIComponent(tr)}/ready`),
   bibleSearch: (tr: string, q: string, scope?: string) => m.get<BibleSearch>(`/public/bible/${encodeURIComponent(tr)}/search${qs({ q, scope })}`),
   bibleRefs: (tr: string, book: string, chapter: number, verse: number) => m.get<{ refs: BibleCrossRef[]; source: string }>(`/public/bible/${encodeURIComponent(tr)}/refs/${book}/${chapter}/${verse}`),

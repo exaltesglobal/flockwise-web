@@ -704,6 +704,11 @@ export const ta: Strings = {
   bibleWordUses: "{count} வசனங்களில் வருகிறது",
   bibleWordBack: "வசனத்திற்குத் திரும்பு",
   bibleWordNone: "இந்த வசனத்திற்கு கிரேக்க அல்லது எபிரெய சொற்கள் இல்லை.",
+  bibleCommentary: "விளக்கவுரை",
+  bibleCommentaryIntro: "முன்னுரை",
+  bibleCommentaryNone: "இந்த விளக்கவுரையில் இந்த அதிகாரத்திற்குக் குறிப்புகள் இல்லை.",
+  bibleCommentaryVerse: "வசனம் {n}",
+  bibleCommentaryEnglish: "விளக்கவுரைகள் ஆங்கிலத்தில் உள்ளன.",
 };
 
 export default ta;

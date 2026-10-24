@@ -1217,6 +1217,9 @@ export type BibleWords = { book: string; chapter: number; verse: number; languag
 /** A Strong's dictionary entry and every verse that uses the word. */
 export type StrongsEntry = { strong: string; lemma: string; translit: string; gloss: string; definition: string; language: 'greek' | 'hebrew' };
 export type StrongsStudy = { entry: StrongsEntry; total: number; uses: { book: string; chapter: number; verse: number; gloss: string }[]; books: { book: string; count: number }[]; source: string };
+/** A classic commentary on one chapter (public domain, or Tyndale's open notes), note by verse. */
+export type BibleCommentaryInfo = { id: string; name: string; short: string; ot: boolean; nt: boolean };
+export type BibleCommentary = { commentary: BibleCommentaryInfo; book: string; chapter: number; intro: string; notes: { verse: number; text: string }[]; source: string };
 /** The scripture on the church's screen right now, for members following on their phones. */
 export type LiveVerse = { eventTitle: string; reference: string; book: string; chapter: number; verse: number | null; passage: BiblePassage | null; at: string };
 export type SermonPrep = {

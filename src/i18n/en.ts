@@ -701,6 +701,11 @@ export const en = {
   bibleWordUses: "Used in {count} verses",
   bibleWordBack: "Back to the verse",
   bibleWordNone: "No Greek or Hebrew words for this verse.",
+  bibleCommentary: "Commentary",
+  bibleCommentaryIntro: "Introduction",
+  bibleCommentaryNone: "This commentary has no notes on this chapter.",
+  bibleCommentaryVerse: "Verse {n}",
+  bibleCommentaryEnglish: "Commentaries are in English.",
 };
 
 export type Strings = typeof en;

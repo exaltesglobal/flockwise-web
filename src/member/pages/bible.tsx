@@ -2,8 +2,8 @@
 // about 890 more languages), book and chapter pickers, headings and poetry as printed, footnotes, a
 // second translation side by side, and a tap on a verse to copy it or send it on WhatsApp.
 // Opens at ?tr=hin2017&ref=John 3:16 from reading plans and shared links; otherwise where they left off.
-import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, Languages, Link2, Sigma, Minus, NotebookPen, Plus, Search, Share2, StickyNote, X } from 'lucide-react';
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, Languages, Link2, Sigma, Minus, NotebookPen, Plus, ScrollText, Search, Share2, StickyNote, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { memberSession } from '@/api/client';
@@ -55,6 +55,7 @@ export function MemberBiblePage() {
   const [picker, setPicker] = useState<null | 'tr' | 'tr2' | 'book' | 'marks' | 'search'>(null);
   const [seeAlso, setSeeAlso] = useState<number | null>(null);
   const [study, setStudy] = useState<number | null>(null);
+  const [notes, setNotes] = useState<number | null>(null);
   const list = useApi(PublicApi.bibleTranslations);
   const go = (p: Partial<Place>) => {
     const next = { ...place, ...p };
@@ -88,6 +89,7 @@ export function MemberBiblePage() {
         <button className="btn sm" onClick={() => setPicker('tr')} title={t('bibleTranslation')}><Languages size={15} /> {tr ? `${tr.native} · ${shortName(tr)}` : place.tr}</button>
         <button className={`btn sm ${place.tr2 ? 'primary' : ''}`} onClick={() => (place.tr2 ? go({ tr2: null }) : setPicker('tr2'))} title={t('bibleCompare')}><Columns2 size={15} /> <span className="bib-hide-sm">{place.tr2 && tr2 ? shortName(tr2) : t('bibleCompare')}</span>{place.tr2 && <X size={13} />}</button>
         <button className="btn sm ghost" onClick={() => setPicker('search')} title={t('bibleSearchTitle')}><Search size={15} /> <span className="bib-hide-sm">{t('bibleSearchTitle')}</span></button>
+        <button className="btn sm ghost" onClick={() => setNotes(0)} title={t('bibleCommentary')}><ScrollText size={15} /> <span className="bib-hide-sm">{t('bibleCommentary')}</span></button>
         <button className="btn sm ghost" onClick={() => setPicker('marks')} title={t('bibleMarks')}><NotebookPen size={15} /> <span className="bib-hide-sm">{t('bibleMarks')}</span></button>
         <span className="grow" />
         <div className="row" style={{ gap: 2 }} aria-label={t('bibleTextSize')}>
@@ -98,7 +100,7 @@ export function MemberBiblePage() {
 
       <LiveVerseCard />
       {ch.error ? <ErrorState error={ch.error} onRetry={ch.reload} /> : !ch.data ? <Loading /> : (
-        <Reader ch={ch.data} ch2={place.tr2 ? ch2.data : null} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} />
+        <Reader ch={ch.data} ch2={place.tr2 ? ch2.data : null} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} onCommentary={setNotes} />
       )}
 
       {ch.data && (
@@ -112,6 +114,7 @@ export function MemberBiblePage() {
       {picker === 'search' && <SearchPanel tr={place.tr} book={place.book} names={books.data} onClose={() => setPicker(null)} onOpen={(book, chapter, verse) => { go({ book, chapter }); setMark(verse); setPicker(null); }} />}
       {seeAlso !== null && <SeeAlso tr={place.tr} book={place.book} chapter={place.chapter} verse={seeAlso} names={books.data} onClose={() => setSeeAlso(null)} onOpen={(book, chapter, verse) => { setSeeAlso(null); go({ book, chapter }); setMark(verse); }} />}
       {study !== null && <WordStudy book={place.book} chapter={place.chapter} verse={study} names={books.data} onClose={() => setStudy(null)} onOpen={(book, chapter, verse) => { setStudy(null); go({ book, chapter }); setMark(verse); }} />}
+      {notes !== null && <Commentary book={place.book} chapter={place.chapter} verse={notes || null} title={title} onClose={() => setNotes(null)} />}
       {picker === 'marks' && <MarksList onClose={() => setPicker(null)} onOpen={(m) => { go({ book: m.book, chapter: m.chapter }); setMark(m.verse); setPicker(null); }} />}
       {(picker === 'tr' || picker === 'tr2') && (
         <TranslationPicker all={all} featured={list.data?.featured ?? FEATURED_BIBLES.map((b) => b.id)} current={picker === 'tr' ? place.tr : place.tr2} myLang={session?.member.language ?? lang}
@@ -121,7 +124,7 @@ export function MemberBiblePage() {
   );
 }
 
-function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStudy }: { ch: BibleChapter; ch2: BibleChapter | null; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void }) {
+function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStudy, onCommentary }: { ch: BibleChapter; ch2: BibleChapter | null; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void; onCommentary: (verse: number) => void }) {
   const { t } = useT();
   const toast = useToast();
   const [showNotes, setShowNotes] = useState(false);
@@ -189,6 +192,7 @@ function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStud
             <button className={`btn sm ${mine?.note ? 'primary' : ''}`} onClick={() => setNoteOpen((o) => !o)}><StickyNote size={14} /> {t('bibleNote')}</button>
             <button className="btn sm" onClick={() => onSeeAlso(verse.n)}><Link2 size={14} /> {t('bibleSeeAlso')}</button>
             <button className="btn sm" onClick={() => onStudy(verse.n)}><Sigma size={14} /> {t('bibleWordStudy')}</button>
+            <button className="btn sm" onClick={() => onCommentary(verse.n)}><ScrollText size={14} /> {t('bibleCommentary')}</button>
             <span className="grow" />
             <button className="btn sm" onClick={() => void copy()}><Copy size={14} /> {t('bibleCopy')}</button>
             <a className="btn sm primary" href={`https://wa.me/?text=${encodeURIComponent(share)}`} target="_blank" rel="noreferrer"><Share2 size={14} /> {t('bibleShare')}</a>
@@ -435,6 +439,54 @@ function SeeAlso({ tr, book, chapter, verse, names, onClose, onOpen }: { tr: str
           <p className="small muted">{res.data.source}</p>
         </div>
       )}
+    </Modal>
+  );
+}
+
+/** A classic commentary on the chapter, opened at the note that covers the chosen verse. The choice is remembered. */
+function Commentary({ book, chapter, verse, title, onClose }: { book: string; chapter: number; verse: number | null; title: string; onClose: () => void }) {
+  const { t } = useT();
+  const nt = (BOOK_CODES as readonly string[]).indexOf(book) > 38;
+  const list = useApi(() => PublicApi.commentaries(), []);
+  const usable = (list.data ?? []).filter((c) => (nt ? c.nt : c.ot));
+  const [pick, setPick] = useState(() => load('fw.bible.commentary', 'matthew-henry'));
+  const id = usable.some((c) => c.id === pick) || !usable.length ? pick : usable[0].id;
+  const res = useApi(() => PublicApi.commentary(id, book, chapter), [id, book, chapter]);
+  const [intro, setIntro] = useState(false);
+  const here = useRef<HTMLDivElement>(null);
+  // A note starts at its verse and runs to the next note, so the one for verse 16 may begin at 1.
+  const at = verse && res.data ? [...res.data.notes].reverse().find((n) => n.verse <= verse)?.verse ?? null : null;
+  useEffect(() => { here.current?.scrollIntoView({ block: 'start' }); }, [res.data, at]);
+  const choose = (v: string) => { setPick(v); save('fw.bible.commentary', v); };
+  return (
+    <Modal title={`${t('bibleCommentary')} · ${title}${verse ? `:${verse}` : ''}`} onClose={onClose} wide>
+      <div className="stack" style={{ gap: 10 }}>
+        <div className="bib-cm-pick">
+          <select className="input" value={id} onChange={(e) => choose(e.target.value)} aria-label={t('bibleCommentary')}>
+            {usable.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+        {res.error ? <ErrorState error={res.error} onRetry={res.reload} /> : !res.data ? <Loading /> : (
+          <>
+            {res.data.intro && (
+              <div className="bib-cm-intro">
+                <button className="btn sm ghost" onClick={() => setIntro((o) => !o)}><ChevronDown size={14} style={{ transform: intro ? 'rotate(180deg)' : undefined }} /> {t('bibleCommentaryIntro')}</button>
+                {intro && <div className="bib-cm-text">{res.data.intro}</div>}
+              </div>
+            )}
+            {!res.data.notes.length ? <p className="muted">{t('bibleCommentaryNone')}</p> : res.data.notes.map((n, i) => {
+              const end = res.data!.notes[i + 1]?.verse;
+              return (
+                <div key={n.verse} ref={n.verse === at ? here : undefined} className={`bib-cm-note ${n.verse === at ? 'on' : ''}`}>
+                  <b className="small">{t('bibleCommentaryVerse', { n: end && end - 1 > n.verse ? `${n.verse}–${end - 1}` : String(n.verse) })}</b>
+                  <div className="bib-cm-text">{n.text}</div>
+                </div>
+              );
+            })}
+            <p className="small muted">{t('bibleCommentaryEnglish')} {res.data.source}</p>
+          </>
+        )}
+      </div>
     </Modal>
   );
 }

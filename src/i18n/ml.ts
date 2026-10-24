@@ -704,6 +704,11 @@ export const ml: Strings = {
   bibleWordUses: "{count} വാക്യങ്ങളിൽ ഉപയോഗിച്ചു",
   bibleWordBack: "വാക്യത്തിലേക്ക് മടങ്ങുക",
   bibleWordNone: "ഈ വാക്യത്തിന് ഗ്രീക്ക് അല്ലെങ്കിൽ എബ്രായ വാക്കുകളില്ല.",
+  bibleCommentary: "വ്യാഖ്യാനം",
+  bibleCommentaryIntro: "ആമുഖം",
+  bibleCommentaryNone: "ഈ വ്യാഖ്യാനത്തിൽ ഈ അധ്യായത്തിന് കുറിപ്പുകളില്ല.",
+  bibleCommentaryVerse: "വാക്യം {n}",
+  bibleCommentaryEnglish: "വ്യാഖ്യാനങ്ങൾ ഇംഗ്ലീഷിലാണ്.",
 };
 
 export default ml;
