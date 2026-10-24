@@ -44,7 +44,7 @@ export function GriefPage() {
   const remove = (g: GriefDateView) => undoable({ text: 'Removed.', hide: () => rows.hide(g.id), show: () => rows.show(g.id), run: () => AdminApi.grief.remove(g.id), done: q.reload });
   return (
     <>
-      <PageHeader title={title} subtitle={`The first years after a death are the hardest, and anniversaries bring it back. You are reminded ${d.settings.nudgeDaysBefore === 0 ? 'on the day' : `${d.settings.nudgeDaysBefore} days before`} each anniversary${d.settings.day40 ? ' and 40 days after a death' : ''}, so you can call or visit. On the day the family gets a short message in their own language${d.settings.autoSend ? ', sent by itself' : ' once you send it'}. Burials in the register are added here for the household. Only people with care access see this page.`} actions={actions} />
+      <PageHeader title={title} subtitle={`Anniversaries of a death are hard days for a family. You are reminded ${d.settings.nudgeDaysBefore === 0 ? 'on the day of' : `${d.settings.nudgeDaysBefore} days before`} each anniversary${d.settings.day40 ? ' and 40 days after a death' : ''}, so you can call or visit, and the family gets a short message in their own language${d.settings.autoSend ? ' on the day' : ' when you send it'}. Only people with care access see this page.`} actions={actions} />
       {!dates.length ? (
         <Empty icon={<Flower2 size={28} />} title="No dates yet" body="Add the day someone in your church lost a loved one. Burials you record in the register are added here by themselves." action={<button className="btn primary" onClick={() => setEditing('new')}>Add a date</button>} />
       ) : (

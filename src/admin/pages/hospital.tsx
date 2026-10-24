@@ -30,7 +30,7 @@ export function HospitalPage() {
   const replace = (s: HospitalStayView) => q.setData(q.data!.map((x) => (x.id === s.id ? s : x)));
   return (
     <>
-      <PageHeader title={title} subtitle="One tap tells the zone leader and the pastors, asks the prayer chain to pray (without medical details), and opens a meal and visit rota that the zone, their groups and family fill in the app. When they go home, they get a check-in two days later." actions={action} />
+      <PageHeader title={title} subtitle="When someone is admitted, mark it here. Their zone leader and pastors are told, the prayer chain is asked to pray (no medical details are shared), and a meal and visit rota opens for their zone, groups and family to fill in the app. Two days after they go home, they get a check-in." actions={action} />
       {!open.length ? (
         <Empty icon={<BedDouble size={28} />} title="No one in hospital" body="When someone is admitted, mark it here. It takes a few seconds." action={action} />
       ) : (

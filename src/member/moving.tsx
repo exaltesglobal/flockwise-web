@@ -33,7 +33,8 @@ function MoveForm({ data, onSaved }: { data: MyMove; onSaved: (d: MyMove) => voi
   const [suggestions, setSuggestions] = useState<PartnerChurch[]>(data.suggestions);
   const [pick, setPick] = useState('');
   const [consent, setConsent] = useState(false);
-  const look = useAction(async () => { const r = await MemberApi.move.get(city.trim()); setSuggestions(r.suggestions); });
+  const [looked, setLooked] = useState('');
+  const look = useAction(async () => { const r = await MemberApi.move.get(city.trim()); setSuggestions(r.suggestions); setLooked(city.trim()); });
   const save = useAction(async () => {
     const r = await MemberApi.move.save({ toCity: city.trim(), movingOn: on || undefined, note: note.trim() || undefined, partnerRef: pick || undefined, consent: pick ? consent : undefined });
     onSaved(r); setSuggestions(r.suggestions); setPick(''); setConsent(false);
@@ -92,6 +93,7 @@ function MoveForm({ data, onSaved }: { data: MyMove; onSaved: (d: MyMove) => voi
           )}
         </div>
       )}
+      {suggestions.length === 0 && looked && looked === city.trim() && <p className="card card-pad small muted" style={{ margin: 0 }}>{t('moveNone', { city: looked })}</p>}
       {look.error && <FormError error={look.error} />}
       <FormError error={save.error} />
       <button className="btn primary" disabled={!city.trim() || save.busy || (!!pick && !consent)}>{pick ? t('moveIntroduce') : t('moveSave')}</button>
