@@ -1658,7 +1658,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder' | 'compliance.due';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder' | 'compliance.due' | 'building.update' | 'building.pledge';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1951,6 +1951,9 @@ export type Collections = {
   annualReports: AnnualReportDraft;
   foreignDonors: ForeignDonor;
   complianceState: ComplianceState;
+  buildingProjects: BuildingProject;
+  buildingUpdates: BuildingUpdate;
+  buildingBills: BuildingBill;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2055,7 +2058,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'buildingProjects', 'buildingUpdates', 'buildingBills', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3720,4 +3723,61 @@ export type ComplianceGuard = {
   donors: (ForeignDonor & { gifts: number; amount: number })[];
   heads: { id: string; name: string; admin: boolean }[];
   currency: Currency;
+};
+
+// ----- building project tracker: a new church building, open to the members -----
+export type BuildingStage = { id: string; name: string; budget: number; status: 'todo' | 'doing' | 'done'; doneAt: string | null };
+export type BuildingProject = {
+  id: string;
+  title: string;
+  description: string;
+  /** The fund gifts and pledges are counted from. */
+  fundId: string;
+  /** Total budget, minor units. */
+  budget: number;
+  startDate: string;
+  targetDate: string | null;
+  status: 'planning' | 'building' | 'paused' | 'done';
+  coverUrl: string | null;
+  stages: BuildingStage[];
+  /** Members see it in the app. */
+  published: boolean;
+  /** Members see each contractor bill (contractor, work, amount, paid or due). */
+  showBills: boolean;
+  /** Members can open the scanned bill too. */
+  showBillFiles: boolean;
+  /** Monthly reminder on the 1st to members whose pledge to the fund is behind. */
+  pledgeReminders: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+export type BuildingPhoto = { url: string; caption: string };
+export type BuildingUpdate = { id: string; projectId: string; date: string; title: string; body: string; photos: BuildingPhoto[]; stageId: string | null; by: string; at: string };
+export type BuildingBill = {
+  id: string;
+  projectId: string;
+  contractor: string;
+  work: string;
+  stageId: string | null;
+  amount: number;
+  billDate: string;
+  billNumber: string;
+  billUrl: string | null;
+  status: 'due' | 'paid';
+  paidAt: string | null;
+  /** Voucher or cheque number in the church's books. */
+  voucher: string;
+  by: string;
+  at: string;
+};
+export type BuildingMoney = { budget: number; raised: number; gifts: number; givers: number; pledged: number; pledgeGiven: number; pledgers: number; behind: number; spent: number; due: number; balance: number; byMonth: { month: string; raised: number; spent: number }[] };
+export type BuildingProjectView = BuildingProject & { fundName: string; money: BuildingMoney; updates: BuildingUpdate[]; bills: BuildingBill[] };
+export type BuildingHub = { projects: BuildingProjectView[]; funds: { id: string; name: string }[]; currency: Currency };
+export type MemberBuildingProject = Omit<BuildingProject, 'showBillFiles' | 'pledgeReminders' | 'published'> & {
+  fundName: string;
+  money: Omit<BuildingMoney, 'behind'>;
+  updates: BuildingUpdate[];
+  bills: (Omit<BuildingBill, 'billUrl' | 'by' | 'at' | 'voucher'> & { billUrl: string | null })[] | null;
+  myPledge: { amount: number; given: number; endDate: string } | null;
+  myGiven: number;
 };

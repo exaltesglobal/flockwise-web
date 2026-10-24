@@ -311,6 +311,12 @@ export function seedDemo(db: Db, env: Env) {
   db.put('donations', gift({ donorId: DEMO_MEMBER, donorName: 'Priya Thomas', fundId: 'fd_building', amount: 1500000, createdAt: at(-60, 11), pan: 'ABCPT1234K' }));
   for (const [i, p] of adults.slice(10, 22).entries())
     db.put('pledges', { id: `pl_${i + 2}`, personId: p.id, personName: `${p.firstName} ${p.lastName}`, fundId: 'fd_building', fundName: 'Building Fund', amount: pick([2500000, 5000000, 10000000, 12000000]), startDate: at(-90, 0).slice(0, 10), endDate: at(275, 0).slice(0, 10), createdAt: at(-90 + i, 10) });
+  // Larger building gifts over the months since the sanctuary project began (cheques and transfers from families).
+  const bigGivers = adults.filter((x) => x.id !== DEMO_MEMBER);
+  for (let i = 0; i < 38; i++) {
+    const p = bigGivers[(i * 7) % bigGivers.length];
+    db.put('donations', gift({ donorId: p.id, donorName: `${p.firstName} ${p.lastName}`, fundId: 'fd_building', amount: [10000000, 20000000, 25000000, 50000000][i % 4], createdAt: at(-230 + i * 6, 11), method: i % 3 ? 'netbanking' : 'cheque', provider: i % 3 ? 'razorpay' : 'offline' }));
+  }
   // ----- harvest festival -----
   db.put('campaigns', { id: 'cp_harvest', name: 'Harvest Festival 2026', kind: 'harvest', description: 'Bring the first fruits of the year. Envelopes go to every family; produce brought on harvest Sunday is auctioned after the service.', fundId: 'fd_harvest', goal: 50_000_000, startsOn: at(-21, 0).slice(0, 10), endsOn: at(9, 0).slice(0, 10), showPublic: true, status: 'active', createdAt: at(-21, 10), createdBy: 'Samuel Raj' });
   const families = new Map<string, Collections['people']>();
@@ -813,6 +819,31 @@ export function seedDemo(db: Db, env: Env) {
   const kinds: [Collections['foreignDonors']['kind'], string][] = [['foreign_citizen', 'United Kingdom'], ['oci', 'United States'], ['foreign_citizen', 'Canada']];
   abroad.slice(0, 3).forEach((pid, i) => { const p = db.get('people', pid); if (p) db.put('foreignDonors', { id: `fg_${i + 1}`, personId: pid, name: `${p.firstName} ${p.lastName}`, kind: kinds[i][0], country: kinds[i][1], note: '', by: 'Leena George', at: iso(now - 90 * DAY) }); });
   db.put('complianceState', { id: 'main', registrationValidTo: `${fyStart + 1}-03-31`, adminHeadIds: ['ah_salary', 'ah_rent', 'ah_power', 'ah_print', 'ah_travel', 'ah_bank'], openingBalances: { [fyLabel]: 1_25_000_00 }, filed: {}, dismissed: [] });
+  // The new sanctuary: open to the members, with progress, stages and each contractor's bill.
+  const d0 = (days: number) => iso(now + days * DAY).slice(0, 10);
+  db.put('buildingProjects', {
+    id: 'bp_1', title: 'New sanctuary', description: 'A 600-seat sanctuary on the plot behind the present hall, with a children\'s floor below and a ramp for the elderly. Designed by Ar. Meera Rao; built by Sri Lakshmi Constructions.',
+    fundId: 'fd_building', budget: 2_40_00_000_00, startDate: d0(-240), targetDate: d0(300), status: 'building', coverUrl: '/demo/building-3.svg',
+    stages: [
+      { id: 'bs_1', name: 'Approvals and design', budget: 6_00_000_00, status: 'done', doneAt: d0(-200) },
+      { id: 'bs_2', name: 'Foundation', budget: 38_00_000_00, status: 'done', doneAt: d0(-110) },
+      { id: 'bs_3', name: 'Columns and first slab', budget: 62_00_000_00, status: 'done', doneAt: d0(-30) },
+      { id: 'bs_4', name: 'Walls and roof', budget: 74_00_000_00, status: 'doing', doneAt: null },
+      { id: 'bs_5', name: 'Electrical, sound and finishing', budget: 60_00_000_00, status: 'todo', doneAt: null },
+    ],
+    published: true, showBills: true, showBillFiles: false, pledgeReminders: true, createdAt: iso(now - 240 * DAY), updatedAt: iso(now - 6 * DAY),
+  });
+  const upd = (n: number, days: number, title: string, body: string, stageId: string, caption: string) => db.put('buildingUpdates', { id: `bu_${n}`, projectId: 'bp_1', date: d0(-days), title, body, photos: [{ url: `/demo/building-${n}.svg`, caption }], stageId, by: 'Vinod Mathew', at: iso(now - days * DAY) });
+  upd(1, 110, 'Foundation complete', 'The footings and plinth beam are done and cured. Thank you to everyone who came for the prayer at the foundation stone.', 'bs_2', 'Plinth beam, March');
+  upd(2, 30, 'First slab cast', 'The columns are up and the first-floor slab was cast in one day by 40 workers. The children\'s floor now has a roof.', 'bs_3', 'Slab casting day');
+  upd(3, 6, 'Walls rising', 'Brickwork on the north and east walls is half done. The roof trusses are ordered for next month.', 'bs_4', 'North wall, this week');
+  const bill = (n: number, contractor: string, work: string, stageId: string, rupees: number, days: number, paid: boolean, billNumber: string) => db.put('buildingBills', { id: `bb_${n}`, projectId: 'bp_1', contractor, work, stageId, amount: rupees * 100, billDate: d0(-days), billNumber, billUrl: null, status: paid ? 'paid' : 'due', paidAt: paid ? d0(-days + 6) : null, voucher: paid ? `CHQ ${402110 + n}` : '', by: 'Leena George', at: iso(now - days * DAY) });
+  bill(1, 'Meera Rao Architects', 'Design, drawings and GHMC approval', 'bs_1', 5_40_000, 210, true, 'MRA/24/118');
+  bill(2, 'Sri Lakshmi Constructions', 'Foundation and plinth, running bill 1', 'bs_2', 21_50_000, 150, true, 'SLC/RA-1');
+  bill(3, 'Sri Lakshmi Constructions', 'Foundation and plinth, running bill 2', 'bs_2', 15_80_000, 112, true, 'SLC/RA-2');
+  bill(4, 'Sri Lakshmi Constructions', 'Columns and first slab, running bill 3', 'bs_3', 34_20_000, 40, true, 'SLC/RA-3');
+  bill(5, 'Ramky Steel Traders', 'TMT steel, 12 tonnes', 'bs_3', 8_64_000, 45, true, 'RST/2291');
+  bill(6, 'Sri Lakshmi Constructions', 'Columns and first slab, running bill 4', 'bs_3', 18_40_000, 8, false, 'SLC/RA-4');
   db.put('settings', { ...db.get('settings', 'church')!, tally: { companyName: 'Grace Community Church Trust', bankLedger: 'HDFC Bank A/c 4821', cashLedger: 'Cash', fcraBankLedger: 'SBI FCRA A/c (New Delhi Main Branch)' } });
   db.put('meta', { id: `voucher:pv:${fyLabel}`, value: String(pv) });
 }

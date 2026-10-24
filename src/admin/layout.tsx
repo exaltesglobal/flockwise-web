@@ -1,4 +1,4 @@
-import { Flame, Armchair, BedDouble, Flower2, Headphones, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
+import { Building2, Flame, Armchair, BedDouble, Flower2, Headphones, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -134,6 +134,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       { label: 'Accounts', icon: Landmark, pages: [
         { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark, feature: 'accounts' },
         { to: '/admin/bank', label: 'Bank reconciliation', icon: Scale, perm: ['giving.view'], feature: 'bank' },
+        { to: '/admin/building', label: 'Building project', icon: Building2, perm: ['giving.view', 'settings'], feature: 'building-project' },
         { to: '/admin/compliance', label: 'FCRA and 80G guard', icon: ShieldCheck, perm: ['giving.view', 'settings'], feature: 'fcra-guard' },
         { to: '/admin/assets', label: 'Assets', icon: Armchair, feature: 'assets' },
         { to: '/admin/annual-return', label: 'Annual return', icon: FileSpreadsheet, perm: ['settings', 'insights'], feature: 'annual-return' },

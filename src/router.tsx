@@ -100,6 +100,8 @@ import { MeetingsPage } from '@/admin/pages/meetings';
 import { MonthlyReportPage } from '@/admin/pages/monthly-report';
 import { AnnualReportPage } from '@/admin/pages/annual-report';
 import { CompliancePage } from '@/admin/pages/compliance';
+import { BuildingPage } from '@/admin/pages/building';
+import { MemberBuildingPage } from '@/member/building';
 import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
 import { AskLivePage } from '@/admin/pages/ask-live';
@@ -192,6 +194,7 @@ const routes = [
       { path: 'assets', element: <AssetsPage /> },
       { path: 'bank', element: <BankPage /> },
       { path: 'compliance', element: <CompliancePage /> },
+      { path: 'building', element: <BuildingPage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
@@ -296,6 +299,8 @@ const routes = [
       { path: 'journey', element: <MemberJourneyPage /> },
       { path: 'altar', element: <MemberAltarPage /> },
       { path: 'talent', element: <MemberTalentPage /> },
+      { path: 'building', element: <MemberBuildingPage /> },
+      { path: 'building/:id', element: <MemberBuildingPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },

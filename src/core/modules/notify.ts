@@ -58,6 +58,8 @@ export const CATALOG: Record<NotificationKind, Entry> = {
   'outreach.invite': { label: 'Asked to help at an outreach', description: 'The office asks a member with the right skills to help at a free clinic, tuition evening or job fair.', audience: 'Members in the talent bank', rule: { email: false, push: true, whatsapp: true } },
   'outreach.reminder': { label: 'Outreach tomorrow', description: 'The day before, a reminder to the members who said they will help.', audience: 'Outreach helpers', rule: { email: false, push: true, whatsapp: true } },
   'compliance.due': { label: 'Compliance return due', description: 'A month and a week before an FCRA or 80G return is due, and when an FCRA warning appears.', audience: 'Staff who handle giving', rule: { email: true, push: true, whatsapp: false } },
+  'building.update': { label: 'Building project update', description: 'When the office posts progress on the church building, with photos.', audience: 'Members', rule: { email: false, push: true, whatsapp: false } },
+  'building.pledge': { label: 'Building pledge reminder', description: 'On the 1st of the month, a gentle reminder when a pledge to the building fund is behind.', audience: 'Members who pledged', rule: { email: true, push: true, whatsapp: false } },
   'devotion.today': { label: "Leaders' devotional", description: "Each morning when the day's devotional for the leadership team is ready.", audience: 'Office staff', rule: { email: false, push: true, whatsapp: false } },
   'task.assigned': { label: 'Task given', description: 'A task on the team hub is given to someone.', audience: 'The person it is given to', rule: { email: true, push: true, whatsapp: false } },
 };

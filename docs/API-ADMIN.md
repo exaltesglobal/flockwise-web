@@ -1578,3 +1578,21 @@ For churches in India. Keeps a list of foreign givers (foreign citizen, OCI card
 | POST | /admin/compliance/dismiss | giving.edit or settings | `{ id }` (only `bank:` and inferred `local:` warnings) | ComplianceGuard |
 | POST | /admin/compliance/filed | giving.edit or settings | `{ key, ack? }` key like `fc4:2025-26`, `10bd:2025-26`, `fcq:2026-27:Q1` | ComplianceGuard |
 | DELETE | /admin/compliance/filed/:key | giving.edit or settings | | ComplianceGuard |
+
+## Building project (feature `building-project`)
+
+A church building open to the members. Money raised = succeeded gifts to the project's fund (all time); pledges to that fund are counted with what came in against each; spent = paid bills; balance = raised − spent. Members (`GET /me/building`) see published projects with stages, updates, the bills when `showBills` (scanned bill only when `showBillFiles`), their own pledge and what they gave. Posting an update on a published project notifies members (`building.update`, send `notify: false` to skip). On the 1st of each month members whose pledge is behind get `building.pledge` (once a month, when `pledgeReminders`).
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/building | giving.view or settings | | BuildingHub `{ projects: BuildingProjectView[], funds, currency }` |
+| POST | /admin/building | giving.edit or settings | `{ title, fundId, startDate, budget?, targetDate?, description?, status?, coverUrl?, stages?[{ id?, name, budget, status }], published?, showBills?, showBillFiles?, pledgeReminders? }` | BuildingProjectView |
+| PATCH | /admin/building/:id | giving.edit or settings | any of the above | BuildingProjectView |
+| DELETE | /admin/building/:id | giving.edit or settings | | BuildingHub |
+| POST | /admin/building/:id/updates | giving.edit or settings | `{ title, body?, date?, photos?[{ url, caption }], stageId?, notify? }` | BuildingProjectView |
+| DELETE | /admin/building/:id/updates/:uid | giving.edit or settings | | BuildingProjectView |
+| POST | /admin/building/:id/bills | giving.edit or settings | `{ contractor, work, amount, billDate, billNumber?, billUrl?, stageId?, status?: 'due'\|'paid', paidAt?, voucher? }` | BuildingProjectView |
+| PATCH | /admin/building/:id/bills/:bid | giving.edit or settings | any of the above | BuildingProjectView |
+| DELETE | /admin/building/:id/bills/:bid | giving.edit or settings | | BuildingProjectView |
+| GET | /admin/building/:id/behind | giving.view or settings | | `[{ personId, name, phone, amount, given, short }]` pledges behind |
+| POST | /admin/building/:id/remind | giving.edit or settings | | `{ sent }` |

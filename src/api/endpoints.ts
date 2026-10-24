@@ -19,6 +19,7 @@ import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { AnnualReport, AnnualReportDraft } from '@/core/types';
 import type { ComplianceGuard, Fc4Figures, ForeignDonorKind, Form10bd } from '@/core/types';
+import type { BuildingBill, BuildingHub, BuildingPhoto, BuildingProject, BuildingProjectView, BuildingStage, MemberBuildingProject } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -439,6 +440,7 @@ export const MemberApi = {
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   journey: () => m.get<MyJourney>('/me/journey'),
+  building: () => m.get<MemberBuildingProject[]>('/me/building'),
   outreach: {
     get: () => m.get<MyOutreachInvite[]>('/me/outreach'),
     answer: (id: string, answer: 'yes' | 'no') => m.post<MyOutreachInvite[]>(`/me/outreach/${id}`, { answer }),
@@ -663,12 +665,27 @@ export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
 export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
+export type BuildingInput = Pick<BuildingProject, 'title' | 'fundId' | 'startDate'> & Partial<Pick<BuildingProject, 'description' | 'budget' | 'targetDate' | 'status' | 'coverUrl' | 'published' | 'showBills' | 'showBillFiles' | 'pledgeReminders'>> & { stages?: (Partial<BuildingStage> & { name: string; budget: number })[] };
+export type BuildingBillInput = Pick<BuildingBill, 'contractor' | 'work' | 'amount' | 'billDate'> & Partial<Pick<BuildingBill, 'billNumber' | 'billUrl' | 'stageId' | 'status' | 'paidAt' | 'voucher'>>;
 export type OutreachInput = { kind: OutreachKind; title: string; date: string; startTime: string; endTime: string; place: string; about: string; skills: string[]; capacity: number | null };
 export type AltarInput = Pick<AltarWeek, 'title' | 'passage' | 'story' | 'songTitle' | 'songUrl' | 'question' | 'prayer' | 'status'>;
 export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  building: {
+    get: () => a.get<BuildingHub>('/admin/building'),
+    create: (body: BuildingInput) => a.post<BuildingProjectView>('/admin/building', body),
+    update: (id: string, body: Partial<BuildingInput>) => a.patch<BuildingProjectView>(`/admin/building/${id}`, body),
+    remove: (id: string) => a.del<BuildingHub>(`/admin/building/${id}`),
+    addUpdate: (id: string, body: { title: string; body?: string; date?: string; photos?: BuildingPhoto[]; stageId?: string | null; notify?: boolean }) => a.post<BuildingProjectView>(`/admin/building/${id}/updates`, body),
+    removeUpdate: (id: string, uid: string) => a.del<BuildingProjectView>(`/admin/building/${id}/updates/${uid}`),
+    addBill: (id: string, body: BuildingBillInput) => a.post<BuildingProjectView>(`/admin/building/${id}/bills`, body),
+    updateBill: (id: string, bid: string, body: Partial<BuildingBillInput>) => a.patch<BuildingProjectView>(`/admin/building/${id}/bills/${bid}`, body),
+    removeBill: (id: string, bid: string) => a.del<BuildingProjectView>(`/admin/building/${id}/bills/${bid}`),
+    behind: (id: string) => a.get<{ personId: string; name: string; phone: string | null; amount: number; given: number; short: number }[]>(`/admin/building/${id}/behind`),
+    remind: (id: string) => a.post<{ sent: number }>(`/admin/building/${id}/remind`, {}),
+  },
   compliance: {
     get: (year?: string) => a.get<ComplianceGuard>(`/admin/compliance${qs({ year })}`),
     fc4: (year?: string) => a.get<Fc4Figures>(`/admin/compliance/fc4${qs({ year })}`),

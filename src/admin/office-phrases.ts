@@ -162,4 +162,6 @@ export const OFFICE_PHRASES = [
   "Annual report",
   "FCRA and 80G guard",
   "Foreign givers",
+  "Building project",
+  "Contractor bills",
 ];
