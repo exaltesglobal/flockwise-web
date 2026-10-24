@@ -1,0 +1,18 @@
+# Security and version updates for the npm libraries and GitHub Actions this app uses.
+# Minor and patch updates come grouped in one weekly pull request to keep the noise down.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
