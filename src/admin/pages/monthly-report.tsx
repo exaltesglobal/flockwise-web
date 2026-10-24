@@ -51,7 +51,7 @@ export function MonthlyReportPage() {
           </header>
 
           <div className="mr-kpis">
-            <div><span className="small muted">Average Sunday</span><b>{formatNumber(r.attendance.average)}</b><Delta now={r.attendance.average} before={r.attendance.previousAverage} label="on last month" /></div>
+            <div><span className="small muted">Average Sunday</span>{r.attendance.services.length ? <><b>{formatNumber(r.attendance.average)}</b><Delta now={r.attendance.average} before={r.attendance.previousAverage} label="on last month" /></> : <><b>-</b><span className="small muted">No headcount recorded</span></>}</div>
             <div><span className="small muted">People</span><b>{formatNumber(r.people.total)}</b><span className="small muted">{formatNumber(r.people.members)} members</span></div>
             <div><span className="small muted">New this month</span><b>{r.people.joined + r.people.newVisitors}</b><span className="small muted">{r.people.joined} member{r.people.joined === 1 ? "" : "s"}, {r.people.newVisitors} visitor{r.people.newVisitors === 1 ? "" : "s"}</span></div>
             {r.giving && <div><span className="small muted">Giving</span><b>{money(r.giving.total)}</b><Delta now={r.giving.total} before={r.giving.previous} label="on last month" /></div>}
@@ -64,8 +64,8 @@ export function MonthlyReportPage() {
                 <thead><tr><th>Date</th><th>Service</th><th className="num">Present</th><th className="num">Children</th></tr></thead>
                 <tbody>{r.attendance.services.map((s, i) => <tr key={i}><td>{day(s.date)}</td><td>{s.title}</td><td className="num">{s.count || '-'}</td><td className="num">{s.children || '-'}</td></tr>)}</tbody>
               </table>
-            ) : <p className="small muted">No services this month.</p>}
-            <p className="small">Highest attendance {formatNumber(r.attendance.highest)}. {r.otherEvents} other event{r.otherEvents === 1 ? '' : 's'}.</p>
+            ) : <p className="small muted">No services with a headcount this month. Record the count on each Sunday's service plan and it shows here.</p>}
+            {(r.attendance.highest > 0 || r.otherEvents > 0) && <p className="small">{r.attendance.highest > 0 && <>Highest attendance {formatNumber(r.attendance.highest)}. </>}{r.otherEvents} other event{r.otherEvents === 1 ? '' : 's'}.</p>}
           </section>
 
           <section className="mr-two">

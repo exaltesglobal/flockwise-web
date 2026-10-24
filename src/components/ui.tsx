@@ -35,12 +35,24 @@ export function Loading() {
   );
 }
 
+/** A plain heading for an error, so people know whether to wait, retry or ask someone. */
+function errorTitle(error: ApiError) {
+  if (error.code === 'offline') return 'Not available in demo mode';
+  if (error.code === 'network') return 'Could not connect';
+  if (error.code === 'timeout') return 'This is taking too long';
+  if (error.status === 401) return 'Please sign in again';
+  if (error.status === 403) return 'You do not have access to this';
+  if (error.status === 404) return 'Not found';
+  if (error.status === 402) return 'Not on your plan';
+  return 'Something went wrong';
+}
+
 export function ErrorState({ error, onRetry }: { error: ApiError; onRetry?: () => void }) {
   return (
     <div className="empty">
       <AlertCircle size={32} />
       <div>
-        <h3 style={{ color: 'var(--text)' }}>Something went wrong</h3>
+        <h3 style={{ color: 'var(--text)' }}>{errorTitle(error)}</h3>
         <p className="small">{error.message}</p>
       </div>
       {onRetry && (
