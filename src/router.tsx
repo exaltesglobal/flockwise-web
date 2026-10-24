@@ -100,6 +100,8 @@ import { MeetingsPage } from '@/admin/pages/meetings';
 import { MonthlyReportPage } from '@/admin/pages/monthly-report';
 import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
+import { AskLivePage } from '@/admin/pages/ask-live';
+import { AskCodePage, AskPhonePage, AskScreenPage } from '@/public/ask';
 import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
 import { OccasionsPage } from '@/admin/pages/occasions';
@@ -183,6 +185,7 @@ const routes = [
       { path: 'counselling', element: <CounsellingPage /> },
       { path: 'my-day', element: <MyDayPage /> },
       { path: 'devotions', element: <DevotionsPage /> },
+      { path: 'ask', element: <AskLivePage /> },
       { path: 'monthly-report', element: <MonthlyReportPage /> },
       { path: 'library', element: <LibraryPage /> },
       { path: 'occasions', element: <OccasionsPage /> },
@@ -220,6 +223,10 @@ const routes = [
   { path: '/r/:id', element: <PublicRecapPage /> },
   { path: '/g/:token', element: <GreetingPage /> },
   { path: '/qr/:id', element: <PublicQrPage /> },
+  { path: '/ask', element: <AskCodePage /> },
+  { path: '/ask/:code', element: <AskPhonePage /> },
+  { path: '/ask/:id/screen', element: <AskScreenPage mode="screen" /> },
+  { path: '/ask/:id/stage', element: <AskScreenPage mode="stage" /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/pray', element: <PrayPage /> },
   { path: '/pray/wall', element: <PrayerWallPage /> },

@@ -253,6 +253,28 @@ export async function chapterSermon(ctx: Ctx, sermon: { title: string; passage: 
   return { summary: str(out.summary, 1200), chapters, clips };
 }
 
+/** Questions sent in during a sermon or Q&A night, sorted into a few themes for the stage. */
+export async function groupQuestions(ctx: Ctx, questions: { id: string; text: string }[]): Promise<Record<string, string>> {
+  const schema = {
+    type: 'object',
+    properties: { groups: { type: 'array', items: { type: 'object', properties: { theme: { type: 'string' }, ids: { type: 'array', items: { type: 'string' } } }, required: ['theme', 'ids'], additionalProperties: false } } },
+    required: ['groups'],
+    additionalProperties: false,
+  };
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou sort questions people sent to the pastor during a service into a few themes, so the pastor can answer them together. Themes are 1 to 4 plain words in the language most questions use. Reply with JSON only.`,
+    messages: [{ role: 'user', content: `Questions:\n${questions.slice(0, 200).map((q) => `${q.id}: ${q.text}`).join('\n')}\n\nReturn groups: 2 to 6 themes, each with the ids of its questions. Every id goes in exactly one group; use "Other" for strays.` }],
+    schema,
+    maxTokens: 2000,
+    effort: 'low',
+  });
+  const out = json<{ groups: { theme: string; ids: string[] }[] }>(res.content);
+  const known = new Set(questions.map((q) => q.id));
+  const map: Record<string, string> = {};
+  for (const g of Array.isArray(out.groups) ? out.groups : []) for (const id of Array.isArray(g.ids) ? g.ids : []) if (known.has(id) && !map[id]) map[id] = str(g.theme, 40) || 'Other';
+  return map;
+}
+
 export function registerAi(r: Router) {
   r.get('/admin/ai/status', { staff: true }, (ctx) => status(ctx));
 

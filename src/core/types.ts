@@ -1912,6 +1912,9 @@ export type Collections = {
   illustrations: Illustration;
   sermonFills: SermonFill;
   sermonTranscripts: SermonTranscript;
+  askSessions: AskSession;
+  askQuestions: AskQuestion;
+  askPolls: AskPoll;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2016,7 +2019,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3243,3 +3246,23 @@ export type MyDay = {
   devotion: { id: string; title: string; passage: string; checkedIn: boolean; team: number } | null;
   waiting: { key: string; label: string; count: number; link: string }[];
 };
+
+/** Ask the pastor, live: a QR code on the screen, questions and polls from phones, grouped for the stage. */
+export type AskSession = {
+  id: string; title: string; eventId: string | null; code: string; open: boolean;
+  /** People may leave their name off. */
+  anonymous: boolean;
+  /** Questions wait for the office to approve them before anyone else sees them. */
+  moderate: boolean;
+  pollId: string | null; stage: 'questions' | 'poll' | 'off';
+  createdBy: string | null; createdAt: string;
+};
+export type AskQuestionStatus = 'new' | 'approved' | 'answered' | 'hidden';
+export type AskQuestion = { id: string; sessionId: string; text: string; name: string | null; device: string; status: AskQuestionStatus; votes: string[]; theme: string | null; createdAt: string };
+export type AskPoll = { id: string; sessionId: string; question: string; options: string[]; votes: Record<string, number>; open: boolean; createdAt: string };
+export type AskQuestionView = { id: string; text: string; name: string | null; status: AskQuestionStatus; votes: number; theme: string | null; createdAt: string; mine?: boolean; voted?: boolean };
+export type AskPollView = { id: string; question: string; options: { label: string; count: number }[]; total: number; open: boolean; myVote: number | null };
+export type AskPublic = { churchName: string; logoUrl: string | null; title: string; open: boolean; anonymous: boolean; poll: AskPollView | null; questions: AskQuestionView[] };
+export type AskSessionSummary = AskSession & { questions: number; waiting: number; eventTitle: string | null };
+export type AskAdmin = { session: AskSession; eventTitle: string | null; questions: AskQuestionView[]; polls: AskPollView[]; screenKey: string | null };
+export type AskStage = { title: string; code: string; stage: AskSession['stage']; groups: { theme: string | null; questions: AskQuestionView[] }[]; poll: AskPollView | null; open: boolean };

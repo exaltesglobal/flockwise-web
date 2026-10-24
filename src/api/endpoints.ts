@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -484,6 +484,13 @@ export const PublicApi = {
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/public/sermons/${id}/transcript`),
+  ask: {
+    get: (code: string, device: string) => m.get<AskPublic>(`/public/ask/${encodeURIComponent(code)}?device=${encodeURIComponent(device)}`),
+    send: (code: string, body: { text: string; name?: string; device: string }) => m.post<AskQuestionView>(`/public/ask/${encodeURIComponent(code)}/questions`, body),
+    vote: (code: string, id: string, device: string) => m.post<AskQuestionView>(`/public/ask/${encodeURIComponent(code)}/questions/${id}/vote`, { device }),
+    poll: (code: string, option: number, device: string) => m.post<AskPollView>(`/public/ask/${encodeURIComponent(code)}/poll`, { option, device }),
+    screen: (id: string, key: string) => m.get<AskStage>(`/screens/ask/${id}?key=${encodeURIComponent(key)}`),
+  },
   recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),
   greeting: (token: string) => m.get<PublicGreeting>(`/public/greetings/${token}`),
   qr: (id: string) => m.get<PublicOfferingQr>(`/public/qr/${id}`),
@@ -1407,6 +1414,20 @@ export const AdminApi = {
     editTranscript: (id: string, body: Partial<Pick<SermonTranscript, 'offset' | 'summary' | 'chapters' | 'clips'>> & { line?: { index: number; text: string } }) => a.patch<SermonTranscript>(`/admin/sermons/${id}/transcript`, body),
     chapterTranscript: (id: string) => a.post<SermonTranscript>(`/admin/sermons/${id}/transcript/chapters`, {}),
     removeTranscript: (id: string) => a.del<void>(`/admin/sermons/${id}/transcript`),
+  },
+  ask: {
+    list: () => a.get<AskSessionSummary[]>('/admin/ask'),
+    create: (body: Partial<AskSession>) => a.post<AskAdmin>('/admin/ask', body),
+    get: (id: string) => a.get<AskAdmin>(`/admin/ask/${id}`),
+    update: (id: string, body: Partial<AskSession>) => a.put<AskAdmin>(`/admin/ask/${id}`, body),
+    remove: (id: string) => a.del<void>(`/admin/ask/${id}`),
+    setQuestion: (id: string, qid: string, body: { status?: AskQuestionStatus; theme?: string | null }) => a.put<AskAdmin>(`/admin/ask/${id}/questions/${qid}`, body),
+    approveAll: (id: string) => a.post<AskAdmin>(`/admin/ask/${id}/approve-all`, {}),
+    group: (id: string) => a.post<AskAdmin>(`/admin/ask/${id}/group`, {}),
+    createPoll: (id: string, body: { question: string; options: string[] }) => a.post<AskAdmin>(`/admin/ask/${id}/polls`, body),
+    setPoll: (id: string, pid: string, body: { open: boolean; show?: boolean }) => a.put<AskAdmin>(`/admin/ask/${id}/polls/${pid}`, body),
+    removePoll: (id: string, pid: string) => a.del<AskAdmin>(`/admin/ask/${id}/polls/${pid}`),
+    stage: (id: string) => a.get<AskStage>(`/admin/ask/${id}/stage`),
   },
   celebrations: {
     list: (days: number, kind?: CelebrationKind) => a.get<Celebration[]>(`/admin/celebrations${qs({ days: String(days), kind })}`),

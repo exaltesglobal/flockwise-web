@@ -61,6 +61,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'sunday-school', label: 'Sunday school', body: 'Classes, teachers and lessons for children.', group: 'sundays', on: true },
   { key: 'sermons', label: 'Sermons', body: 'Sermon notes, series and recordings for members.', group: 'sundays', on: true },
   { key: 'sermon-prep', label: 'Sermon workspace', body: 'Prepare sermons: passage, outline with verses and timings, study notes, a preaching view for the pulpit, and one click into the sermon library.', group: 'sundays', on: true },
+  { key: 'ask-live', label: 'Ask the pastor, live', body: 'A QR code on the screen: people send questions or answer a poll from their phones, with or without their name. Questions are grouped on the stage display.', group: 'sundays', on: true },
   { key: 'livestream', label: 'Livestream', body: 'Go live to YouTube or Facebook from the service plan.', group: 'sundays', on: true },
   { key: 'practice', label: 'Choir practice', body: 'Rehearsal attendance and part recordings for singers.', group: 'sundays', on: false },
   { key: 'recap', label: 'Sunday in 60 seconds', body: 'A short recap of the service to send out on Sunday evening.', group: 'sundays', on: false },

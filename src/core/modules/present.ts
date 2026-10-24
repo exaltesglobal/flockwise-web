@@ -165,7 +165,7 @@ const stateFor = (ctx: Ctx, eventId: string): PresentationState =>
 const KEY_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
 
 /** The church's screen key, created the first time an office login asks for it. */
-function screenKey(ctx: Ctx, rotate = false) {
+export function screenKey(ctx: Ctx, rotate = false) {
   const s = settings(ctx);
   if (s.screenKey && !rotate) return s.screenKey;
   const key = ctx.env.random(24, KEY_ALPHABET);

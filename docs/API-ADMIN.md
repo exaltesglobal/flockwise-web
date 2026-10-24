@@ -1404,3 +1404,13 @@ The words of a sermon as preached, with a summary, chapters and short moments to
 - `DELETE /admin/sermons/:id/transcript`.
 - Members: `GET /sermons/:id/transcript`; public page: `GET /public/sermons/:id/transcript` (published sermons only).
 - Sermons carry `transcript: { lines, chapters, clips } | null` once one is saved.
+
+## Ask the pastor, live
+
+A QR code on the screen opens `/ask/:code` on the web app. People send questions or answer a poll from their phones with no sign-in; each phone sends a random `device` id. Feature `ask-live`. Office perm `services`, `comms` or `care`.
+
+- `GET/POST /admin/ask`, `GET/PUT/DELETE /admin/ask/:id`. Session `{ title, eventId, open, anonymous, moderate, stage: 'questions'|'poll'|'off' }`; `code` is five letters or digits. Returns `{ session, eventTitle, questions, polls, screenKey }`.
+- `PUT /admin/ask/:id/questions/:qid` `{ status: 'new'|'approved'|'answered'|'hidden', theme? }`; `POST /admin/ask/:id/approve-all`; `POST /admin/ask/:id/group` (AI themes).
+- `POST /admin/ask/:id/polls` `{ question, options[2..6] }` opens it and closes any other; `PUT /admin/ask/:id/polls/:pid` `{ open, show? }`; `DELETE`.
+- Stage: `GET /admin/ask/:id/stage` (staff) or `GET /screens/ask/:id?key=<screenKey>` → `{ title, code, stage, groups: [{ theme, questions }], poll, open }`.
+- Phones: `GET /public/ask/:code?device=`, `POST /public/ask/:code/questions` `{ text, name?, device }` (5 per 10 minutes per phone), `POST /public/ask/:code/questions/:qid/vote` `{ device }` (toggles), `POST /public/ask/:code/poll` `{ option, device }`. With `moderate`, others see a question only once it is approved.
