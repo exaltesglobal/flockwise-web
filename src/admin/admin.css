@@ -757,3 +757,16 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
   .admin-main table.table:not(.keep-table) td:last-child:not(:first-child) { margin-left: auto; align-self: flex-end; flex-direction: row; flex-wrap: wrap; align-items: center; }
   .admin-main table.table:not(.keep-table) td:last-child > div { flex-wrap: wrap; }
 }
+
+/* ---------- sermon workspace ---------- */
+.sp-top { gap: 8px; margin-bottom: 8px; }
+.sp-save { color: var(--muted); } .sp-save.error { color: var(--danger); }
+.sp-title { width: 100%; border: 0; border-bottom: 2px solid var(--border); background: transparent; color: var(--text); font-family: var(--font-heading); font-size: 28px; font-weight: 600; padding: 6px 0; margin-bottom: 16px; }
+.sp-title:focus { outline: none; border-bottom-color: var(--primary); }
+.sp-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .sp-grid { grid-template-columns: minmax(0, 1fr); } }
+.sp-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.sp-num { width: 28px; height: 28px; border-radius: 50%; background: var(--tint); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
+
+.sp-verses { max-height: 46vh; overflow: auto; line-height: 1.6; }
+.sp-verses p { margin: 0 0 6px; }

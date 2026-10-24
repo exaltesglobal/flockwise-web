@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, Sunrise, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, NotebookPen, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, Sunrise, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -95,6 +95,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/services', label: 'Service planning', icon: ClipboardList, perm: ['services'], feature: 'services' },
         { to: '/admin/practice', label: 'Choir practice', icon: MicVocal, perm: ['services', 'volunteers'], feature: 'practice' },
         { to: '/admin/sermons', label: 'Sermons', icon: BookOpen, perm: ['comms', 'services'], feature: 'sermons' },
+        { to: '/admin/sermon-prep', label: 'Sermon workspace', icon: NotebookPen, perm: ['comms', 'services'], feature: 'sermon-prep' },
         { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'], feature: 'livestream' },
         { to: '/admin/recap', label: 'Sunday in 60 seconds', icon: Clapperboard, perm: ['comms'], feature: 'recap' },
         { to: '/admin/reading', label: 'Bible reading plan', icon: BookOpenCheck, feature: 'reading' },

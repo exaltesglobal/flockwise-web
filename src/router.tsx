@@ -39,6 +39,7 @@ import { PracticePage } from '@/admin/pages/practice';
 import { MessagesPage } from '@/admin/pages/messages';
 import { PeoplePage } from '@/admin/pages/people';
 import { SermonsPage } from '@/admin/pages/publishing';
+import { SermonPrepPage } from '@/admin/pages/sermon-prep';
 import { ServicesPage } from '@/admin/pages/services';
 import { SettingsPage } from '@/admin/pages/settings';
 import { AssistantPage } from '@/admin/ai';
@@ -54,6 +55,7 @@ import { VerifyCertificatePage } from '@/public/verify';
 import { PrayPage, PrayerWallPage } from '@/public/pray';
 import { BandPage } from '@/present/band';
 import { OverlayPage, PresenterPage, ScreenPage, StagePage } from '@/present/present';
+import { PreachPage } from '@/present/preach';
 import { StudioPage } from '@/present/studio';
 import { MemberLayout, MemberSignIn } from '@/member/layout';
 import { MemberBulletinPage } from '@/member/pages/bulletin';
@@ -130,6 +132,7 @@ const routes = [
       { path: 'services', element: <ServicesPage /> },
       { path: 'services/:eventId/live', element: <LiveServicePage /> },
       { path: 'sermons', element: <SermonsPage /> },
+      { path: 'sermon-prep', element: <SermonPrepPage /> },
       { path: 'forms', element: <FormsPage /> },
       { path: 'calendar', element: <CalendarPage /> },
       { path: 'lists', element: <ListsPage /> },
@@ -186,6 +189,7 @@ const routes = [
       { path: 'assistant', element: <AssistantPage /> },
     ],
   },
+  { path: '/preach/:id', element: <PreachPage /> },
   { path: '/present/:eventId', element: <PresenterPage /> },
   { path: '/present/:eventId/screen', element: <ScreenPage /> },
   { path: '/present/:eventId/stage', element: <StagePage /> },

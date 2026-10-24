@@ -1301,3 +1301,12 @@ Every free-to-share Bible on eBible.org (about 1,100 translations in 890 languag
 
 - `GET /public/bible/:tr/search?q=&scope=` searches a whole Bible. Every word must appear; "quoted phrases" stay together. Case and Latin accents are ignored; Indian scripts match as written. `scope` is `ot`, `nt` or a book code such as `JHN`. Returns `{translation, q, total, results: [{book, chapter, verse, text}] (first 300), books: [{book, count}], reference}`; `reference` is set when the words read as a reference ("John 3:16") so the app can offer to go there. The first search in a translation downloads its verse-per-line file from eBible.org (a few seconds); the server keeps four Bibles in memory and the downloads on disk. `GET /public/bible/:tr/ready` answers `{ready}` at once and starts the download, so the app can show "getting ready" and poll instead of waiting on one long request; `{ready: false, failed}` reports a failed download once.
 - `GET /public/bible/:tr/refs/:book/:chapter/:verse` gives "see also" verses for one verse: `{refs: [{book, chapter, verse, endChapter, endVerse, votes, text}], source}`, best first, up to 40. From the Treasury of Scripture Knowledge as shared by OpenBible.info (CC BY); `text` is in the chosen translation when it can be searched, otherwise empty.
+
+## Sermon workspace (staff with services or comms)
+
+One page per sermon, from study to the pulpit. `SermonPrep` = `{id, title, preacher, date, series, passage, bigIdea, intro, points: [{id, heading, body, refs[], minutes}], close, study (private), translation, status: draft|ready|preached, sermonId}`.
+
+- `GET /admin/sermon-prep` lists summaries with `points` and planned `minutes`. `POST` starts one (any fields; an untitled draft takes the passage as its title). `GET/PUT/DELETE /admin/sermon-prep/:id`; `PUT` changes only the fields sent (the app autosaves). Verse references are tidied ("jn 3:16" becomes "John 3:16"); point ids are kept when sent back.
+- `POST /admin/sermon-prep/:id/copy` starts a new draft from this one.
+- `POST /admin/sermon-prep/:id/publish` `{published?}` puts it in the sermon library (or updates the entry made before) with the outline as the notes. Study notes are never published.
+- `GET /admin/sermon-prep/:id/preach?tr=` returns `{prep, verses: {ref: {reference, text} | null}}` for the preaching view, in the sermon's translation unless `tr` is given.

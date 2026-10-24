@@ -1207,6 +1207,29 @@ export type BibleVerse = { n: number; text: string; label?: string; heading?: st
 export type BibleChapterNote = { verse: number; text: string };
 export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
 /** A member's own highlight, bookmark or note on one verse. Private to them; not in the office export. */
+// ---------- sermon workspace: one page per sermon, from study to the pulpit ----------
+/** One main point of a sermon outline, with its verses and the minutes planned for it. */
+export type SermonPoint = { id: string; heading: string; body: string; refs: string[]; minutes: number };
+export type SermonPrepStatus = 'draft' | 'ready' | 'preached';
+export type SermonPrep = {
+  id: string; title: string; preacher: string; date: string; series: string;
+  /** The main passage, e.g. "John 3:1-21". */
+  passage: string;
+  /** The sermon in one sentence. */
+  bigIdea: string;
+  intro: string; points: SermonPoint[]; close: string;
+  /** Study notes for the preacher only; never published. */
+  study: string;
+  /** Bible the verses are shown in (eBible.org id). */
+  translation: string;
+  status: SermonPrepStatus;
+  /** The sermon library entry made from this, once published. */
+  sermonId: string | null;
+  createdBy: string; createdAt: string; updatedAt: string;
+};
+export type SermonPrepSummary = Pick<SermonPrep, 'id' | 'title' | 'preacher' | 'date' | 'series' | 'passage' | 'status' | 'sermonId' | 'updatedAt'> & { points: number; minutes: number };
+/** Everything the preaching view needs: the sermon and the words of each verse it uses. */
+export type SermonPreach = { prep: SermonPrep; verses: Record<string, { reference: string; text: string } | null> };
 export type BibleMark = { id: string; personId: string; book: string; chapter: number; verse: number; color: BibleMarkColor | null; bookmark: boolean; note: string; updatedAt: string };
 export type BibleBookInfo = { code: string; name: string; en: string; chapters: number; testament: 'ot' | 'nt' };
 /** One verse found by a Bible search. */
@@ -1722,6 +1745,7 @@ export type Collections = {
   campSignups: CampSignup;
   registrations: Registration;
   bibleMarks: BibleMark;
+  sermonPreps: SermonPrep;
   captions: CaptionsLog;
   ballots: Ballot;
   ballotStubs: BallotStub;
@@ -1820,7 +1844,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

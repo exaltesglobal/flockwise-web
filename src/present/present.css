@@ -250,3 +250,28 @@ html.pres-transparent, html.pres-transparent body, html.pres-transparent #root {
 .pres-stage .big-timer { font-size: 1.4em; font-weight: 800; }
 .pres-side > * { flex-shrink: 0; }
 @media (max-width: 720px) { .pres-side > .pres-panel { display: none; } }
+
+/* ---------- preaching view (/preach/:id) ---------- */
+.preach { --pb: #14110f; --pf: #f4efe6; --pm: #a59c8f; --pa: #e8b04a; --pl: #2a2520; min-height: 100dvh; display: flex; flex-direction: column; background: var(--pb); color: var(--pf); padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px)); user-select: none; }
+.preach .muted { color: var(--pm); }
+.preach-bar { display: flex; align-items: center; gap: 12px; padding: 10px 0; flex-wrap: wrap; }
+.preach-clock { font-size: 20px; font-variant-numeric: tabular-nums; color: var(--pm); }
+.preach-timer { flex: 1; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; display: flex; gap: 10px; justify-content: center; align-items: baseline; flex-wrap: wrap; }
+.preach-pace { font-size: 14px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.preach-pace.ok { background: #1f3b2a; color: #8be0a4; } .preach-pace.early { background: #1e2f45; color: #9cc8f5; } .preach-pace.late { background: #4a1f1f; color: #ffaaa0; }
+.preach-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; min-width: 40px; justify-content: center; padding: 0 10px; border-radius: 10px; border: 1px solid var(--pl); background: transparent; color: var(--pf); font: inherit; cursor: pointer; }
+.preach-btn:disabled { opacity: 0.3; cursor: default; }
+.preach-btn.big { min-height: 56px; font-size: 16px; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.preach-btn.next { justify-content: flex-end; background: var(--pl); }
+.preach-progress { display: flex; gap: 4px; }
+.preach-progress button { flex: 1; height: 6px; border: 0; border-radius: 3px; background: var(--pl); cursor: pointer; padding: 0; }
+.preach-progress button.done { background: color-mix(in srgb, var(--pa) 45%, var(--pl)); } .preach-progress button.on { background: var(--pa); }
+.preach-main { flex: 1; overflow: auto; padding: 24px 0; max-width: 48ch; width: 100%; margin: 0 auto; line-height: 1.4; }
+.preach-label { font-size: 0.5em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pa); margin-bottom: 8px; }
+.preach-head { font-size: 1.35em; line-height: 1.15; margin: 0 0 0.5em; text-wrap: balance; font-family: var(--font-heading, Georgia, serif); }
+.preach-body { white-space: pre-line; }
+.preach-refs { display: flex; flex-direction: column; gap: 10px; margin-top: 0.8em; }
+.preach-ref button { font: inherit; font-size: 0.7em; color: var(--pa); background: transparent; border: 1px solid color-mix(in srgb, var(--pa) 50%, transparent); border-radius: 999px; padding: 4px 14px; cursor: pointer; }
+.preach-ref.on button { background: var(--pa); color: var(--pb); }
+.preach-ref p { font-size: 0.8em; margin: 8px 0 0; padding-left: 14px; border-left: 3px solid var(--pa); }
+.preach-nav { display: flex; gap: 10px; padding: 10px 0 14px; }

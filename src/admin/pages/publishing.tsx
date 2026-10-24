@@ -5,6 +5,7 @@ import type { CustomField, CustomFieldType, PublicPage, Sermon } from '@/api/adm
 import { AdminApi } from '@/api/endpoints';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { formatDate } from '@/lib/format';
+import { useOpenParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { SermonAiModal, useAi } from '../ai';
@@ -27,6 +28,7 @@ export function SermonsPage() {
   const [q, setQ] = useState('');
   const [series, setSeries] = useState('');
   const toast = useToast();
+  useOpenParam('open', (id) => { const s = list.data?.find((x) => x.id === id); if (s) setEditing(s); return !!s; }, [list.data]);
 
   const allSeries = useMemo(() => [...new Set((list.data ?? []).map((s) => s.series).filter(Boolean))].sort(), [list.data]);
   const shown = (list.data ?? []).filter((s) =>
