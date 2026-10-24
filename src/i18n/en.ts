@@ -822,6 +822,20 @@ export const en = {
   cue_end: "Ending",
   cue_stop: "Stop",
   cue_next: "Next song",
+  hospTitle: "Hospital help",
+  hospIntro: "Bring a meal or visit someone from church who is in hospital. Pick a slot so the family is never left alone or hungry.",
+  hospNone: "No one needs help right now. Thank you for asking.",
+  hospSince: "In hospital since {date}",
+  hospMeal: "Meal for the family",
+  hospVisit: "Visit",
+  hospTakeMeal: "I will bring a meal",
+  hospTakeVisit: "I will visit",
+  hospYou: "You",
+  hospCancel: "I can’t make it",
+  hospNotePh: "What you will bring (optional)",
+  hospCard: "{name} is in hospital",
+  hospHelp: "Help with meals and visits",
+  hospFamily: "Your family: see who is coming",
 };
 
 export type Strings = typeof en;

@@ -1442,3 +1442,12 @@ Feature `festival-care`, perm `care`. Kept apart from the person record and neve
 - `PUT /admin/festival-care/settings` `{festivals: string[], custom: [{name, date}], leadDays}`.
 - `PUT /admin/festival-care/families/:personId` `{home: 'mixed'|'other', firstGeneration, festivals?, note?}`; `DELETE` takes them off.
 - `PUT /admin/festival-care/records` `{festivalKey, date, personId, action?, by?, status?: 'planned'|'done', note?, clear?}`.
+
+## Hospital mode
+
+Feature `hospital-mode`. Notifications `hospital.admitted` (zone leaders and care staff) and `hospital.checkin` (the person, two days after discharge); the prayer chain gets a `prayer.chain` notice without the ward or any note.
+
+- `GET /admin/hospital` (perm care): stays, open first, with name, zone, filled and open slots.
+- `POST /admin/hospital` `{personId, hospital, ward?, note?, admittedOn?, days? (1–14, default 5), meals?, visits?, tellChain?}`: opens an urgent hospital care case and the rota.
+- `PATCH /admin/hospital/:id` `{hospital?, ward?, note?, addDays?}`; `POST /admin/hospital/:id/discharge` `{date?, checkIn?}`; `DELETE /admin/hospital/:id`.
+- `GET /me/hospital`: stays the member can help with (family, same zone, a shared group, or the prayer chain), no private note. `POST /me/hospital/:id/slots/:slotId` `{take: boolean, note?}`.

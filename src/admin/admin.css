@@ -902,3 +902,9 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 
 /* Festival care */
 .fc-row.fc-done { opacity: .7; }
+
+/* Hospital rota */
+.hs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.hs-day { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.hs-slot { display: grid; padding: 6px 8px; border-radius: 8px; background: var(--surface-2, color-mix(in srgb, var(--border) 35%, transparent)); }
+.hs-slot.taken { background: color-mix(in srgb, var(--ok, #16a34a) 14%, transparent); }

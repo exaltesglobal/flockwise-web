@@ -50,6 +50,8 @@ export const CATALOG: Record<NotificationKind, Entry> = {
   'meeting.minutes': { label: 'Meeting minutes', description: 'The minutes, decisions and action items after a meeting.', audience: 'Members of that meeting', rule: { email: true, push: true, whatsapp: false } },
   'meeting.action': { label: 'Action item due', description: 'The day before an action item from a meeting is due, to the person who owns it.', audience: 'The owner of the action', rule: { email: false, push: true, whatsapp: true } },
   'counsel.followup': { label: 'Counselling follow-up', description: 'On the day a follow-up is due. It never says who the note is about.', audience: 'The pastor who wrote the note', rule: { email: false, push: true, whatsapp: false } },
+  'hospital.admitted': { label: 'Someone is in hospital', description: 'The office marks a member as admitted: their zone leader and the pastors are told, with a link to the meal and visit rota.', audience: 'Zone leaders and care team', rule: { email: false, push: true, whatsapp: true } },
+  'hospital.checkin': { label: 'Home from hospital', description: 'Two days after someone is discharged, a short message to them asking how they are.', audience: 'The person who was in hospital', rule: { email: false, push: true, whatsapp: true } },
   'devotion.today': { label: "Leaders' devotional", description: "Each morning when the day's devotional for the leadership team is ready.", audience: 'Office staff', rule: { email: false, push: true, whatsapp: false } },
   'task.assigned': { label: 'Task given', description: 'A task on the team hub is given to someone.', audience: 'The person it is given to', rule: { email: true, push: true, whatsapp: false } },
 };

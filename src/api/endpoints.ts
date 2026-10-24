@@ -10,6 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
+import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
@@ -428,6 +429,10 @@ export const MemberApi = {
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
+  hospital: {
+    list: () => m.get<MemberHospitalStay[]>('/me/hospital'),
+    slot: (id: string, slotId: string, take: boolean, note?: string) => m.post<MemberHospitalStay>(`/me/hospital/${id}/slots/${slotId}`, { take, note }),
+  },
   cues: {
     get: (eventId: string) => m.get<CuePad>(`/me/services/${eventId}/cues`),
     send: (eventId: string, body: { kind: WorshipCueKind; text?: string } | { clear: true }) => m.post<CuePad>(`/me/services/${eventId}/cues`, body),
@@ -632,6 +637,13 @@ export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
 
 export const AdminApi = {
+  hospital: {
+    list: () => a.get<HospitalStayView[]>('/admin/hospital'),
+    admit: (body: { personId: string; hospital: string; ward?: string; note?: string; days?: number; meals?: boolean; visits?: boolean; tellChain?: boolean }) => a.post<HospitalStayView>('/admin/hospital', body),
+    update: (id: string, body: { hospital?: string; ward?: string; note?: string; addDays?: number }) => a.patch<HospitalStayView>(`/admin/hospital/${id}`, body),
+    discharge: (id: string, body: { date?: string; checkIn?: boolean } = {}) => a.post<HospitalStayView>(`/admin/hospital/${id}/discharge`, body),
+    remove: (id: string) => a.del<void>(`/admin/hospital/${id}`),
+  },
   festivalCare: {
     get: () => a.get<FestivalCareHub>('/admin/festival-care'),
     settings: (body: Partial<FestivalCareSettings>) => a.put<FestivalCareHub>('/admin/festival-care/settings', body),

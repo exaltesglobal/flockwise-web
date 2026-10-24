@@ -251,3 +251,8 @@ input.switch:checked::after { transform: translateX(18px); }
 .at-ev.on { border-left-color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, transparent); }
 .at-ghost { background: transparent; }
 @media (max-width: 600px) { .at-row { flex-wrap: wrap; } .at-vs { max-width: none; width: 100%; justify-content: flex-start; padding-left: 25px; } .at-year { width: 64px; } }
+
+/* Hospital help */
+.hsm-slot { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; }
+.hsm-slot.taken { background: color-mix(in srgb, var(--primary) 7%, transparent); }
+.hsm-home { text-decoration: none; color: inherit; border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }

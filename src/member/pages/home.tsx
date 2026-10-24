@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui';
 
 import { LiveVerseCard } from '../live-verse';
 import { LiveSongCard } from '../sing';
+import { HospitalCard } from '../hospital';
 import { EventCard } from './shared';
 
 export function MemberHomePage() {
@@ -32,6 +33,7 @@ export function MemberHomePage() {
       <QuickLinks />
       <LiveVerseCard />
       <LiveSongCard />
+      <HospitalCard />
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
         <div className="home-grid">
           <div>

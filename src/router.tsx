@@ -104,6 +104,7 @@ import { AskLivePage } from '@/admin/pages/ask-live';
 import { AskCodePage, AskPhonePage, AskScreenPage } from '@/public/ask';
 import { MemberSingPage, PublicSingPage } from '@/member/sing';
 import { MemberCuesPage } from '@/member/cues';
+import { MemberHospitalPage } from '@/member/hospital';
 import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
 import { OccasionsPage } from '@/admin/pages/occasions';
@@ -114,6 +115,7 @@ import { CampsPage } from '@/admin/pages/camps';
 import { RegistrationsPage } from '@/admin/pages/registrations';
 import { MorningListPage } from '@/admin/pages/morning-list';
 import { FestivalCarePage } from '@/admin/pages/festival-care';
+import { HospitalPage } from '@/admin/pages/hospital';
 import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
@@ -197,6 +199,7 @@ const routes = [
       { path: 'registrations', element: <RegistrationsPage /> },
       { path: 'morning-list', element: <MorningListPage /> },
       { path: 'festival-care', element: <FestivalCarePage /> },
+      { path: 'hospital', element: <HospitalPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -264,6 +267,7 @@ const routes = [
       { path: 'bible', element: <MemberBiblePage /> },
       { path: 'sing', element: <MemberSingPage /> },
       { path: 'cues/:eventId', element: <MemberCuesPage /> },
+      { path: 'hospital', element: <MemberHospitalPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },
