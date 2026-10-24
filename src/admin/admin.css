@@ -899,3 +899,6 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 .ak-bar > * { position: relative; }
 .ak-bar-fill { position: absolute !important; inset: 0 auto 0 0; background: color-mix(in srgb, var(--primary) 15%, transparent); }
 @media (max-width: 860px) { .ak-grid { grid-template-columns: 1fr; } .ak-side { position: static; } }
+
+/* Festival care */
+.fc-row.fc-done { opacity: .7; }

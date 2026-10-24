@@ -10,6 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
+import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
@@ -631,6 +632,13 @@ export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
 
 export const AdminApi = {
+  festivalCare: {
+    get: () => a.get<FestivalCareHub>('/admin/festival-care'),
+    settings: (body: Partial<FestivalCareSettings>) => a.put<FestivalCareHub>('/admin/festival-care/settings', body),
+    save: (personId: string, body: { home: FestivalHome; firstGeneration: boolean; festivals: string[]; note?: string }) => a.put<FestivalCareHub>(`/admin/festival-care/families/${personId}`, body),
+    remove: (personId: string) => a.del<FestivalCareHub>(`/admin/festival-care/families/${personId}`),
+    record: (body: { festivalKey: string; date: string; personId: string; action?: FestivalCareAction; by?: string | null; status?: 'planned' | 'done'; note?: string | null; clear?: boolean }) => a.put<FestivalCareHub>('/admin/festival-care/records', body),
+  },
   morningList: {
     get: () => a.get<MorningListView>('/admin/morning-list'),
     done: (personId: string, outcome: MorningCallOutcome, note?: string) => a.post<MorningListView>(`/admin/morning-list/${personId}/done`, { outcome, note }),

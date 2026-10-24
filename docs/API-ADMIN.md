@@ -1433,3 +1433,12 @@ Feature `worship-cues`. The worship leader taps a cue on a phone; the band view,
 ## Offering on the big screen
 
 Feature `offering-screen`. `POST /admin/services/:eventId/presentation {action:'offering', offering:{campaignId?, fundId?, qrId?, title?}}` puts the screens in mode `offering`. A campaign brings its fund, a fund brings its active QR code. `PresentationView.offering` (`OfferingScreen`) carries the title, goal, raised, percent, givers, today's total and gift count, and the QR (`imageUrl`, `payload`, public `url`). Totals only, never names. Staff views also get `offeringChoices` (active QR codes, active campaigns, funds).
+
+## Festival-season care
+
+Feature `festival-care`, perm `care`. Kept apart from the person record and never shown to members.
+
+- `GET /admin/festival-care`: `FestivalCareHub` with the church's settings, known festivals and their next dates, upcoming festivals (within lead days + 30) with a row per listed person (reason, suggested visit/gift/call/invite, zone leaders, plan record), the list itself, and "maybe" people (baptised in the last two years, alone from their home).
+- `PUT /admin/festival-care/settings` `{festivals: string[], custom: [{name, date}], leadDays}`.
+- `PUT /admin/festival-care/families/:personId` `{home: 'mixed'|'other', firstGeneration, festivals?, note?}`; `DELETE` takes them off.
+- `PUT /admin/festival-care/records` `{festivalKey, date, personId, action?, by?, status?: 'planned'|'done', note?, clear?}`.

@@ -815,6 +815,8 @@ export type ChurchSettings = Church & {
   obs?: Partial<ObsSettings>;
   /** Secret in the projector, stage and OBS overlay links so those screens need no sign-in. */
   screenKey?: string;
+  /** Festival-season care: which festivals to prepare for (see modules/festival-care.ts). */
+  festivalCare?: Partial<FestivalCareSettings>;
   /** Secret in the lobby prayer-wall kiosk link (see modules/prayer-wall.ts). */
   prayerKioskKey?: string;
   /** Whether anyone can send a prayer request from /pray (QR cards, kiosk). Default on. */
@@ -1923,6 +1925,8 @@ export type Collections = {
   askSessions: AskSession;
   askQuestions: AskQuestion;
   askPolls: AskPoll;
+  festivalFamilies: FestivalFamily;
+  festivalCare: FestivalCareRecord;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2027,7 +2031,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3314,4 +3318,42 @@ export type OfferingChoices = {
   codes: { id: string; name: string; fundId: string; fundName: string }[];
   campaigns: { id: string; name: string; fundId: string; goal: number | null }[];
   funds: { id: string; name: string; goal: number | null }[];
+};
+/** Festival-season care: people who may feel left out at home when the family celebrates a festival. Office (care) only. */
+export type FestivalHome = 'mixed' | 'other';
+export type FestivalFamily = {
+  /** = person id */
+  id: string;
+  /** Mixed: some of the family follow Jesus. Other: the rest of the family keep another faith. */
+  home: FestivalHome;
+  /** The first in their family to follow Jesus. */
+  firstGeneration: boolean;
+  /** Festival keys that matter for them; empty = all the church follows. */
+  festivals: string[];
+  note: string | null;
+  addedBy: string;
+  updatedAt: string;
+};
+export type FestivalCareAction = 'visit' | 'gift' | 'call' | 'invite';
+export type FestivalCareRecord = {
+  /** `${festivalKey}:${date}:${personId}` */
+  id: string; festivalKey: string; date: string; personId: string;
+  action: FestivalCareAction; by: string | null; status: 'planned' | 'done'; note: string | null; doneAt: string | null; updatedAt: string;
+};
+export type Festival = { key: string; name: string; date: string; custom?: boolean };
+export type FestivalCareSettings = { festivals: string[]; custom: { key: string; name: string; date: string }[]; leadDays: number };
+export type FestivalCareRow = {
+  personId: string; name: string; phone: string | null; householdName: string | null;
+  zone: string | null; zoneLeaders: string[];
+  reason: string; suggestion: { action: FestivalCareAction; text: string };
+  record: FestivalCareRecord | null;
+};
+export type FestivalCareHub = {
+  settings: FestivalCareSettings;
+  /** Every festival the app knows, for the settings. */
+  known: { key: string; name: string; next: string | null }[];
+  upcoming: (Festival & { daysAway: number; rows: FestivalCareRow[]; done: number })[];
+  families: (FestivalFamily & { name: string })[];
+  /** People who might belong on the list: baptised in the last two years and the only member in their household. */
+  maybe: { personId: string; name: string; why: string }[];
 };

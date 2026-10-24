@@ -58,6 +58,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/my-day', label: 'My day', icon: Sun, feature: 'my-day' },
         { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'], feature: 'care' },
         { to: '/admin/morning-list', label: "Today's calls", icon: Sunrise, perm: ['care'], feature: 'morninglist' },
+        { to: '/admin/festival-care', label: 'Festival care', icon: Gift, perm: ['care'], feature: 'festival-care' },
         { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'], feature: 'workflows' },
         { to: '/admin/vigils', label: 'Prayer vigils', icon: Hourglass, perm: ['care'], feature: 'vigils' },
         { to: '/admin/benevolence', label: 'Benevolence', icon: HandCoins, perm: ['care'], feature: 'benevolence' },

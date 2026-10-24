@@ -151,4 +151,5 @@ export const OFFICE_PHRASES = [
   "{n} volunteer reply still awaited",
   "Your day",
   "Ask the pastor",
+  "Festival care",
 ];

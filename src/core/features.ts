@@ -38,6 +38,7 @@ export const FEATURES: FeatureInfo[] = [
   // Care and growth
   { key: 'care', label: 'Care & prayer', body: 'Care cases, prayer requests and who has not been seen.', group: 'care', on: true, core: true },
   { key: 'workflows', label: 'Follow-ups', body: 'Step-by-step follow-up for visitors and new believers.', group: 'care', on: true },
+  { key: 'festival-care', label: 'Festival-season care', body: 'Before Diwali, Pongal, Onam or Christmas, see who may feel left out at home (first-generation believers, other-faith homes) with a visit or gift to plan for each.', group: 'care', on: true },
   { key: 'vigils', label: 'Prayer vigils', body: 'Fill a 24-hour or night prayer chain, slot by slot.', group: 'care', on: false },
   { key: 'benevolence', label: 'Benevolence', body: 'Requests for help, approvals and payments from the welfare fund.', group: 'care', on: false },
   { key: 'occasions', label: 'Weddings & funerals', body: 'Plan weddings, funerals and dedications with checklists.', group: 'care', on: false },
