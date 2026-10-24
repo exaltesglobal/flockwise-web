@@ -55,7 +55,7 @@ export function GroupsPage() {
           </div>
           {requests.data.data.map((r) => (
             <div key={r.id} className="list-row">
-              <Avatar name={r.person.name} />
+              <Avatar name={r.person.name} id={r.person.id} />
               <div className="grow">
                 <div style={{ fontWeight: 600 }}>{r.person.name}</div>
                 <div className="small muted">wants to join <b>{r.groupName}</b> · {formatRelative(r.requestedAt)}{r.person.phone ? ` · ${r.person.phone}` : ''}</div>
@@ -151,7 +151,7 @@ function GroupDrawer({ id, onClose, onEdit }: { id: string; onClose: () => void;
                 {data.members.length === 0 && <p className="card-body muted small">No members yet.</p>}
                 {data.members.map((m) => (
                   <div key={m.id} className="list-row">
-                    <Avatar name={m.name} />
+                    <Avatar name={m.name} id={m.id} />
                     <div className="grow">
                       <Link to={`/admin/people/${m.id}`} style={{ fontWeight: 600 }}>{m.name}</Link>
                       <div className="small muted">{m.phone ?? ''}</div>

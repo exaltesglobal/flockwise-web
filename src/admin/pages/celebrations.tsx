@@ -71,7 +71,7 @@ export function CelebrationsPage() {
     const Icon = info.icon;
     return (
       <div key={`${c.personId}-${c.kind}`} className="list-row">
-        <Avatar name={c.name} />
+        <Avatar name={c.name} id={c.personId} />
         <div className="grow" style={{ minWidth: 0 }}>
           <Link to={`/admin/people/${c.personId}`} style={{ fontWeight: 600, color: 'inherit' }}>{c.name}</Link>
           <div className="small muted row wrap" style={{ gap: 6 }}>

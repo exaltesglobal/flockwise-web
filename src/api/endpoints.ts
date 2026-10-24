@@ -253,6 +253,9 @@ export const MemberApi = {
   me: {
     get: () => m.get<Member>('/me'),
     update: (patch: Partial<Pick<Member, 'firstName' | 'lastName' | 'email' | 'phone' | 'language'>>) => m.patch<Member>('/me', patch),
+    setPhoto: (image: string) => m.put<PhotoResult>('/me/photo', { image }),
+    removePhoto: () => m.del<PhotoResult>('/me/photo'),
+    setAvatar: (avatar: number | null) => m.put<PhotoResult>('/me/avatar', { avatar }),
     preferences: () => m.get<MemberPreferences>('/me/preferences'),
     updatePreferences: (patch: { consent?: Partial<MemberPreferences['consent']>; campusId?: string | null; prayerChain?: boolean; titheDay?: number | null; titheAmount?: number | null }) => m.patch<MemberPreferences>('/me/preferences', patch),
     privacy: () => m.get<MemberPrivacy>('/me/privacy'),
@@ -552,6 +555,7 @@ export type RoleInfo = { role: StaffRole; label: string; permissions: Permission
 export type RoleChoice = { role: StaffRole; roleId?: string | null; scopeIds?: string[] };
 export type RoleView = CustomRole & { holders: number };
 export type RoleInput = { name: string; description?: string; permissions: Permission[]; scope: RoleScope };
+export type PhotoResult = { id: string; photoUrl: string | null; avatar: number | null };
 export type Duplicate = { reason: string; people: { id: string; name: string; phone: string | null; email: string | null }[] };
 export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
@@ -571,6 +575,9 @@ export const AdminApi = {
     create: (input: PersonInput) => a.post<Person>('/admin/people', input),
     update: (id: string, input: Partial<PersonInput>) => a.patch<Person>(`/admin/people/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/people/${id}`),
+    setPhoto: (id: string, image: string) => a.put<PhotoResult>(`/admin/people/${id}/photo`, { image }),
+    removePhoto: (id: string) => a.del<PhotoResult>(`/admin/people/${id}/photo`),
+    setAvatar: (id: string, avatar: number | null) => a.put<PhotoResult>(`/admin/people/${id}/avatar`, { avatar }),
     import: (rows: ImportPersonRow[], source: ImportSource, dedupeBy: 'phone' | 'email') =>
       a.post<ImportResult>('/admin/people/import', { rows, source, dedupeBy }),
     duplicates: () => a.get<Duplicate[]>('/admin/people-duplicates'),
@@ -1196,6 +1203,7 @@ export const AdminApi = {
   },
   bible: (ref: string, tr: 'kjv' | 'web' = 'kjv') => a.get<BiblePassage>(`/admin/bible${qs({ ref, tr })}`),
   songStats: () => a.get<SongStats>('/admin/songs/stats'),
+  faces: () => a.get<Record<string, { p: string | null; a: number | null }>>('/admin/faces'),
   ccli: (from?: string, to?: string) => a.get<{ from: string; to: string; rows: CcliRow[] }>(`/admin/songs/ccli-report${qs({ from, to })}`),
   headcounts: {
     record: (eventId: string, area: string, count: number) => a.post<CheckinSummary>(`/admin/checkin/${eventId}/headcounts`, { area, count }),

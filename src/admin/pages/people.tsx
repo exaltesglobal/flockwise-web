@@ -1,4 +1,4 @@
-import { CalendarCheck, Copy, Download, FileText, Gift, HandHeart, HeartHandshake, Pencil, Plus, Search, Trash2, Upload, Users } from 'lucide-react';
+import { CalendarCheck, Camera, Copy, Download, FileText, Gift, HandHeart, HeartHandshake, Pencil, Plus, Search, Trash2, Upload, Users } from 'lucide-react';
 import { Fragment, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
@@ -7,6 +7,8 @@ import { languages } from '@/i18n';
 import { useCan } from '@/lib/perms';
 import { AdminApi } from '@/api/endpoints';
 import { Avatar, Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { PhotoEditor } from '@/components/photo-editor';
+import { setFace } from '@/lib/faces';
 import { downloadCsv, formatDate, formatDay, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -157,7 +159,7 @@ export function PeoplePage() {
                   <tr key={p.id} className="clickable" onClick={() => navigate(`/admin/people/${p.id}`)}>
                     <td>
                       <div className="row" style={{ gap: 10 }}>
-                        <Avatar name={`${p.firstName} ${p.lastName}`} />
+                        <Avatar name={`${p.firstName} ${p.lastName}`} person={p} />
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontWeight: 600 }}>{p.firstName} {p.lastName}</div>
                           <div className="small muted ellipsis" style={{ maxWidth: 240 }}>{p.email ?? '—'}</div>
@@ -223,6 +225,7 @@ function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; 
   const toast = useToast();
   const can = useCan();
   const remove = useAction(AdminApi.people.remove);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const p = data?.person;
 
   async function openCase() {
@@ -250,7 +253,18 @@ function PersonDrawer({ id, onClose, onEdit, onDeleted, onOpen }: { id: string; 
       {error ? <ErrorState error={error} onRetry={reload} /> : !data || !p ? <Loading /> : (
         <div className="stack lg">
           <div className="row">
-            <Avatar name={`${p.firstName} ${p.lastName}`} size="lg" />
+            {can('people.edit') ? (
+              <button className="avatar-edit" onClick={() => setPhotoOpen(true)} aria-label="Change picture" title="Change picture">
+                <Avatar name={`${p.firstName} ${p.lastName}`} person={p} size="lg" />
+                <span className="badge-cam"><Camera size={12} /></span>
+              </button>
+            ) : <Avatar name={`${p.firstName} ${p.lastName}`} person={p} size="lg" />}
+            {photoOpen && (
+              <PhotoEditor who={{ id: p.id, name: `${p.firstName} ${p.lastName}`, photoUrl: p.photoUrl, avatar: p.avatar }} onClose={() => setPhotoOpen(false)}
+                onSavePhoto={async (img) => { const r = await AdminApi.people.setPhoto(p.id, img); setFace(p.id, { p: r.photoUrl, a: r.avatar }); reload(); }}
+                onRemovePhoto={async () => { const r = await AdminApi.people.removePhoto(p.id); setFace(p.id, { p: r.photoUrl, a: r.avatar }); reload(); }}
+                onPickAvatar={async (n) => { const r = await AdminApi.people.setAvatar(p.id, n); setFace(p.id, { p: r.photoUrl, a: r.avatar }); reload(); }} />
+            )}
             <div className="grow">
               <h2>{p.firstName} {p.lastName}</h2>
               <div className="row wrap" style={{ gap: 6, marginTop: 6 }}>
@@ -460,8 +474,8 @@ function PersonForm({ person, onClose, onSaved }: { person: Person | null; onClo
         )}
         {section === 'basics' && (
           <div className="grid cols-2">
-            <Field label="First name" error={fe.firstName}><input className="input" autoFocus value={form.firstName} onChange={(e) => set('firstName', e.target.value)} /></Field>
-            <Field label="Last name" error={fe.lastName}><input className="input" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} /></Field>
+            <Field label="First name *" error={fe.firstName}><input className="input" autoFocus required value={form.firstName ?? ''} onChange={(e) => set('firstName', e.target.value)} /></Field>
+            <Field label="Last name *" error={fe.lastName}><input className="input" required value={form.lastName ?? ''} onChange={(e) => set('lastName', e.target.value)} /></Field>
             <Field label="Email" hint="Used for app sign-in codes"><input className="input" type="email" value={form.email ?? ''} onChange={(e) => set('email', e.target.value)} /></Field>
             <Field label="Mobile" hint="For calls, SMS and WhatsApp"><input className="input" type="tel" placeholder="+91 98765 43210" value={form.phone ?? ''} onChange={(e) => set('phone', e.target.value)} /></Field>
             <Field label="Status">

@@ -166,7 +166,7 @@ function AssignModal({ eventId, slot, onClose, onDone }: { eventId: string; slot
             {people.data.filter((p) => !taken.has(p.personId)).length === 0 && <p className="card-body small muted">No one on this team plays this position yet. Add someone below or in the Teams tab.</p>}
             {people.data.filter((p) => !taken.has(p.personId)).map((p) => (
               <div key={p.personId} className="list-row">
-                <Avatar name={p.name} />
+                <Avatar name={p.name} id={p.personId} />
                 <div className="grow">
                   <b>{p.name}</b>
                   <div className="small muted">
@@ -341,7 +341,7 @@ function LoginsPane() {
       <div className="card-head"><h2>Team app logins</h2><span className="small muted">Send one from a team's Members list. Each volunteer picks their team at sign-in and sees only their own rota.</span></div>
       {list.data.length === 0 ? <Empty icon={<Smartphone size={28} />} title="No app logins yet" body="Open a team, choose Members, and press “Send app login” next to a volunteer." /> : list.data.map((l) => (
         <div key={l.personId} className="list-row">
-          <Avatar name={l.name} />
+          <Avatar name={l.name} id={l.personId} />
           <div className="grow">
             <b>{l.name}</b> <span className="small muted">· {l.email}</span>
             <div className="small muted">

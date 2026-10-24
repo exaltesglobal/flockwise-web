@@ -111,7 +111,7 @@ export function MemberGroupPage() {
       <section className="stack">
         <h2>{t('members', { count: members.length })}</h2>
         <div className="card card-pad row wrap" style={{ gap: 12 }}>
-          {members.map((m) => <span key={m.id} className="row small" style={{ gap: 6 }}><Avatar name={m.name} /> {m.name}</span>)}
+          {members.map((m) => <span key={m.id} className="row small" style={{ gap: 6 }}><Avatar name={m.name} id={m.id} /> {m.name}</span>)}
         </div>
       </section>
     </>

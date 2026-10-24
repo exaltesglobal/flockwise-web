@@ -46,7 +46,7 @@ export function PersonSearch({ onPick, placeholder = 'Search people by name, pho
                 setResults([]);
               }}
             >
-              <Avatar name={`${p.firstName} ${p.lastName}`} />
+              <Avatar name={`${p.firstName} ${p.lastName}`} person={p} />
               <span className="grow">
                 <b>{p.firstName} {p.lastName}</b>
                 <span className="small muted ellipsis" style={{ display: 'block' }}>{[p.householdName, p.phone, p.email].filter(Boolean).join(' · ')}</span>
@@ -64,7 +64,7 @@ export function PersonField({ value, onChange, placeholder }: { value: PickedPer
   if (value)
     return (
       <div className="chip-field">
-        <Avatar name={value.name} />
+        <Avatar name={value.name} id={value.id} />
         <b className="grow">{value.name}</b>
         <button type="button" className="btn ghost icon sm" onClick={() => onChange(null)} aria-label="Clear"><X size={15} /></button>
       </div>

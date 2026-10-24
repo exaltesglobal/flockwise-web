@@ -162,7 +162,7 @@ export function DashboardPage() {
           {data.birthdaysThisWeek.length === 0 && <p className="card-body muted small">No birthdays in the next 7 days.</p>}
           {data.birthdaysThisWeek.map((b) => (
             <Link key={b.id} to={`/admin/people/${b.id}`} className="list-row" style={{ color: 'inherit', textDecoration: 'none' }}>
-              <Avatar name={b.name} />
+              <Avatar name={b.name} id={b.id} />
               <div className="grow ellipsis" style={{ fontWeight: 600 }}>{b.name}</div>
               <span className="small muted">{formatDay(b.date)}</span>
             </Link>

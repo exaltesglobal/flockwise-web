@@ -637,6 +637,20 @@ export const en = {
   campSignUp: "Sign up",
   campFull: "Full",
   campDone: "Signed up. See you there!",
+  peTitle: "Profile picture",
+  pePhoto: "Photo",
+  peAvatars: "Avatar",
+  peChoose: "Choose a photo",
+  peDrag: "Drag to move, use the slider to zoom.",
+  peZoom: "Zoom",
+  peRemove: "Remove photo",
+  peAuto: "Pick for me",
+  peAutoHint: "Shown when there is no photo.",
+  peChange: "Change picture",
+  nameTitle: "Your name",
+  nameBody: "Please add your first and last name so your church knows who you are.",
+  nameEdit: "Edit name",
+  nameRequired: "First name and last name are both needed.",
 };
 
 export type Strings = typeof en;

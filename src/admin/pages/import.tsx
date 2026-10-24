@@ -243,7 +243,7 @@ export function ImportPage() {
                   <tbody>
                     {people.slice(0, 5).map((p, i) => (
                       <tr key={i}>
-                        <td>{p.firstName || <span style={{ color: 'var(--danger)' }}>Missing</span>} {p.lastName}</td>
+                        <td>{p.firstName || <span style={{ color: 'var(--danger)' }}>Missing</span>} {p.lastName || <span style={{ color: 'var(--danger)' }}>Missing</span>}</td>
                         <td className="mono">{p.phone ?? '—'}</td>
                         <td>{p.email ?? '—'}</td>
                         <td>{p.status ?? 'visitor'}</td>

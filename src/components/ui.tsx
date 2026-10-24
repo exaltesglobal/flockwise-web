@@ -2,7 +2,8 @@ import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import type { ApiError } from '@/api/errors';
-import { initials } from '@/lib/format';
+import { DrawnAvatar, avatarFor } from '@/components/avatars';
+import { useFace } from '@/lib/faces';
 
 export function Logo({ reverse = false, height = 28 }: { reverse?: boolean; height?: number }) {
   const src = (v: 'color' | 'reverse') => `${import.meta.env.BASE_URL}brand/logo-${v}.svg`;
@@ -74,8 +75,18 @@ export function Empty({ icon, title, body, action }: { icon?: ReactNode; title: 
   );
 }
 
-export function Avatar({ name, size }: { name: string; size?: 'lg' }) {
-  return <span className={`avatar ${size ?? ''}`}>{initials(name)}</span>;
+/**
+ * A person's face: their photo, or else one of the 100 drawn avatars (the one they picked, or one
+ * chosen from their id so it never changes). Pass `person` when you have it; `name` alone still works.
+ */
+export function Avatar({ name, size, person, photo, avatar, id }: { name: string; size?: 'lg' | 'xl' | 'sm'; person?: { id?: string; photoUrl?: string | null; avatar?: number | null }; photo?: string | null; avatar?: number | null; id?: string | null }) {
+  const pid = id ?? person?.id;
+  const face = useFace(pid ?? undefined);
+  const url = photo ?? person?.photoUrl ?? face?.p ?? null;
+  const [broken, setBroken] = useState(false);
+  if (url && !broken) return <span className={`avatar photo ${size ?? ''}`} title={name}><img src={url} alt="" loading="lazy" onError={() => setBroken(true)} /></span>;
+  const n = avatar ?? person?.avatar ?? face?.a ?? avatarFor(pid || name || '');
+  return <span className={`avatar drawn ${size ?? ''}`} title={name}><DrawnAvatar n={n} /></span>;
 }
 
 type FieldProps = { label: string; hint?: string; error?: string; children: ReactNode };

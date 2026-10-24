@@ -1,4 +1,4 @@
-import { ChevronRight, Download, LogOut, QrCode as QrIcon, UsersRound } from 'lucide-react';
+import { ChevronRight, Download, LogOut, Pencil, QrCode as QrIcon, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -10,11 +10,12 @@ import { QrCode } from '@/components/qr';
 import { ServerSettings } from '@/components/server-settings';
 import { canOverrideServer } from '@/lib/config';
 import { AppearancePanel } from '@/components/theme-picker';
-import { Avatar, FormError, Loading, useToast } from '@/components/ui';
+import { FormError, Loading, useToast } from '@/components/ui';
 import { languages, useT, type StringKey } from '@/i18n';
 import { downloadJson, formatDate } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
+import { MyPhotoButton, NameModal } from '../profile-bits';
 
 export function MemberMePage() {
   const { t } = useT();
@@ -24,6 +25,7 @@ export function MemberMePage() {
   const prefs = useApi(MemberApi.me.preferences);
   const campuses = useApi(MemberApi.campuses);
   const toast = useToast();
+  const [nameOpen, setNameOpen] = useState(false);
 
   async function setLanguage(language: LanguageCode) {
     const member = await MemberApi.me.update({ language });
@@ -55,14 +57,15 @@ export function MemberMePage() {
       <div className="cols-auto">
       <div className="col-stack">
       <div className="card card-pad row">
-        <Avatar name={`${m.firstName} ${m.lastName}`} size="lg" />
+        <MyPhotoButton />
         <div className="grow">
-          <h2>{m.firstName} {m.lastName}</h2>
+          <h2 className="row" style={{ gap: 6 }}>{`${m.firstName ?? ''} ${m.lastName ?? ''}`.trim()} <button className="btn sm ghost icon" onClick={() => setNameOpen(true)} aria-label={t('nameEdit')} title={t('nameEdit')}><Pencil size={14} /></button></h2>
           <div className="small muted">{[m.phone, m.email].filter(Boolean).join(' · ')}</div>
           {m.householdName && <div className="small muted">{t('household')}: {m.householdName}</div>}
         </div>
       </div>
 
+      {nameOpen && <NameModal onClose={() => setNameOpen(false)} />}
       <Link to="/app/family" className="card card-pad row" style={{ gap: 12 }}>
         <UsersRound size={22} className="muted" />
         <div className="grow" style={{ minWidth: 0 }}>

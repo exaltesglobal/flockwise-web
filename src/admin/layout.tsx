@@ -10,6 +10,7 @@ import { ChurchLogo } from '@/components/brand';
 import { Avatar, Logo } from '@/components/ui';
 import { ThemeButton } from '@/components/theme-picker';
 import { ROLE_LABELS, useCan } from '@/lib/perms';
+import { loadFaces } from '@/lib/faces';
 import { useSession } from '@/lib/session';
 import type { Permission } from '@/api/admin-types';
 import { LegalFooter } from '@/legal/legal';
@@ -278,6 +279,7 @@ export function AdminLayout() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
+  useEffect(() => { void loadFaces(); }, []);
 
   if (!session?.staff) return <Navigate to="/admin/sign-in" replace state={{ from: location.pathname }} />;
   const name = `${session.member.firstName} ${session.member.lastName}`;
@@ -311,7 +313,7 @@ export function AdminLayout() {
           </div>
           <AdminNav path={location.pathname} />
           <div className="admin-user">
-            <Avatar name={name} />
+            <Avatar name={name} person={session.member} />
             <div className="grow">
               <div className="ellipsis">{name}</div>
               <small>{ROLE_LABELS[session.staff.role]}</small>

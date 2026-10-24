@@ -46,7 +46,7 @@ function MemberRow({ m, onEdit }: { m: FamilyMember; onEdit: () => void }) {
   const { t } = useT();
   return (
     <div className="card card-pad row fam-row" style={{ gap: 12 }}>
-      <Avatar name={m.name} />
+      <Avatar name={m.name} person={m} />
       <div className="grow" style={{ minWidth: 0 }}>
         <b>{m.name}</b>
         <div className="small muted">
@@ -144,7 +144,7 @@ function MemberModal({ member, onClose, onSaved }: { member: FamilyMember | null
       <div className="stack">
         <div className="grid cols-2">
           <Field label={t('familyFirstName')}><input className="input" autoFocus value={f.firstName} onChange={(e) => set('firstName', e.target.value)} /></Field>
-          <Field label={t('familyLastName')}><input className="input" value={f.lastName ?? ''} onChange={(e) => set('lastName', e.target.value)} /></Field>
+          <Field label={t('familyLastName')}><input className="input" required value={f.lastName ?? ''} onChange={(e) => set('lastName', e.target.value)} /></Field>
         </div>
         <Field label={t('familyBirthDate')}><input className="input" type="date" max={new Date().toISOString().slice(0, 10)} value={f.birthDate ?? ''} onChange={(e) => set('birthDate', e.target.value || null)} /></Field>
         {'phone' in f && <Field label={t('mobile')}><input className="input" type="tel" value={f.phone ?? ''} onChange={(e) => set('phone', e.target.value)} /></Field>}
