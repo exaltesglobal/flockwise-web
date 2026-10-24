@@ -73,8 +73,8 @@ const clean = (html: string) => decode(html.replace(/<[^>]+>/g, '')).replace(/[ 
 /** Footnote markers (with their pop-up text) and bracketed cross references like "(Eccl. 11:5)" come out of the verse text. */
 function stripNotes(html: string) {
   return html
-    .replace(/<a[^>]*class="notemark"[^>]*>[\s\S]*?<\/a>/g, '')
-    .replace(/<span class="bdit">([\s\S]*?)<\/span>/g, (m, inner: string) => (/^\s*\(.*\d+\s*[:.]\s*\d+.*\)\s*$/.test(clean(inner)) ? '' : m));
+    .replace(/<a[^>]*class=["']notemark["'][^>]*>[\s\S]*?<\/a>/g, '')
+    .replace(/<span class=["']bdit["']>([\s\S]*?)<\/span>/g, (m, inner: string) => (/^\s*\(.*\d+\s*[:.]\s*\d+.*\)\s*$/.test(clean(inner)) ? '' : m));
 }
 
 const HEADING = /^(s\d?|ms\d?|sp|qa|cl)$/;
@@ -86,28 +86,29 @@ export type ParsedChapter = { bookName: string | null; intro: string | null; ver
 
 /** Reads one eBible.org chapter page into verses, section headings, a psalm's title line, footnotes and the previous and next chapters. */
 export function parseEbibleChapter(html: string): ParsedChapter {
-  const start = html.indexOf('<div class="main">');
-  const navs = [...html.matchAll(/<ul class="tnav">([\s\S]*?)<\/ul>/g)];
+  const start = html.search(/<div class=["']main["']>/);
+  const navs = [...html.matchAll(/<ul class=["']tnav["']>([\s\S]*?)<\/ul>/g)];
   const nav = navs[0]?.[1] ?? '';
   const link = (label: string) => {
-    const m = new RegExp(`<a href="[^"]*/([0-9A-Z]{3})(\\d{2,3})\\.htm">${label}</a>`).exec(nav);
+    const m = new RegExp(`<a href=["'](?:[^"']*/)?([0-9A-Z]{3})(\\d{2,3})\\.htm["']>${label}</a>`).exec(nav);
     return m && bookIndex(m[1]) >= 0 ? { book: m[1], chapter: Number(m[2]) } : null;
   };
-  const bookName = /<li><a href="[^"]*index\.htm">([^<]*)<\/a><\/li>/.exec(nav)?.[1];
-  const endNav = start >= 0 ? html.indexOf('<ul class="tnav">', start) : -1;
-  const main = start >= 0 ? html.slice(start + 18, endNav > start ? endNav : undefined) : '';
+  const bookName = /<li><a href=["'](?:[^"']*\/)?index\.htm["']>([^<]*)<\/a><\/li>/.exec(nav)?.[1];
+  const afterMain = start >= 0 ? html.slice(start).replace(/^<div[^>]*>/, '') : '';
+  const endNav = afterMain.search(/<ul class=["']tnav["']>/);
+  const main = endNav >= 0 ? afterMain.slice(0, endNav) : afterMain;
 
   const verses: BibleVerse[] = [];
   let intro: string | null = null;
   let heading: string | null = null;
   let current: BibleVerse | null = null;
-  for (const b of main.matchAll(/<div class="([^"]+)"[^>]*>([\s\S]*?)<\/div>/g)) {
+  for (const b of main.matchAll(/<div class=["']([^"']+)["'][^>]*>([\s\S]*?)<\/div>/g)) {
     const cls = b[1].split(' ')[0];
     if (SKIP.test(cls)) continue;
     const body = stripNotes(b[2]);
     if (HEADING.test(cls)) { const t = clean(body); if (t) heading = heading ? `${heading} · ${t}` : t; continue; }
     if (cls === 'd' && !verses.length) { intro = clean(body) || null; continue; }
-    const parts = body.split(/<span class="verse" id="V(\d+)">([\s\S]*?)<\/span>/);
+    const parts = body.split(/<span class=["']verse["'] id=["']V(\d+)["']>([\s\S]*?)<\/span>/);
     const poetry = POETRY.test(cls);
     const lead = clean(parts[0]);
     if (lead && current) current.text += `\n${lead}`;
@@ -129,10 +130,10 @@ export function parseEbibleChapter(html: string): ParsedChapter {
   for (const v of verses) v.text = v.text.replace(/ +\n/g, '\n').trim();
 
   const notes: BibleChapterNote[] = [];
-  for (const f of html.matchAll(/<p class="f" id="FN\d+">([\s\S]*?)<\/p>/g)) {
-    const ref = /<a class="notebackref"[^>]*>([^<]*)<\/a>/.exec(f[1]);
+  for (const f of html.matchAll(/<p class=["']f["'] id=["']FN\d+["']>([\s\S]*?)<\/p>/g)) {
+    const ref = /<a class=["']notebackref["'][^>]*>([^<]*)<\/a>/.exec(f[1]);
     const verse = Number(/[:.](\d+)/.exec(ref?.[1] ?? '')?.[1] ?? 0);
-    const text = clean(f[1].replace(/<span class="notemark">[\s\S]*?<\/span>/, '').replace(/<a class="notebackref"[^>]*>[^<]*<\/a>/, ''));
+    const text = clean(f[1].replace(/<span class=["']notemark["']>[\s\S]*?<\/span>/, '').replace(/<a class=["']notebackref["'][^>]*>[^<]*<\/a>/, ''));
     if (verse && text) notes.push({ verse, text });
   }
   return { bookName: bookName ? clean(bookName) : null, intro, verses: verses.filter((v) => v.text), notes, prev: link('&lt;'), next: link('&gt;') };
@@ -141,7 +142,7 @@ export function parseEbibleChapter(html: string): ParsedChapter {
 /** Reads a translation's book list (code and the book's name in that language) from its eBible.org index page. */
 export function parseEbibleIndex(html: string): { code: string; name: string }[] {
   const out: { code: string; name: string }[] = [];
-  for (const m of html.matchAll(/<a(?: class="[^"]*")? href="[^"]*\/([0-9A-Z]{3})\d{2,3}\.htm">([^<]+)<\/a>/g)) {
+  for (const m of html.matchAll(/<a(?: class=["'][^"']*["'])? href=["'](?:[^"']*\/)?([0-9A-Z]{3})\d{2,3}\.htm["']>([^<]+)<\/a>/g)) {
     if (bookIndex(m[1]) >= 0 && !out.some((b) => b.code === m[1])) out.push({ code: m[1], name: clean(m[2]) });
   }
   return out;
