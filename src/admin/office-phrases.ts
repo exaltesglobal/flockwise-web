@@ -157,4 +157,5 @@ export const OFFICE_PHRASES = [
   "Grief calendar",
   "Bible stories to listen to",
   "Journey map",
+  "Family altar",
 ];
