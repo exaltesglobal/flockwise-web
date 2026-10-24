@@ -113,6 +113,8 @@ export type Env = {
   http?: (req: HttpRequest) => Promise<HttpResponse>;
   /** Every free-to-share Bible the server offers (the full eBible.org list). Absent in the demo, which offers the featured few. */
   bibleCatalog?: BibleTranslationInfo[];
+  /** A small on-disk cache for big downloads (whole Bibles, cross references), so a restart does not fetch them again. */
+  fileCache?: { get(key: string): Promise<Uint8Array | null>; put(key: string, data: Uint8Array): Promise<void> };
   /** Google service-account signing (access tokens and V4 signed URLs). Absent when the host cannot sign. */
   google?: {
     accessToken(key: GoogleKey, scope: string): Promise<string>;

@@ -344,7 +344,17 @@ function SearchPanel({ tr, book, names, onClose, onOpen }: { tr: string; book: s
   const [scope, setScope] = useState<'all' | 'ot' | 'nt' | 'book'>('all');
   const [asked, setAsked] = useState<{ q: string; scope: string } | null>(null);
   const [onlyBook, setOnlyBook] = useState<string | null>(null);
-  const res = useApi(() => (asked ? PublicApi.bibleSearch(tr, asked.q, asked.scope || undefined) : Promise.resolve(null)), [tr, asked?.q, asked?.scope]);
+  // The first search in a Bible downloads it on the server; poll until it is ready instead of one long wait.
+  const [ready, setReady] = useState<boolean | string>(false);
+  useEffect(() => {
+    let stop = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const check = () => PublicApi.bibleReady(tr).then((r) => { if (stop) return; if (r.ready) setReady(true); else if (r.failed) setReady(r.failed); else timer = setTimeout(check, 3000); }, (e: Error) => !stop && setReady(e.message));
+    setReady(false);
+    void check();
+    return () => { stop = true; clearTimeout(timer); };
+  }, [tr]);
+  const res = useApi(() => (asked && ready === true ? PublicApi.bibleSearch(tr, asked.q, asked.scope || undefined) : Promise.resolve(null)), [tr, asked?.q, asked?.scope, ready]);
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (q.trim().length < 2) return;
@@ -366,7 +376,8 @@ function SearchPanel({ tr, book, names, onClose, onOpen }: { tr: string; book: s
           <button className="btn primary"><Search size={15} /></button>
         </form>
         <Segmented value={scope} onChange={setScope} options={[{ value: 'all', label: t('bibleWhole') }, { value: 'ot', label: t('bibleOT') }, { value: 'nt', label: t('bibleNT') }, { value: 'book', label: `${t('bibleThisBook')} · ${bookName(names, book)}` }]} />
-        {!asked ? <p className="small muted">{t('bibleSearchFirst')}</p> : res.error ? <ErrorState error={res.error} onRetry={res.reload} /> : !res.data ? <Loading /> : (
+        {typeof ready === 'string' ? <p className="small" style={{ color: 'var(--danger)' }}>{ready}</p> : !ready && <p className="small muted row" style={{ gap: 8 }}><span className="spinner" aria-hidden style={{ width: 14, height: 14, flex: "none" }} /> {t('bibleSearchFirst')}</p>}
+        {!asked || ready !== true ? null : res.error ? <ErrorState error={res.error} onRetry={res.reload} /> : !res.data ? <Loading /> : (
           <div className="stack" style={{ gap: 8 }}>
             {res.data.reference && (
               <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => onOpen(res.data!.reference!.book, res.data!.reference!.chapter, res.data!.reference!.verse)}>

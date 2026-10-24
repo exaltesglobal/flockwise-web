@@ -438,6 +438,7 @@ export const PublicApi = {
   bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
   bibleBooks: (tr: string) => m.get<BibleBookInfo[]>(`/public/bible/${encodeURIComponent(tr)}/books`),
   bibleChapter: (tr: string, book: string, chapter: number) => m.get<BibleChapter>(`/public/bible/${encodeURIComponent(tr)}/${book}/${chapter}`),
+  bibleReady: (tr: string) => m.get<{ ready: boolean; failed?: string }>(`/public/bible/${encodeURIComponent(tr)}/ready`),
   bibleSearch: (tr: string, q: string, scope?: string) => m.get<BibleSearch>(`/public/bible/${encodeURIComponent(tr)}/search${qs({ q, scope })}`),
   bibleRefs: (tr: string, book: string, chapter: number, verse: number) => m.get<{ refs: BibleCrossRef[]; source: string }>(`/public/bible/${encodeURIComponent(tr)}/refs/${book}/${chapter}/${verse}`),
   church: () => m.get<PublicChurch>('/public/church'),
