@@ -1,4 +1,4 @@
-import { Armchair, BedDouble, Flower2, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BedDouble, Flower2, Headphones, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -109,6 +109,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/livestream', label: 'Livestream', icon: Radio, perm: ['services', 'events', 'comms'], feature: 'livestream' },
         { to: '/admin/recap', label: 'Sunday in 60 seconds', icon: Clapperboard, perm: ['comms'], feature: 'recap' },
         { to: '/admin/reading', label: 'Bible reading plan', icon: BookOpenCheck, feature: 'reading' },
+        { to: '/admin/stories', label: 'Bible stories to listen to', icon: Headphones, perm: ['comms'], feature: 'story-line' },
       ] },
       one({ to: '/admin/volunteers', label: 'Volunteers', icon: HandHeart, perm: ['volunteers'], feature: 'volunteers' }),
       { label: 'Check-in', icon: ScanLine, pages: [

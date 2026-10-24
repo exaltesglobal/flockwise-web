@@ -854,6 +854,12 @@ export const en = {
   moveCardBody: "Find a church in your new city",
   movePending: "Your pastors will introduce you to {church} and let them know you are coming.",
   moveNone: "We don't know a church in {city} yet. Tap Tell my church and your pastors will help you find one.",
+  storyFrom: "A Bible story from {church}",
+  storyTap: "Tap to listen",
+  storyHeard: "I listened",
+  storyPray: "Please pray for me",
+  storyThanks: "Thank you. God bless you.",
+  storyPrayThanks: "Thank you. A pastor will call you to pray with you.",
 };
 
 export type Strings = typeof en;

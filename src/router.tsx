@@ -119,6 +119,8 @@ import { FestivalCarePage } from '@/admin/pages/festival-care';
 import { HospitalPage } from '@/admin/pages/hospital';
 import { MovesPage } from '@/admin/pages/moves';
 import { GriefPage } from '@/admin/pages/grief';
+import { StoryLinePage } from '@/admin/pages/story-line';
+import { PublicStoryPage } from '@/public/story';
 import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
@@ -205,6 +207,7 @@ const routes = [
       { path: 'hospital', element: <HospitalPage /> },
       { path: 'moves', element: <MovesPage /> },
       { path: 'grief', element: <GriefPage /> },
+      { path: 'stories', element: <StoryLinePage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -236,6 +239,7 @@ const routes = [
   { path: '/g/:token', element: <GreetingPage /> },
   { path: '/qr/:id', element: <PublicQrPage /> },
   { path: '/sing', element: <PublicSingPage /> },
+  { path: '/story/:token', element: <PublicStoryPage /> },
   { path: '/ask', element: <AskCodePage /> },
   { path: '/ask/:code', element: <AskPhonePage /> },
   { path: '/ask/:id/screen', element: <AskScreenPage mode="screen" /> },

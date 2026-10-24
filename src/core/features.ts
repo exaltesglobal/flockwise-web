@@ -72,6 +72,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'livestream', label: 'Livestream', body: 'Go live to YouTube or Facebook from the service plan.', group: 'sundays', on: true },
   { key: 'practice', label: 'Choir practice', body: 'Rehearsal attendance and part recordings for singers.', group: 'sundays', on: false },
   { key: 'recap', label: 'Sunday in 60 seconds', body: 'A short recap of the service to send out on Sunday evening.', group: 'sundays', on: false },
+  { key: 'story-line', label: 'Bible stories to listen to', body: 'For people who cannot read: Bible stories recorded in their own dialect, sent as a WhatsApp or SMS link or heard by calling a number. They press 1 when they have listened and 2 to ask for prayer.', group: 'sundays', on: true },
   { key: 'reading', label: 'Bible reading plan', body: 'A reading plan the whole church follows together.', group: 'sundays', on: false },
   { key: 'rides', label: 'Sunday lifts', body: 'Match people who need a lift with drivers.', group: 'sundays', on: false },
   { key: 'missed-call', label: 'Missed-call line', body: 'People with basic phones give a missed call to hear the week\'s news.', group: 'sundays', on: false },

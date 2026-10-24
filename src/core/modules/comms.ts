@@ -18,6 +18,7 @@ import { devotionMorning } from './devotions.js';
 import { morningListDue } from './morning-list.js';
 import { hospitalCheckInsDue } from './hospital.js';
 import { griefDue } from './grief.js';
+import { storyLineDue } from './story-line.js';
 import { libraryReminders } from './library.js';
 import { occasionReminders } from './occasions.js';
 import { practiceReminders } from './practice.js';
@@ -226,6 +227,7 @@ export async function runDue(ctx: Ctx) {
   await verseReminders(ctx, today);
   await videoGreetingsDue(ctx);
   await griefDue(ctx);
+  await storyLineDue(ctx, today);
   if (a.welcome.enabled) {
     const welcomed = new Set((ctx.db.get('meta', 'automations:welcomed')?.value ?? '').split(',').filter(Boolean));
     const fresh = people.filter((p) => p.status === 'visitor' && !welcomed.has(p.id) && ctx.now.getTime() - new Date(p.joinedAt).getTime() < 7 * DAY);

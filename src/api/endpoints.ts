@@ -13,6 +13,7 @@ import type { MorningCallOutcome, MorningListView } from '@/core/types';
 import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
 import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } from '@/core/types';
 import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
+import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
@@ -482,6 +483,9 @@ export type FamilyMemberInput = { firstName: string; lastName?: string; birthDat
 
 // ---------- Public pages (no sign-in) ----------
 export const PublicApi = {
+  story: (token: string) => m.get<StoryListen>(`/public/story/${encodeURIComponent(token)}`),
+  storyListened: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/listened`, {}),
+  storyPrayer: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/prayer`, {}),
   bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
   bibleBooks: (tr: string) => m.get<BibleBookInfo[]>(`/public/bible/${encodeURIComponent(tr)}/books`),
   bibleChapter: (tr: string, book: string, chapter: number) => m.get<BibleChapter>(`/public/bible/${encodeURIComponent(tr)}/${book}/${chapter}`),
@@ -644,6 +648,18 @@ export type BlockoutView = Blockout & { name: string };
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  stories: {
+    get: () => a.get<StoryLineHub>('/admin/stories'),
+    add: (body: { title: string; reference?: string; summary?: string; order?: number }) => a.post<StoryLineHub>('/admin/stories', body),
+    starter: () => a.post<StoryLineHub>('/admin/stories/starter', {}),
+    update: (id: string, body: { title?: string; reference?: string; summary?: string; order?: number }) => a.patch<StoryLineHub>(`/admin/stories/${id}`, body),
+    remove: (id: string) => a.del<StoryLineHub>(`/admin/stories/${id}`),
+    record: (id: string, lang: LanguageCode, body: { url?: string; mediaId?: string }) => a.put<StoryLineHub>(`/admin/stories/${id}/recordings/${lang}`, body),
+    listener: (personId: string, body: Partial<Pick<StoryListener, 'language' | 'channel' | 'active'>>) => a.put<StoryLineHub>(`/admin/stories/listeners/${personId}`, body),
+    removeListener: (personId: string) => a.del<StoryLineHub>(`/admin/stories/listeners/${personId}`),
+    send: (personId?: string) => a.post<{ sent: number; hub: StoryLineHub }>('/admin/stories/send', { personId }),
+    settings: (body: Partial<StoryLineSettings> & { newKey?: boolean }) => a.put<StoryLineHub>('/admin/stories/settings', body),
+  },
   grief: {
     get: () => a.get<GriefHub>('/admin/grief'),
     add: (body: GriefInput) => a.post<GriefHub>('/admin/grief', body),

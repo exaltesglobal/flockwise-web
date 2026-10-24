@@ -819,6 +819,8 @@ export type ChurchSettings = Church & {
   festivalCare?: Partial<FestivalCareSettings>;
   /** Grief calendar: when the pastor is reminded and whether the family message goes by itself (see modules/grief.ts). */
   griefCare?: Partial<GriefSettings>;
+  /** Story line: Bible stories to listen to, for people who cannot read (see modules/story-line.ts). */
+  storyLine?: Partial<StoryLineSettings>;
   /** Churches in other cities the church trusts, for members who move (see modules/migrant-link.ts). */
   partnerChurches?: OwnPartnerChurch[];
   /** Whether other churches on Flockwise may find this church and introduce people moving here. Default on while the public page is on. */
@@ -1936,6 +1938,9 @@ export type Collections = {
   hospitalStays: HospitalStay;
   moves: Move;
   griefDates: GriefDate;
+  stories: Story;
+  storyListeners: StoryListener;
+  storySends: StorySend;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2040,7 +2045,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -2114,7 +2119,7 @@ export type RecurringGift = {
 export type RecurringSummary = { active: number; monthly: number; failing: number; pending: number; currency: Currency };
 
 // ----- WhatsApp assistant: answers members and visitors on the church's WhatsApp number (through Chitthi) -----
-export type BotIntent = 'menu' | 'services' | 'events' | 'prayer_ask' | 'prayer' | 'prayed' | 'chain_join' | 'chain_leave' | 'checkin_ok' | 'checkin_away' | 'checkin_call' | 'give' | 'sermon' | 'new' | 'talk' | 'stop' | 'start' | 'unknown';
+export type BotIntent = 'menu' | 'services' | 'events' | 'prayer_ask' | 'prayer' | 'prayed' | 'chain_join' | 'chain_leave' | 'checkin_ok' | 'checkin_away' | 'checkin_call' | 'give' | 'sermon' | 'new' | 'talk' | 'stop' | 'start' | 'story' | 'unknown';
 export type WaBotConfig = {
   id: 'waBot';
   enabled: boolean;
@@ -3450,3 +3455,64 @@ export type GriefDateView = GriefDate & {
   sentThisTime: string | null;
 };
 export type GriefHub = { dates: GriefDateView[]; settings: GriefSettings };
+
+/** Story line: a Bible story to listen to, by phone call or a WhatsApp/SMS link, for people who cannot read. */
+export type StoryLineSettings = {
+  /** Secret in the phone line's webhook address. */
+  key: string;
+  cadence: 'daily' | 'weekly';
+  /** For weekly: 0 = Sunday … 6 = Saturday. */
+  weekday: number;
+  channel: 'whatsapp' | 'sms';
+  /** The number people call (or give a missed call to) to hear the story; shown in the messages. */
+  callNumber: string;
+};
+export type StoryRecording = { url: string; mediaId: string | null; by: string; at: string };
+export type Story = {
+  id: string;
+  /** Place in the series; stories go out in this order. */
+  order: number;
+  title: string;
+  reference: string;
+  /** Notes for whoever records it: what to tell, in their own words. */
+  summary: string;
+  recordings: Partial<Record<LanguageCode, StoryRecording>>;
+  createdAt: string;
+  updatedAt: string;
+};
+export type StoryListener = {
+  /** The person's id. */
+  id: string;
+  language: LanguageCode;
+  channel: 'whatsapp' | 'sms';
+  /** The next story (by order) they will get. */
+  nextOrder: number;
+  active: boolean;
+  joinedAt: string;
+};
+export type StorySend = {
+  /** Random token in the listen link. */
+  id: string;
+  personId: string | null;
+  phone: string;
+  storyId: string;
+  language: LanguageCode;
+  via: 'message' | 'call';
+  at: string;
+  listenedAt: string | null;
+  prayerAt: string | null;
+};
+export type StoryView = Story & { sent: number; listened: number; prayer: number };
+export type StoryListenerView = StoryListener & { name: string; phone: string | null; lastHeard: string | null; heard: number; got: number };
+export type StoryLineHub = {
+  settings: StoryLineSettings;
+  stories: StoryView[];
+  listeners: StoryListenerView[];
+  /** Where the phone provider fetches what to play; null until the server has a public address. */
+  callUrl: string | null;
+  recent: (StorySend & { name: string | null; storyTitle: string })[];
+  /** Whether recordings can be uploaded (the church's Google Cloud Storage bucket is connected). */
+  storage: boolean;
+};
+/** What the listen page shows. */
+export type StoryListen = { title: string; reference: string; audioUrl: string; language: LanguageCode; church: string; listened: boolean; prayer: boolean };

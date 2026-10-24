@@ -155,4 +155,5 @@ export const OFFICE_PHRASES = [
   "Hospital",
   "Moving away",
   "Grief calendar",
+  "Bible stories to listen to",
 ];

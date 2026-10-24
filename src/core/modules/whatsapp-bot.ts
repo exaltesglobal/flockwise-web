@@ -10,6 +10,7 @@ import { latestChainRequest, staffPerson } from './care.js';
 import { publicPageOf } from './ministry.js';
 import { notify, pastorIds } from './notify.js';
 import { logConsent } from './privacy.js';
+import { storyReply } from './story-line.js';
 
 const KEEP = 500;
 const STATE_TTL = 30 * 60_000;
@@ -218,7 +219,9 @@ export async function handleBotMessage(ctx: Ctx, msg: { phone: string; name: str
   if (!cfg?.enabled || !c) return null;
   if (!atLeast(effectivePlan(getSubscription(ctx.db), ctx.now), 'grow')) return null;
   if (msg.type && msg.type !== 'text' && msg.type !== 'button' && msg.type !== 'interactive') msg = { ...msg, text: 'menu' };
-  const out = answer(ctx, msg);
+  // A 1 or 2 right after a Bible story is about the story, not the menu.
+  const story = await storyReply(ctx, msg.phone, msg.text);
+  const out = story ? { intent: 'story' as BotIntent, reply: story, personId: ctx.db.all('people').find((p) => normPhone(p.phone) === normPhone(msg.phone))?.id ?? null } : answer(ctx, msg);
   let sent = false;
   let error: string | null = null;
   try {

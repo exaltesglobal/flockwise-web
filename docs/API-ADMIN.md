@@ -1475,3 +1475,21 @@ Remembers the day someone lost a loved one. A few days before each anniversary (
 | DELETE | /admin/grief/:id | | GriefHub |
 | POST | /admin/grief/:id/send | `{ text? }` (the pastor's own words; `{name}`, `{lovedOne}`, `{church}`) | GriefHub; 409 if already sent for this day |
 | PUT | /admin/grief/settings | `{ nudgeDaysBefore 0–14, autoSend, channel, day40 }` | GriefHub |
+
+## Story line: Bible stories to listen to (feature `story-line`, perm `comms`)
+
+For people who cannot read. Each story is recorded per language (a link, or a media library upload). Every day or week (settings) each active listener gets a WhatsApp/SMS link to `/story/:token` with one play button; replying 1 marks it heard and 2 asks for prayer (a pastors-only prayer request and a `prayer.new` notice). The phone line plays the caller's story.
+
+| Method | Path | Body | Returns |
+| --- | --- | --- | --- |
+| GET | /admin/stories | | StoryLineHub `{ settings, stories, listeners, callUrl, recent }` |
+| POST | /admin/stories | `{ title, reference?, summary?, order? }` | StoryLineHub |
+| POST | /admin/stories/starter | | StoryLineHub (adds the 52-story series once) |
+| PATCH / DELETE | /admin/stories/:id | | StoryLineHub |
+| PUT | /admin/stories/:id/recordings/:lang | `{ url }` or `{ mediaId }`; empty removes | StoryLineHub |
+| PUT / DELETE | /admin/stories/listeners/:personId | `{ language?, channel?, active? }` | StoryLineHub |
+| POST | /admin/stories/send | `{ personId? }` | `{ sent, hub }` |
+| PUT | /admin/stories/settings | `{ cadence: daily\|weekly, weekday, channel, callNumber, newKey? }` | StoryLineHub |
+| GET | /public/story/:token | | StoryListen |
+| POST | /public/story/:token/listened, /prayer | | `{ ok }` |
+| GET/POST | /webhooks/story-line/:church/:key | provider fields (From/CallFrom…, Digits) | `?format=twiml` TwiML, `?format=url` plain audio link, else JSON |
