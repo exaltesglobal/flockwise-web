@@ -127,6 +127,7 @@ const GATES: [RegExp, PlanId][] = [
   [/^\/admin\/video-greetings/, 'thrive'],
   [/^\/admin\/annual-return/, 'thrive'],
   [/^\/admin\/missed-call/, 'grow'],
+  [/^\/admin\/morning-list/, 'grow'],
   [/^\/admin\/services\/[^/]+\/captions/, 'cathedral'],
   [/^\/admin\/(services|songs|workflows|workflow-cards|people-fields|bookings|resources|calendar|insights|presentation|bible|ai\/(?!status))/, 'thrive'],
   [/^\/admin\/(checkin|volunteers|groups|forms|care|sermons|integrations|registers|zones|visits|accounts|expenses)/, 'grow'],

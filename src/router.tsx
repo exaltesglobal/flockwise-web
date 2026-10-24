@@ -99,6 +99,7 @@ import { SkillsPage } from '@/admin/pages/skills';
 import { MemberSkillsPage } from '@/member/pages/skills';
 import { CampsPage } from '@/admin/pages/camps';
 import { RegistrationsPage } from '@/admin/pages/registrations';
+import { MorningListPage } from '@/admin/pages/morning-list';
 import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
@@ -172,6 +173,7 @@ const routes = [
       { path: 'skills', element: <SkillsPage /> },
       { path: 'camps', element: <CampsPage /> },
       { path: 'registrations', element: <RegistrationsPage /> },
+      { path: 'morning-list', element: <MorningListPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },

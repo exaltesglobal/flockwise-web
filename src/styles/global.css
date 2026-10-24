@@ -630,3 +630,7 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 .filter-chip button { border: 0; background: transparent; color: inherit; cursor: pointer; display: inline-flex; padding: 2px; border-radius: 50%; }
 .filter-chip button:hover { background: rgba(0, 0, 0, 0.08); }
 .filter-panel { flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; padding: 10px 0 2px; }
+
+/* Care › Today's calls */
+.ml-card.ml-done { opacity: 0.7; }
+.ml-card .badge { white-space: normal; text-align: left; }

@@ -41,6 +41,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'vigils', label: 'Prayer vigils', body: 'Fill a 24-hour or night prayer chain, slot by slot.', group: 'care', on: false },
   { key: 'benevolence', label: 'Benevolence', body: 'Requests for help, approvals and payments from the welfare fund.', group: 'care', on: false },
   { key: 'occasions', label: 'Weddings & funerals', body: 'Plan weddings, funerals and dedications with checklists.', group: 'care', on: false },
+  { key: 'morninglist', label: "Pastor's morning list", body: 'Each morning, the few people most worth a call today and why: hospital, grief, missed Sundays, new visitors, prayer, birthdays.', group: 'care', on: true },
   { key: 'discipleship', label: 'Discipleship', body: 'Mentors and the people they walk with.', group: 'care', on: false },
   { key: 'courses', label: 'Classes & courses', body: 'Bible school, membership class and baptism class with attendance.', group: 'care', on: false },
   { key: 'library', label: 'Library', body: 'Lend books and keep track of who has them.', group: 'care', on: false },

@@ -13,6 +13,7 @@ import { assetReminders } from './assets.js';
 import { readingReminders } from './reading.js';
 import { vigilReminders } from './vigils.js';
 import { mentorNudges } from './discipleship.js';
+import { morningListDue } from './morning-list.js';
 import { libraryReminders } from './library.js';
 import { occasionReminders } from './occasions.js';
 import { practiceReminders } from './practice.js';
@@ -187,6 +188,7 @@ export async function runDue(ctx: Ctx) {
   await closeDueElections(ctx);
   await vigilReminders(ctx); // slot reminders are minutes ahead, so every tick
   await smsDigestDue(ctx, today); // has its own day and hour, so it runs on every tick and dedupes itself
+  await morningListDue(ctx, today); // same: its own hour, once a day
   if (hour < 8) return; // daily jobs run after 8 am church time
   const done = ctx.db.get('meta', 'automations:lastRun')?.value;
   if (done === today) return;

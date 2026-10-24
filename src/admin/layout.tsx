@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, Sunrise, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -56,6 +56,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       one({ to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'], feature: 'groups' }),
       { label: 'Care', icon: HeartHandshake, pages: [
         { to: '/admin/care', label: 'Care & prayer', icon: HeartHandshake, perm: ['care'], feature: 'care' },
+        { to: '/admin/morning-list', label: "Today's calls", icon: Sunrise, perm: ['care'], feature: 'morninglist' },
         { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'], feature: 'workflows' },
         { to: '/admin/vigils', label: 'Prayer vigils', icon: Hourglass, perm: ['care'], feature: 'vigils' },
         { to: '/admin/benevolence', label: 'Benevolence', icon: HandCoins, perm: ['care'], feature: 'benevolence' },

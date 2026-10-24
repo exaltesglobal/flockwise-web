@@ -9,6 +9,7 @@ import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, Ba
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
+import type { MorningCallOutcome, MorningListView } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -567,6 +568,12 @@ export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
 
 export const AdminApi = {
+  morningList: {
+    get: () => a.get<MorningListView>('/admin/morning-list'),
+    done: (personId: string, outcome: MorningCallOutcome, note?: string) => a.post<MorningListView>(`/admin/morning-list/${personId}/done`, { outcome, note }),
+    undo: (personId: string) => a.post<MorningListView>(`/admin/morning-list/${personId}/undo`, {}),
+    settings: (input: { enabled?: boolean; count?: number; hour?: number }) => a.put<MorningListView>('/admin/morning-list/settings', input),
+  },
   registrations: {
     get: () => a.get<RegistrationsHub>('/admin/registrations'),
     settings: (input: Partial<RegistrationSettings>) => a.put<RegistrationSettings>('/admin/registration-settings', input),

@@ -1278,3 +1278,12 @@ A public link and QR code where a family registers everyone in the house. Nothin
 - `POST /admin/registrations/:id/approve` (people.edit): `{ status?: visitor|regular|member, link?: { [memberIndex]: personId }, note? }`. Creates the household (linked members are updated, not duplicated), tags everyone with the settings tag, and records consent.
 - `POST /admin/registrations/:id/decline` (people.edit): `{ note? }`. `DELETE /admin/registrations/:id` removes it.
 - `PUT /admin/registration-settings` (people.edit): `{ enabled, intro, askBaptism, askPreviousChurch, askHowHeard, defaultStatus, tag }`.
+
+## Pastor's morning list
+
+Each morning, the few people most worth a call today, each with a one-line reason. Reasons, strongest first: open hospital case, bereavement (open or closed in the last 60 days), an urgent care case, a member or regular away 2 to 17 weeks, a visitor in the last 10 days with no care case, an open prayer request from the last 4 days, a birthday or wedding anniversary today, and (only for staff with giving.view) regular giving that stopped about 2 months ago. After a call the person stays off the list for a while: called 21 days, visited 30, messaged 10, no answer 2. A new hospital or bereavement case brings them back at once.
+
+- `GET /admin/morning-list` (care): `{ date, settings: {enabled, count, hour}, today: MorningRow[], more: MorningRow[], doneCount }`. Respects the staff member's zone/group scope.
+- `POST /admin/morning-list/:personId/done` (care): `{ outcome: called|no_answer|visited|messaged, note? }`. A note is added to the person's open care case. Returns the list.
+- `POST /admin/morning-list/:personId/undo` (care). `PUT /admin/morning-list/settings` (care): `{ enabled, count 1-20, hour 4-12 }`.
+- Push `morning.list` to each staff member with care access once a day after `hour` (church time). The push never mentions giving. Grow plan and up.

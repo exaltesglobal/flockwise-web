@@ -1433,7 +1433,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list';
 
 // ---------- Christmas carol rounds ----------
 
@@ -2979,3 +2979,13 @@ export type RegistrationSettings = {
 };
 export type RegistrationsHub = { settings: RegistrationSettings; publicUrl: string; pending: RegistrationView[]; recent: RegistrationView[] };
 export type PublicRegistrationForm = { church: { name: string; logoUrl: string | null }; enabled: boolean; intro: string; askBaptism: boolean; askPreviousChurch: boolean; askHowHeard: boolean; privacyNotice: string };
+
+// ---------- pastor's morning list ----------
+
+export type MorningReasonKind = 'hospital' | 'grief' | 'care' | 'absent' | 'visitor' | 'prayer' | 'birthday' | 'anniversary' | 'giving';
+export type MorningReason = { kind: MorningReasonKind; score: number; text: string };
+export type MorningCallOutcome = 'called' | 'no_answer' | 'visited' | 'messaged';
+export type MorningCall = { at: string; by: string; outcome: MorningCallOutcome; note: string };
+export type MorningListSettings = { enabled: boolean; count: number; hour: number };
+export type MorningRow = { personId: string; name: string; phone: string | null; photoUrl: string | null; avatar: number | null; householdName: string | null; reasons: MorningReason[]; score: number; lastCall: MorningCall | null; doneToday: boolean };
+export type MorningListView = { date: string; settings: MorningListSettings; today: MorningRow[]; more: MorningRow[]; doneCount: number };
