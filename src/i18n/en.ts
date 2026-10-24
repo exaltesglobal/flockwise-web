@@ -853,6 +853,7 @@ export const en = {
   moveCard: "Moving away?",
   moveCardBody: "Find a church in your new city",
   movePending: "Your pastors will introduce you to {church} and let them know you are coming.",
+  moveNone: "We don't know a church in {city} yet. Tap Tell my church and your pastors will help you find one.",
 };
 
 export type Strings = typeof en;
