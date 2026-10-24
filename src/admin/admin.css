@@ -875,3 +875,11 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 .dv-past summary { list-style: none; cursor: pointer; }
 .dv-past summary::-webkit-details-marker { display: none; }
 .dv-date { width: 96px; flex: none; color: var(--muted); font-size: 13px; }
+
+/* Sermon transcript */
+.tr-source { border-style: dashed; }
+.tr-row { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.tr-at { flex: 0 0 150px; max-width: 150px; }
+.tr-preview { max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; }
+.tr-preview p { margin: 6px 0; }
+@media (max-width: 600px) { .tr-row { flex-wrap: wrap; } .tr-at { flex-basis: 100%; max-width: none; } }

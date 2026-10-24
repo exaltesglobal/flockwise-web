@@ -1,0 +1,17 @@
+/* A sermon's transcript: shared by the member app and the public church page. */
+.tx-h { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.tx-audio { width: 100%; }
+.tx-video { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; background: #000; }
+.tx-chapter { display: flex; gap: 10px; align-items: flex-start; text-align: start; width: 100%; padding: 8px 6px; border: 0; border-bottom: 1px solid var(--border); background: none; color: inherit; font: inherit; cursor: pointer; border-radius: 6px; }
+.tx-chapter:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); }
+.tx-time { flex-shrink: 0; min-width: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 1px 6px; margin-inline-end: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--primary); font: inherit; font-size: 12px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.tx-clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.tx-clip { margin: 0; display: grid; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: color-mix(in srgb, var(--primary) 5%, var(--card)); }
+.tx-clip blockquote { margin: 0; font-style: italic; line-height: 1.5; }
+.tx-search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 0 10px; background: var(--card); }
+.tx-search input { border: 0; background: none; outline: none; flex: 1; min-width: 0; padding: 10px 0; font: inherit; color: inherit; }
+.tx-chip { border: 1px solid var(--border); background: var(--card); color: inherit; border-radius: 999px; padding: 2px 9px; font: inherit; font-size: 12px; cursor: pointer; }
+.tx-lines p { margin: 0 0 10px; line-height: 1.65; scroll-margin: 80px; }
+.tx-lines p.hit { background: color-mix(in srgb, var(--primary) 6%, transparent); border-radius: 6px; }
+.tx-lines mark { background: color-mix(in srgb, #f5c400 45%, transparent); color: inherit; border-radius: 3px; }
+.tx-ch { margin: 16px 0 6px; font-size: 15px; }

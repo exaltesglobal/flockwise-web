@@ -760,6 +760,17 @@ export const en = {
   bibleAtlasEnglish: "Entries are in English.",
   bibleAtlasAlso: "Also called",
   bibleAtlasRead: "Read",
+  sermonTranscript: "Transcript",
+  sermonSummary: "Summary",
+  sermonChapters: "Chapters",
+  sermonMoments: "Moments to share",
+  sermonFullText: "Full text",
+  sermonSearchWords: "Search the sermon",
+  sermonMatches: "{n} found",
+  sermonNoMatch: "Not found",
+  sermonShare: "Share",
+  sermonRead: "Read",
+  sermonTranscriptNote: "Written down from the service, so a few words may be wrong.",
 };
 
 export type Strings = typeof en;

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, BookOpen, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Sparkles, Trash2, Wand2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookOpen, Captions, Copy, ExternalLink, Globe, ListPlus, Pencil, Plus, Search, Sparkles, Trash2, Wand2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { CustomField, CustomFieldType, PublicPage, Sermon } from '@/api/admin-types';
@@ -10,6 +10,7 @@ import { useAction, useApi } from '@/lib/use-api';
 
 import { SermonAiModal, useAi } from '../ai';
 import { DictateButton } from '../components/dictate';
+import { SermonTranscriptModal } from '../components/sermon-transcript';
 import { PageHeader } from '../layout';
 
 // ---------- sermon library ----------
@@ -24,6 +25,7 @@ export function SermonsPage() {
   const list = useApi(AdminApi.sermons.list);
   const [editing, setEditing] = useState<Sermon | 'new' | null>(null);
   const [followUp, setFollowUp] = useState<Sermon | null>(null);
+  const [transcript, setTranscript] = useState<Sermon | null>(null);
   const ai = useAi();
   const [q, setQ] = useState('');
   const [series, setSeries] = useState('');
@@ -67,6 +69,7 @@ export function SermonsPage() {
               {s.audioUrl && <a className="chip" href={s.audioUrl} target="_blank" rel="noreferrer">Audio</a>}
               {s.notesUrl && <a className="chip" href={s.notesUrl} target="_blank" rel="noreferrer">Notes</a>}
             </div>
+            <button className={`btn ${s.transcript ? '' : 'ghost '}icon sm`} onClick={() => setTranscript(s)} aria-label="Transcript" title={s.transcript ? `Transcript: ${s.transcript.chapters} chapters` : 'Add the transcript: from live captions, a caption file or text'}><Captions size={15} /></button>
             {ai && <button className="btn ghost icon sm" onClick={() => setFollowUp(s)} aria-label="Follow-up material with AI" title="Small-group questions, summary, social posts"><Sparkles size={15} /></button>}
             <button className="btn ghost icon sm" onClick={() => setEditing(s)} aria-label="Edit"><Pencil size={15} /></button>
             <button className="btn ghost icon sm danger" aria-label="Delete" onClick={async () => {
@@ -78,6 +81,7 @@ export function SermonsPage() {
           </div>
         ))}
       </div>
+      {transcript && <SermonTranscriptModal sermon={transcript} onClose={() => setTranscript(null)} onChanged={list.reload} />}
       {followUp && <SermonAiModal sermon={followUp} onClose={() => setFollowUp(null)} />}
       {editing && <SermonForm sermon={editing === 'new' ? null : editing} series={allSeries} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); list.reload(); toast('Saved'); }} />}
     </>

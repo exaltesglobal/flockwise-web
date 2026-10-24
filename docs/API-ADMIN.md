@@ -1392,3 +1392,15 @@ From Theographic Bible Metadata (CC BY-SA 4.0) and Easton's Bible Dictionary (pu
 - `GET /public/bible/people/:slug`, `GET /public/bible/places/:slug` → entry with Easton text, references, family (people), events.
 - `GET /public/bible/timeline` → all events in order (`year` negative = BC, traditional dating).
 - `GET /public/bible/dictionary?q=` → headword hits; `GET /public/bible/dictionary/:term` → all senses with linked person/place.
+
+## Sermon transcripts
+
+The words of a sermon as preached, with a summary, chapters and short moments to share. Perm `comms` or `services`.
+
+- `GET /admin/sermons/:id/transcript` → `{ transcript | null, captions: { eventId, title, lines } | null }`. `captions` is the service whose live captions can be used (the sermon's own service, or one on its date).
+- `PUT /admin/sermons/:id/transcript` `{ source: 'captions' | 'file' | 'typed', text?, eventId?, offset?, language? }` replaces the transcript. `file` and `typed` accept `.srt`/`.vtt` (YouTube's automatic captions are de-duplicated), lines stamped `[mm:ss]`, or plain paragraphs. `offset` is seconds added to every time when the recording started before the captions.
+- `PATCH /admin/sermons/:id/transcript` `{ offset?, summary?, chapters?, clips?, line?: { index, text } }`.
+- `POST /admin/sermons/:id/transcript/chapters` asks AI for `summary`, `chapters` `[{ line, title, summary }]` and `clips` `[{ line, endLine, title, quote }]`. `line` indexes `lines`.
+- `DELETE /admin/sermons/:id/transcript`.
+- Members: `GET /sermons/:id/transcript`; public page: `GET /public/sermons/:id/transcript` (published sermons only).
+- Sermons carry `transcript: { lines, chapters, clips } | null` once one is saved.

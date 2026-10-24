@@ -219,6 +219,40 @@ export async function writeDevotion(ctx: Ctx, passage: string, text: string): Pr
   return { title: str(out.title, 120), thought, question: str(out.question, 400), prayer: str(out.prayer, 500) };
 }
 
+/**
+ * A summary, chapters and shareable moments for a preached sermon, from its transcript. Lines are
+ * given numbered; chapters and clips point back at line numbers so the app can jump to them.
+ */
+export async function chapterSermon(ctx: Ctx, sermon: { title: string; passage: string }, lines: { at: number | null; text: string }[]): Promise<{ summary: string; chapters: { line: number; title: string; summary: string }[]; clips: { line: number; endLine: number; title: string; quote: string }[] }> {
+  const clock = (n: number) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
+  let body = '';
+  for (let i = 0; i < lines.length && body.length < 90_000; i++) body += `[${i}]${lines[i].at !== null ? ` (${clock(lines[i].at!)})` : ''} ${lines[i].text}\n`;
+  const schema = {
+    type: 'object',
+    properties: {
+      summary: { type: 'string' },
+      chapters: { type: 'array', items: { type: 'object', properties: { line: { type: 'integer' }, title: { type: 'string' }, summary: { type: 'string' } }, required: ['line', 'title', 'summary'], additionalProperties: false } },
+      clips: { type: 'array', items: { type: 'object', properties: { line: { type: 'integer' }, endLine: { type: 'integer' }, title: { type: 'string' }, quote: { type: 'string' } }, required: ['line', 'endLine', 'title', 'quote'], additionalProperties: false } },
+    },
+    required: ['summary', 'chapters', 'clips'],
+    additionalProperties: false,
+  };
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou prepare a preached sermon for the church's members to catch up on. The transcript comes from speech-to-text or captions and has slips; read through them. Write in the language the sermon was preached in. Never add teaching the preacher did not give. Reply with JSON only.`,
+    messages: [{ role: 'user', content: `Sermon: ${sermon.title || '(untitled)'}${sermon.passage ? `, ${sermon.passage}` : ''}\nTranscript, one numbered line each:\n${body}\nReturn: summary (80 to 120 words, what the sermon said and asked of us), chapters (4 to 10 in order, each starting at the line number where that part begins, with a short title and a one-sentence summary; the first starts at line 0), clips (3 to 6 moments of 20 to 60 seconds that stand on their own and would help someone who missed Sunday: line and endLine numbers, a short title, and the quote in the preacher's words with slips fixed, under 60 words).` }],
+    schema,
+    maxTokens: 4000,
+    effort: 'low',
+  });
+  const out = json<{ summary: string; chapters: { line: number; title: string; summary: string }[]; clips: { line: number; endLine: number; title: string; quote: string }[] }>(res.content);
+  const last = lines.length - 1;
+  const at = (n: unknown) => Math.max(0, Math.min(last, Math.round(Number(n) || 0)));
+  const chapters = (Array.isArray(out.chapters) ? out.chapters : []).map((c) => ({ line: at(c.line), title: str(c.title, 120), summary: str(c.summary, 300) })).filter((c) => c.title).sort((a, b) => a.line - b.line).slice(0, 12);
+  const clips = (Array.isArray(out.clips) ? out.clips : []).map((c) => { const line = at(c.line); return { line, endLine: Math.max(line, at(c.endLine)), title: str(c.title, 120), quote: str(c.quote, 500) }; }).filter((c) => c.quote).slice(0, 8);
+  if (!chapters.length && !str(out.summary, 10)) throw new ApiError(502, 'ai_error', 'The chapters came back empty. Try again.');
+  return { summary: str(out.summary, 1200), chapters, clips };
+}
+
 export function registerAi(r: Router) {
   r.get('/admin/ai/status', { staff: true }, (ctx) => status(ctx));
 

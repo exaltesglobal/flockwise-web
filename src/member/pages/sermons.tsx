@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Headphones, MessagesSquare, PenLine, PlayCircle } from 'lucide-react';
+import { BookOpen, Captions, FileText, Headphones, MessagesSquare, PenLine, PlayCircle } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
 import type { GroupKit, Sermon } from '@/api/admin-types';
@@ -9,6 +9,8 @@ import { useT } from '@/i18n';
 import { formatDate } from '@/lib/format';
 import { useApi } from '@/lib/use-api';
 import { useOpenParam } from '@/lib/use-new-param';
+
+import { TranscriptModal } from '../transcript';
 
 export function MemberSermonsPage() {
   const { t } = useT();
@@ -31,6 +33,7 @@ export function MemberSermonsPage() {
 export function SermonList({ sermons, member = false, open = null }: { sermons: Sermon[]; member?: boolean; open?: string | null }) {
   const { t, locale, lang } = useT();
   const [series, setSeries] = useState('');
+  const [reading, setReading] = useState<Sermon | null>(null);
   const all = [...new Set(sermons.map((s) => s.series).filter(Boolean))];
   const shown = sermons.filter((s) => !series || s.series === series);
   if (sermons.length === 0) return <p className="muted">{t('noSermons')}</p>;
@@ -55,6 +58,7 @@ export function SermonList({ sermons, member = false, open = null }: { sermons: 
               {s.videoUrl && <a className="btn sm primary" href={s.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={15} /> {t('watch')}</a>}
               {s.audioUrl && <a className="btn sm" href={s.audioUrl} target="_blank" rel="noreferrer"><Headphones size={15} /> {t('listen')}</a>}
               {s.notesUrl && <a className="btn sm" href={s.notesUrl} target="_blank" rel="noreferrer"><FileText size={15} /> {t('notes')}</a>}
+              {!!s.transcript?.lines && <button type="button" className="btn sm" onClick={() => setReading(s)}><Captions size={15} /> {t('sermonTranscript')}</button>}
             </div>
             {s.notes && (
               <details className="sermon-notes">
@@ -78,6 +82,7 @@ export function SermonList({ sermons, member = false, open = null }: { sermons: 
         </article>
       ))}
       </div>
+      {reading && <TranscriptModal sermon={reading} member={member} onClose={() => setReading(null)} />}
     </div>
   );
 }

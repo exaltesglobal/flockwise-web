@@ -763,6 +763,17 @@ export const te: Strings = {
   bibleAtlasEnglish: "నమోదులు ఆంగ్లంలో ఉన్నాయి.",
   bibleAtlasAlso: "ఇతర పేర్లు",
   bibleAtlasRead: "చదవండి",
+  sermonTranscript: "వ్రాతప్రతి",
+  sermonSummary: "సారాంశం",
+  sermonChapters: "భాగాలు",
+  sermonMoments: "పంచుకోదగిన మాటలు",
+  sermonFullText: "పూర్తి పాఠం",
+  sermonSearchWords: "ప్రసంగంలో వెతకండి",
+  sermonMatches: "{n} దొరికాయి",
+  sermonNoMatch: "దొరకలేదు",
+  sermonShare: "పంచుకోండి",
+  sermonRead: "చదవండి",
+  sermonTranscriptNote: "ఆరాధన నుండి వ్రాయబడింది, కొన్ని పదాలు తప్పు కావచ్చు.",
 };
 
 export default te;

@@ -1128,7 +1128,24 @@ export type Sermon = {
   outline?: SermonOutline | null;
   /** Discussion kits for cell groups, by language code. */
   kits?: Record<string, GroupKit>;
+  /** Set when a transcript is saved, so lists know without loading it. */
+  transcript?: { lines: number; chapters: number; clips: number } | null;
 };
+/** One stretch of the sermon as preached. `at` is seconds into the recording when known. */
+export type TranscriptLine = { at: number | null; text: string };
+/** A chapter starts at a line of the transcript. */
+export type TranscriptChapter = { line: number; title: string; summary: string };
+/** A short moment worth sharing: from one line to another, with the words to quote. */
+export type TranscriptClip = { line: number; endLine: number; title: string; quote: string };
+export type TranscriptSource = 'captions' | 'file' | 'typed';
+export type SermonTranscript = {
+  id: string; sermonId: string; source: TranscriptSource; language: string | null;
+  /** Seconds to add to every line's time, when the recording starts before the captions did. */
+  offset: number;
+  lines: TranscriptLine[]; summary: string; chapters: TranscriptChapter[]; clips: TranscriptClip[];
+  madeBy: 'ai' | 'office' | null; updatedAt: string;
+};
+export type SermonTranscriptAdmin = { transcript: SermonTranscript | null; captions: { eventId: string; title: string; lines: number } | null };
 export type SermonOutline = { bigIdea: string; points: { heading: string; refs: string[] }[] };
 /** A cell group's meeting, built from Sunday's sermon. */
 export type GroupKit = { language: string; summary: string; icebreaker: string; questions: string[]; memoryVerse: { reference: string; text: string }; prayer: string; madeBy: 'ai' | 'outline'; createdAt: string };
@@ -1894,6 +1911,7 @@ export type Collections = {
   sermonSeries: SermonSeries;
   illustrations: Illustration;
   sermonFills: SermonFill;
+  sermonTranscripts: SermonTranscript;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -1998,7 +2016,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

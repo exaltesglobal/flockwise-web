@@ -763,6 +763,17 @@ export const ta: Strings = {
   bibleAtlasEnglish: "பதிவுகள் ஆங்கிலத்தில் உள்ளன.",
   bibleAtlasAlso: "வேறு பெயர்கள்",
   bibleAtlasRead: "படி",
+  sermonTranscript: "எழுத்துப் பிரதி",
+  sermonSummary: "சுருக்கம்",
+  sermonChapters: "பகுதிகள்",
+  sermonMoments: "பகிர வேண்டிய வரிகள்",
+  sermonFullText: "முழு உரை",
+  sermonSearchWords: "பிரசங்கத்தில் தேடுங்கள்",
+  sermonMatches: "{n} கிடைத்தன",
+  sermonNoMatch: "கிடைக்கவில்லை",
+  sermonShare: "பகிர்",
+  sermonRead: "படி",
+  sermonTranscriptNote: "ஆராதனையிலிருந்து எழுதப்பட்டது, சில சொற்கள் தவறாக இருக்கலாம்.",
 };
 
 export default ta;

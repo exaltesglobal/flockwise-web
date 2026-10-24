@@ -763,6 +763,17 @@ export const kn: Strings = {
   bibleAtlasEnglish: "ನಮೂದುಗಳು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿವೆ.",
   bibleAtlasAlso: "ಇತರ ಹೆಸರುಗಳು",
   bibleAtlasRead: "ಓದಿ",
+  sermonTranscript: "ಲಿಖಿತ ಪ್ರತಿ",
+  sermonSummary: "ಸಾರಾಂಶ",
+  sermonChapters: "ಭಾಗಗಳು",
+  sermonMoments: "ಹಂಚಿಕೊಳ್ಳುವ ಮಾತುಗಳು",
+  sermonFullText: "ಪೂರ್ಣ ಪಠ್ಯ",
+  sermonSearchWords: "ಪ್ರಸಂಗದಲ್ಲಿ ಹುಡುಕಿ",
+  sermonMatches: "{n} ಸಿಕ್ಕಿವೆ",
+  sermonNoMatch: "ಸಿಗಲಿಲ್ಲ",
+  sermonShare: "ಹಂಚಿಕೊಳ್ಳಿ",
+  sermonRead: "ಓದಿ",
+  sermonTranscriptNote: "ಆರಾಧನೆಯಿಂದ ಬರೆಯಲಾಗಿದೆ, ಕೆಲವು ಪದಗಳು ತಪ್ಪಾಗಿರಬಹುದು.",
 };
 
 export default kn;

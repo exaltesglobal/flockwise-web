@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -425,6 +425,7 @@ export const MemberApi = {
   sermons: () => m.get<Sermon[]>('/sermons'),
   sermonNotes: (id: string) => m.get<{ fill: SermonFill | null }>(`/me/sermons/${id}/notes`),
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
+  sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
   missions: {
     list: () => m.get<MemberMission[]>('/missions'),
@@ -482,6 +483,7 @@ export const PublicApi = {
   bibleRefs: (tr: string, book: string, chapter: number, verse: number) => m.get<{ refs: BibleCrossRef[]; source: string }>(`/public/bible/${encodeURIComponent(tr)}/refs/${book}/${chapter}/${verse}`),
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
+  sermonTranscript: (id: string) => m.get<SermonTranscript>(`/public/sermons/${id}/transcript`),
   recap: (id: string) => m.get<MemberRecap>(`/public/recaps/${id}`),
   greeting: (token: string) => m.get<PublicGreeting>(`/public/greetings/${token}`),
   qr: (id: string) => m.get<PublicOfferingQr>(`/public/qr/${id}`),
@@ -1400,6 +1402,11 @@ export const AdminApi = {
     create: (input: Partial<Sermon>) => a.post<Sermon>('/admin/sermons', input),
     update: (id: string, input: Partial<Sermon>) => a.patch<Sermon>(`/admin/sermons/${id}`, input),
     remove: (id: string) => a.del<void>(`/admin/sermons/${id}`),
+    transcript: (id: string) => a.get<SermonTranscriptAdmin>(`/admin/sermons/${id}/transcript`),
+    saveTranscript: (id: string, body: { source: TranscriptSource; text?: string; eventId?: string; offset?: number }) => a.put<SermonTranscript>(`/admin/sermons/${id}/transcript`, body),
+    editTranscript: (id: string, body: Partial<Pick<SermonTranscript, 'offset' | 'summary' | 'chapters' | 'clips'>> & { line?: { index: number; text: string } }) => a.patch<SermonTranscript>(`/admin/sermons/${id}/transcript`, body),
+    chapterTranscript: (id: string) => a.post<SermonTranscript>(`/admin/sermons/${id}/transcript/chapters`, {}),
+    removeTranscript: (id: string) => a.del<void>(`/admin/sermons/${id}/transcript`),
   },
   celebrations: {
     list: (days: number, kind?: CelebrationKind) => a.get<Celebration[]>(`/admin/celebrations${qs({ days: String(days), kind })}`),

@@ -763,6 +763,17 @@ export const ml: Strings = {
   bibleAtlasEnglish: "എൻട്രികൾ ഇംഗ്ലീഷിലാണ്.",
   bibleAtlasAlso: "മറ്റു പേരുകൾ",
   bibleAtlasRead: "വായിക്കുക",
+  sermonTranscript: "എഴുത്തുരൂപം",
+  sermonSummary: "സംഗ്രഹം",
+  sermonChapters: "ഭാഗങ്ങൾ",
+  sermonMoments: "പങ്കുവെക്കാവുന്ന വാക്കുകൾ",
+  sermonFullText: "മുഴുവൻ പാഠം",
+  sermonSearchWords: "പ്രസംഗത്തിൽ തിരയുക",
+  sermonMatches: "{n} കണ്ടെത്തി",
+  sermonNoMatch: "കണ്ടെത്തിയില്ല",
+  sermonShare: "പങ്കുവെക്കുക",
+  sermonRead: "വായിക്കുക",
+  sermonTranscriptNote: "ആരാധനയിൽ നിന്ന് എഴുതിയതാണ്, ചില വാക്കുകൾ തെറ്റാകാം.",
 };
 
 export default ml;

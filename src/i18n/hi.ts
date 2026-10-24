@@ -763,6 +763,17 @@ export const hi: Strings = {
   bibleAtlasEnglish: "प्रविष्टियाँ अंग्रेज़ी में हैं।",
   bibleAtlasAlso: "अन्य नाम",
   bibleAtlasRead: "पढ़ें",
+  sermonTranscript: "लिखित संदेश",
+  sermonSummary: "सारांश",
+  sermonChapters: "अध्याय",
+  sermonMoments: "बाँटने योग्य बातें",
+  sermonFullText: "पूरा पाठ",
+  sermonSearchWords: "संदेश में खोजें",
+  sermonMatches: "{n} मिले",
+  sermonNoMatch: "नहीं मिला",
+  sermonShare: "बाँटें",
+  sermonRead: "पढ़ें",
+  sermonTranscriptNote: "आराधना से लिखा गया है, कुछ शब्द गलत हो सकते हैं।",
 };
 
 export default hi;
