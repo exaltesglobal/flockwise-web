@@ -23,7 +23,7 @@ const day = (d: string) => (d ? formatDate(`${d}T12:00:00`) : '');
 const newPoint = (): SermonPoint => ({ id: `new-${Math.random().toString(36).slice(2, 10)}`, heading: '', body: '', refs: [], minutes: 5 });
 
 type Tab = 'sermons' | 'series' | 'illustrations' | 'history';
-const TABS: { value: Tab; label: string }[] = [{ value: 'sermons', label: 'Sermons' }, { value: 'series', label: 'Series' }, { value: 'illustrations', label: 'Illustrations' }, { value: 'history', label: 'History' }];
+const TABS: { value: Tab; label: string }[] = [{ value: 'sermons', label: 'In progress' }, { value: 'series', label: 'Series' }, { value: 'illustrations', label: 'Illustrations' }, { value: 'history', label: 'History' }];
 
 export function SermonPrepPage() {
   const [tab, setTab] = useState<Tab>('sermons');
@@ -39,8 +39,8 @@ export function SermonPrepPage() {
   return (
     <>
       <PageHeader
-        title="Sermon workspace"
-        subtitle="Prepare each sermon in one place: the passage, the big idea, your points with their verses and minutes, and private study notes. Preach from your phone or tablet, then put it in the sermon library in one click."
+        title="Sermon prep"
+        subtitle="Write each sermon here, from the first notes to the pulpit. Preach from your phone or tablet. When it is preached, one click moves it to the Sermons library for members."
         actions={tab === 'sermons' && <button className="btn primary" onClick={() => void start.run()} disabled={start.busy}><Plus size={16} /> New sermon</button>}
       />
       <div style={{ marginBottom: 14 }}><Segmented value={tab} options={TABS} onChange={setTab} /></div>
@@ -118,8 +118,8 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
   const [slides, setSlides] = useState(false);
   const [kit, setKit] = useState(false);
 
-  if (q.error) return <><PageHeader title="Sermon workspace" /><ErrorState error={q.error} onRetry={q.reload} /></>;
-  if (!d || !prep) return <><PageHeader title="Sermon workspace" /><Loading /></>;
+  if (q.error) return <><PageHeader title="Sermon prep" /><ErrorState error={q.error} onRetry={q.reload} /></>;
+  if (!d || !prep) return <><PageHeader title="Sermon prep" /><Loading /></>;
   const minutes = d.points.reduce((n, p) => n + (p.minutes || 0), 0);
 
   return (

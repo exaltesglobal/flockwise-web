@@ -62,7 +62,7 @@ export function LeaderPipelinePage() {
           </div>
         )}
         {!d.tracks.length ? (
-          <Empty icon={<Sprout size={28} />} title="Nobody on the pipeline yet" body="Add the people you see growing: a faithful cell member, a young person who serves, an apprentice leader." action={editable && <button className="btn primary" onClick={() => setAdding(null)}>Add the first person</button>} />
+          <Empty icon={<Sprout size={28} />} title="Nobody on the pipeline yet" body={editable && d.suggestions.length > 0 ? 'Start with one of the people suggested above, or add someone else you see growing.' : 'Add the people you see growing: a faithful cell member, a young person who serves, an apprentice leader.'} action={editable && <button className="btn primary" onClick={() => setAdding(null)}>Add the first person</button>} />
         ) : (
           <div className="lp-board">
             {STAGES.map((s) => (
