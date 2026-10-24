@@ -696,6 +696,10 @@ export const te: Strings = {
   bibleSeeAlso: "ఇవి కూడా చూడండి",
   bibleSeeAlsoNone: "ఈ వచనానికి సంబంధిత వచనాలు లేవు.",
   bibleWhole: "పూర్తి బైబిల్",
+  liveVerseTitle: "ఇప్పుడు స్క్రీన్‌పై",
+  liveVerseOpen: "నా బైబిల్‌లో తెరవండి",
+  liveVerseMore: "అంతా చూపించు",
+  liveVerseLess: "తక్కువ చూపించు",
 };
 
 export default te;

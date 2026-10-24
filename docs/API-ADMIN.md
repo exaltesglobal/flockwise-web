@@ -1310,3 +1310,10 @@ One page per sermon, from study to the pulpit. `SermonPrep` = `{id, title, preac
 - `POST /admin/sermon-prep/:id/copy` starts a new draft from this one.
 - `POST /admin/sermon-prep/:id/publish` `{published?}` puts it in the sermon library (or updates the entry made before) with the outline as the notes. Study notes are never published.
 - `GET /admin/sermon-prep/:id/preach?tr=` returns `{prep, verses: {ref: {reference, text} | null}}` for the preaching view, in the sermon's translation unless `tr` is given.
+
+## Live verse on members' phones
+
+When the screen shows a reading whose title is a Bible reference (plan readings and passages added in the presenter), members following along see it on their phones in their own Bible.
+
+- `GET /me/live-verse?tr=` (signed-in member) returns `{live: null}` or `{live: {eventTitle, reference, book, chapter, verse, passage: {reference, translation, verses} | null, at}}` for the service whose presentation changed in the last three hours.
+- The presentation view has `phoneVerse` (what phones show now). Presenter action `{action: 'phones', on}` turns it off and on for the service.

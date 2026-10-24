@@ -693,6 +693,10 @@ export const en = {
   bibleSeeAlso: "See also",
   bibleSeeAlsoNone: "No cross references for this verse.",
   bibleWhole: "Whole Bible",
+  liveVerseTitle: "On the screen now",
+  liveVerseOpen: "Open in my Bible",
+  liveVerseMore: "Show all",
+  liveVerseLess: "Show less",
 };
 
 export type Strings = typeof en;

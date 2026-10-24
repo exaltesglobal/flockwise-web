@@ -213,6 +213,7 @@ import type {
   Resource,
   Sermon,
   SermonPrep,
+  LiveVerse,
   SermonPrepSummary,
   SermonPreach,
   Celebration,
@@ -255,6 +256,7 @@ function authApi(store: SessionStore) {
 const m = createApi(memberSession);
 
 export const MemberApi = {
+  liveVerse: (tr: string) => m.get<{ live: LiveVerse | null }>(`/me/live-verse${qs({ tr })}`),
   bibleMarks: (book?: string, chapter?: number) => m.get<BibleMark[]>(`/me/bible/marks${qs({ book, chapter: chapter ? String(chapter) : undefined })}`),
   bibleMark: (book: string, chapter: number, verse: number, patch: { color?: BibleMarkColor | null; bookmark?: boolean; note?: string }) => m.put<{ mark: BibleMark | null }>(`/me/bible/marks/${book}/${chapter}/${verse}`, patch),
   auth: authApi(memberSession),
@@ -1228,7 +1230,7 @@ export const AdminApi = {
   },
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
-    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background',
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background' | 'phones',
       extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings>;
         added?: Partial<AddedItem>; live?: boolean; id?: string; minutes?: number; label?: string; stopwatch?: boolean; clear?: boolean; itemId?: string; url?: string } = {}) =>
       a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),

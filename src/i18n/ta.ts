@@ -696,6 +696,10 @@ export const ta: Strings = {
   bibleSeeAlso: "இவற்றையும் காண்க",
   bibleSeeAlsoNone: "இந்த வசனத்திற்கு குறிப்புகள் இல்லை.",
   bibleWhole: "முழு வேதாகமம்",
+  liveVerseTitle: "இப்போது திரையில்",
+  liveVerseOpen: "என் வேதாகமத்தில் திற",
+  liveVerseMore: "முழுவதும் காட்டு",
+  liveVerseLess: "குறைவாகக் காட்டு",
 };
 
 export default ta;

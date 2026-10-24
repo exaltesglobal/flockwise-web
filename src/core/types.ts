@@ -1211,6 +1211,8 @@ export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
 /** One main point of a sermon outline, with its verses and the minutes planned for it. */
 export type SermonPoint = { id: string; heading: string; body: string; refs: string[]; minutes: number };
 export type SermonPrepStatus = 'draft' | 'ready' | 'preached';
+/** The scripture on the church's screen right now, for members following on their phones. */
+export type LiveVerse = { eventTitle: string; reference: string; book: string; chapter: number; verse: number | null; passage: BiblePassage | null; at: string };
 export type SermonPrep = {
   id: string; title: string; preacher: string; date: string; series: string;
   /** The main passage, e.g. "John 3:1-21". */
@@ -1267,6 +1269,8 @@ export type PresentationState = {
   stageTimer?: StageTimer | null;
   /** Background picture or video per plan item id. */
   backgrounds?: Record<string, string>;
+  /** Whether scripture on the screen also shows on members' phones (on unless turned off). */
+  phones?: boolean;
 };
 /** Live captions: the preacher's words, heard by the media desk's browser, translated for the screen. */
 export type CaptionsSettings = {
@@ -1330,6 +1334,8 @@ export const OBS_MOMENTS: { id: ObsMoment; label: string; hint: string }[] = [
 ];
 
 export type PresentationView = {
+  /** The Bible reference members' phones show right now, if any. */
+  phoneVerse?: string | null;
   event: { id: string; title: string; startsAt: string; endsAt: string };
   churchName: string;
   logoUrl: string | null;

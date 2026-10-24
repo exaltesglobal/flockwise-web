@@ -14,6 +14,7 @@ import { useApi } from '@/lib/use-api';
 import type { MemberCelebration } from '@/api/admin-types';
 import { useToast } from '@/components/ui';
 
+import { LiveVerseCard } from '../live-verse';
 import { EventCard } from './shared';
 
 export function MemberHomePage() {
@@ -28,6 +29,7 @@ export function MemberHomePage() {
         <h1>{session?.member.firstName}</h1>
       </div>
       <QuickLinks />
+      <LiveVerseCard />
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
         <div className="home-grid">
           <div>

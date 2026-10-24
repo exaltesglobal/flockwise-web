@@ -2,7 +2,7 @@
 // stage display and the OBS overlay. Every screen polls the same presentation state, so they all
 // follow the operator. Screens opened with ?key= (the church's screen key) need no sign-in.
 import { LANGUAGES } from '@/core/languages';
-import { ArrowLeft, BookOpen, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eraser, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Timer, Trash2, Tv, Type, Video, Wallpaper, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Smartphone, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eraser, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Timer, Trash2, Tv, Type, Video, Wallpaper, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
@@ -242,6 +242,7 @@ function Presenter() {
           <p className="small muted">Keys: → or space next, ← back, C clear words, B blank, L logo.</p>
           {control && <AddLivePanel act={act} />}
           {control && <StagePanel view={data} act={act} />}
+          {control && <PhonesPanel view={data} act={act} />}
           {control && <CaptionsPanel view={data} act={act} eventId={eventId} onChanged={() => void reload()} />}
           {control && <MediaPanel view={data} act={act} />}
           {control && <ObsPanel view={data} act={act} />}
@@ -341,6 +342,17 @@ function AddLivePanel({ act }: { act: Act }) {
         </>
       )}
       {err && <p className="small" style={{ color: 'var(--danger, #c0392b)', margin: 0 }}>{err}</p>}
+    </div>
+  );
+}
+
+/** Scripture on the screen also shows on members' phones, in their own Bible. */
+function PhonesPanel({ view, act }: { view: PresentationView; act: Act }) {
+  const on = view.state.phones !== false;
+  return (
+    <div className="pres-panel stack" style={{ gap: 6 }}>
+      <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={on} onChange={(e) => void act('phones', { on: e.target.checked })} /> <Smartphone size={14} /> Bible readings on members' phones</label>
+      <span className="small muted">{!on ? 'Off for this service.' : view.phoneVerse ? `Showing now: ${view.phoneVerse}` : 'When a reading is on the screen, members see it in their own Bible.'}</span>
     </div>
   );
 }

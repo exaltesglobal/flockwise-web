@@ -189,3 +189,7 @@ input.switch:checked::after { transform: translateX(18px); }
 .bib-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; background: var(--hl); cursor: pointer; padding: 0; }
 .bib-dot.on { border-color: var(--text); }
 .bib-v.on { outline: 2px solid color-mix(in srgb, var(--primary) 60%, transparent); outline-offset: 1px; }
+.live-verse { border-left: 4px solid var(--accent, var(--primary)); margin-block: 12px; }
+.live-verse-ref { font-size: 1.15em; }
+.live-verse-text { line-height: 1.6; }
+.live-verse-text p { margin: 0 0 4px; }

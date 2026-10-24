@@ -696,6 +696,10 @@ export const hi: Strings = {
   bibleSeeAlso: "यह भी देखें",
   bibleSeeAlsoNone: "इस पद के लिए कोई संदर्भ नहीं।",
   bibleWhole: "पूरी बाइबल",
+  liveVerseTitle: "अभी स्क्रीन पर",
+  liveVerseOpen: "मेरी बाइबल में खोलें",
+  liveVerseMore: "पूरा दिखाएँ",
+  liveVerseLess: "कम दिखाएँ",
 };
 
 export default hi;

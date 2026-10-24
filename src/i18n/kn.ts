@@ -696,6 +696,10 @@ export const kn: Strings = {
   bibleSeeAlso: "ಇವನ್ನೂ ನೋಡಿ",
   bibleSeeAlsoNone: "ಈ ವಚನಕ್ಕೆ ಸಂಬಂಧಿತ ವಚನಗಳಿಲ್ಲ.",
   bibleWhole: "ಸಂಪೂರ್ಣ ಬೈಬಲ್",
+  liveVerseTitle: "ಈಗ ಪರದೆಯ ಮೇಲೆ",
+  liveVerseOpen: "ನನ್ನ ಬೈಬಲ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ",
+  liveVerseMore: "ಎಲ್ಲವನ್ನೂ ತೋರಿಸಿ",
+  liveVerseLess: "ಕಡಿಮೆ ತೋರಿಸಿ",
 };
 
 export default kn;

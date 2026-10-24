@@ -696,6 +696,10 @@ export const ml: Strings = {
   bibleSeeAlso: "ഇതും കാണുക",
   bibleSeeAlsoNone: "ഈ വാക്യത്തിന് പരാമർശങ്ങളില്ല.",
   bibleWhole: "മുഴുവൻ ബൈബിൾ",
+  liveVerseTitle: "ഇപ്പോൾ സ്ക്രീനിൽ",
+  liveVerseOpen: "എന്റെ ബൈബിളിൽ തുറക്കുക",
+  liveVerseMore: "മുഴുവൻ കാണിക്കുക",
+  liveVerseLess: "കുറച്ച് കാണിക്കുക",
 };
 
 export default ml;

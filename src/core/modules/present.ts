@@ -4,10 +4,12 @@ import { LANGUAGE_CODES } from '../languages.js';
 import { ApiError } from '../errors.js';
 import { hasIndic, transliterateLines } from '../transliterate.js';
 import type { Ctx, Router } from '../engine.js';
-import type { AddedItem, BandItem, CaptionsSettings, CaptionsView, Collections, LanguageCode, LowerThird, ObsSettings, PlanItem, PresentationState, PresentationTheme, PresentationView, Slide, Song, SongStats } from '../types.js';
+import type { AddedItem, BandItem, CaptionsSettings, CaptionsView, Collections, LanguageCode, LiveVerse, LowerThird, ObsSettings, PlanItem, PresentationState, PresentationTheme, PresentationView, Slide, Song, SongStats } from '../types.js';
 import { OBS_MOMENTS } from '../types.js';
 import { church, DAY, find, pick, settings } from '../util.js';
+import { BOOK_CODES, parseReference } from '../bible-texts.js';
 import { translateCaption } from './ai.js';
+import { lookupPassage } from './bible.js';
 import { liveView } from './ministry.js';
 
 export const DEFAULT_THEME: PresentationTheme = { background: '#0f1f1c', textColor: '#ffffff', imageUrl: '', fontScale: 1, linesPerSlide: 4, showAlt: true, titleSlides: true, uppercase: false, transliterate: false, transition: 'fade' };
@@ -213,6 +215,40 @@ const addedItems = (added: AddedItem[] | undefined): PlanItem[] =>
 const cleanUrl = (v: unknown) => { const u = String(v ?? '').trim().slice(0, 600); return /^(https:\/\/|\/)[^\s"'<>]+$/.test(u) ? u : ''; };
 const MAX_ADDED = 40;
 
+/** The reading on the screen, when it is a Bible reference and the operator has not turned phones off. */
+function verseOnScreen(state: PresentationState, items: PlanItem[], slides: Slide[]): string | null {
+  if (state.phones === false || state.mode !== 'live') return null;
+  const slide = slides[Math.min(state.index, slides.length - 1)];
+  const item = slide ? items[slide.itemIndex] : undefined;
+  if (!item || item.kind !== 'reading') return null;
+  // Passages added in the presenter are titled "John 3:16-18 (King James Version)".
+  const ref = item.title.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return parseReference(ref) ? ref : null;
+}
+
+// What each service's screen shows, worked out once per change of slide (members' phones ask often).
+const onScreen = new Map<string, { at: string; ref: string | null; title: string }>();
+
+/** The scripture showing on the church's screen in a service running now (changed in the last 3 hours). */
+export async function liveVerse(ctx: Ctx, tr: string): Promise<LiveVerse | null> {
+  const since = ctx.now.getTime() - 3 * 60 * 60_000;
+  const recent = ctx.db.all('presentations').filter((p) => new Date(p.updatedAt).getTime() > since).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+  if (!recent) return null;
+  const key = `${church(ctx).id}:${recent.eventId}`;
+  let hit = onScreen.get(key);
+  if (!hit || hit.at !== recent.updatedAt) {
+    const ev = ctx.db.get('events', recent.eventId);
+    if (!ev) return null;
+    hit = { at: recent.updatedAt, ref: view(ctx, ev, false).phoneVerse ?? null, title: ev.title };
+    onScreen.set(key, hit);
+    if (onScreen.size > 500) onScreen.delete(onScreen.keys().next().value as string);
+  }
+  if (!hit.ref) return null;
+  const p = parseReference(hit.ref)!;
+  const passage = await lookupPassage(ctx, hit.ref, tr).catch(() => null);
+  return { eventTitle: hit.title, reference: passage?.reference ?? hit.ref, book: BOOK_CODES[p.book], chapter: p.chapter, verse: p.from ?? null, passage, at: hit.at };
+}
+
 function view(ctx: Ctx, ev: Collections['events'], staff = true): PresentationView {
   const live = liveView(ctx, ev);
   const theme = themeOf(ctx);
@@ -242,6 +278,7 @@ function view(ctx: Ctx, ev: Collections['events'], staff = true): PresentationVi
     obs: obsOf(ctx),
     ...(staff ? { screenKey: screenKey(ctx) } : {}),
     captions: captionsOf(ctx, state, ev.id, staff),
+    phoneVerse: verseOnScreen(state, items, slides),
   };
 }
 
@@ -365,6 +402,7 @@ export function registerPresent(r: Router) {
       case 'lowerClear': s.lowerThird = null; break;
       case 'queue': s.lowerThirds = (Array.isArray(ctx.body.lowerThirds) ? ctx.body.lowerThirds : []).slice(0, 40).map((l: unknown, i: number) => cleanLower(l, `q${i}`)).filter((l: LowerThird | null): l is LowerThird => !!l); break;
       case 'overlay': s.overlayLyrics = !!ctx.body.on; break;
+      case 'phones': s.phones = !!ctx.body.on; break;
       case 'message': s.message = String(ctx.body.message ?? '').slice(0, 200); break;
       case 'captions': {
         const c = (ctx.body.captions ?? {}) as Partial<CaptionsSettings>;
@@ -446,5 +484,7 @@ export function registerPresent(r: Router) {
     return next;
   });
 
+  // Members following along: the Bible passage on the screen right now, in their own Bible.
+  r.get('/me/live-verse', {}, async (ctx) => ({ live: await liveVerse(ctx, String(ctx.query.tr ?? '') || 'eng-kjv2006') }));
   r.get('/admin/songs/stats', { perm: 'services' }, (ctx) => songStats(ctx));
 }

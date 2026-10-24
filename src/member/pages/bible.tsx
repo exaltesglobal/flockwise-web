@@ -16,6 +16,8 @@ import { useT } from '@/i18n';
 import { useSession } from '@/lib/session';
 import { useApi } from '@/lib/use-api';
 
+import { LiveVerseCard } from '../live-verse';
+
 type Place = { tr: string; tr2: string | null; book: string; chapter: number };
 
 const load = <T,>(key: string, fallback: T): T => {
@@ -93,6 +95,7 @@ export function MemberBiblePage() {
         </div>
       </div>
 
+      <LiveVerseCard />
       {ch.error ? <ErrorState error={ch.error} onRetry={ch.reload} /> : !ch.data ? <Loading /> : (
         <Reader ch={ch.data} ch2={place.tr2 ? ch2.data : null} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} />
       )}
