@@ -159,7 +159,7 @@ input.switch:checked::after { transform: translateX(18px); }
 .bib-v { cursor: pointer; border-radius: 4px; transition: background 0.15s; }
 .bib-v sup { font-size: 0.6em; color: var(--muted); margin-inline-end: 3px; font-weight: 600; }
 .bib-v.on, .bib-cols.on .bib-v { background: color-mix(in srgb, var(--primary) 18%, transparent); }
-.bib-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 4px 0; border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent); cursor: pointer; }
+.bib-cols { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 20px; padding: 4px 0; border-bottom: 1px dashed color-mix(in srgb, var(--border) 60%, transparent); cursor: pointer; }
 .bib-cols > * { min-width: 0; }
 .bib-colhead { border: 0; font-size: 13px; font-weight: 600; cursor: default; }
 .bib-notes { padding-inline-start: 1.2em; line-height: 1.5; }
@@ -179,7 +179,8 @@ input.switch:checked::after { transform: translateX(18px); }
 @media (max-width: 640px) {
   .bib-cols { grid-template-columns: 1fr; gap: 4px; }
   .bib-colhead { display: none; }
-  .bib-cols > :nth-child(2) { color: var(--muted); }
+  .bib-cols > :not(:first-child) { color: var(--muted); }
+  .bib-many .bib-alt::before { content: attr(data-tr); display: block; font-size: 11px; font-weight: 600; }
   .bib-hide-sm { display: none; }
 }
 @media (min-width: 900px) { .bib-actions { bottom: 24px; } }

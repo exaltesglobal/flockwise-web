@@ -709,6 +709,8 @@ export const hi: Strings = {
   bibleCommentaryNone: "इस टीका में इस अध्याय पर कोई टिप्पणी नहीं है।",
   bibleCommentaryVerse: "पद {n}",
   bibleCommentaryEnglish: "टीकाएँ अंग्रेज़ी में हैं।",
+  bibleCompareAdd: "एक और बाइबल जोड़ें",
+  bibleCompareRemove: "यह बाइबल हटाएँ",
 };
 
 export default hi;

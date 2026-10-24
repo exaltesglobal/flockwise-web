@@ -709,6 +709,8 @@ export const te: Strings = {
   bibleCommentaryNone: "ఈ వ్యాఖ్యానంలో ఈ అధ్యాయంపై వివరణ లేదు.",
   bibleCommentaryVerse: "వచనం {n}",
   bibleCommentaryEnglish: "వ్యాఖ్యానాలు ఆంగ్లంలో ఉన్నాయి.",
+  bibleCompareAdd: "ఇంకో బైబిల్ జోడించండి",
+  bibleCompareRemove: "ఈ బైబిల్ తీసివేయండి",
 };
 
 export default te;

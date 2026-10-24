@@ -709,6 +709,8 @@ export const kn: Strings = {
   bibleCommentaryNone: "ಈ ವ್ಯಾಖ್ಯಾನದಲ್ಲಿ ಈ ಅಧ್ಯಾಯಕ್ಕೆ ಟಿಪ್ಪಣಿಗಳಿಲ್ಲ.",
   bibleCommentaryVerse: "ವಚನ {n}",
   bibleCommentaryEnglish: "ವ್ಯಾಖ್ಯಾನಗಳು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿವೆ.",
+  bibleCompareAdd: "ಇನ್ನೊಂದು ಬೈಬಲ್ ಸೇರಿಸಿ",
+  bibleCompareRemove: "ಈ ಬೈಬಲ್ ತೆಗೆದುಹಾಕಿ",
 };
 
 export default kn;

@@ -706,6 +706,8 @@ export const en = {
   bibleCommentaryNone: "This commentary has no notes on this chapter.",
   bibleCommentaryVerse: "Verse {n}",
   bibleCommentaryEnglish: "Commentaries are in English.",
+  bibleCompareAdd: "Add another Bible",
+  bibleCompareRemove: "Remove this Bible",
 };
 
 export type Strings = typeof en;

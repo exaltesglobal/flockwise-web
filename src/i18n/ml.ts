@@ -709,6 +709,8 @@ export const ml: Strings = {
   bibleCommentaryNone: "ഈ വ്യാഖ്യാനത്തിൽ ഈ അധ്യായത്തിന് കുറിപ്പുകളില്ല.",
   bibleCommentaryVerse: "വാക്യം {n}",
   bibleCommentaryEnglish: "വ്യാഖ്യാനങ്ങൾ ഇംഗ്ലീഷിലാണ്.",
+  bibleCompareAdd: "മറ്റൊരു ബൈബിൾ ചേർക്കുക",
+  bibleCompareRemove: "ഈ ബൈബിൾ നീക്കുക",
 };
 
 export default ml;

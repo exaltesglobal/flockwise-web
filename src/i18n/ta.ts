@@ -709,6 +709,8 @@ export const ta: Strings = {
   bibleCommentaryNone: "இந்த விளக்கவுரையில் இந்த அதிகாரத்திற்குக் குறிப்புகள் இல்லை.",
   bibleCommentaryVerse: "வசனம் {n}",
   bibleCommentaryEnglish: "விளக்கவுரைகள் ஆங்கிலத்தில் உள்ளன.",
+  bibleCompareAdd: "இன்னொரு வேதாகமம் சேர்க்கவும்",
+  bibleCompareRemove: "இந்த வேதாகமத்தை நீக்கவும்",
 };
 
 export default ta;

@@ -18,7 +18,8 @@ import { useApi } from '@/lib/use-api';
 
 import { LiveVerseCard } from '../live-verse';
 
-type Place = { tr: string; tr2: string | null; book: string; chapter: number };
+/** `more`: up to three other Bibles shown beside the main one. */
+type Place = { tr: string; more: string[]; book: string; chapter: number };
 
 const load = <T,>(key: string, fallback: T): T => {
   try {
@@ -45,14 +46,16 @@ export function MemberBiblePage() {
   const [params, setParams] = useSearchParams();
   const startTr = FEATURED_BIBLES.find((b) => b.app === (session?.member.language ?? lang))?.id ?? 'engbsb';
   const [place, setPlace] = useState<Place>(() => {
-    const saved = load<Place>('fw.bible.place', { tr: startTr, tr2: null, book: 'JHN', chapter: 1 });
+    const saved = load<Place & { tr2?: string | null }>('fw.bible.place', { tr: startTr, more: [], book: 'JHN', chapter: 1 });
+    saved.more = (saved.more ?? (saved.tr2 ? [saved.tr2] : [])).slice(0, 3);
+    delete saved.tr2;
     const ref = params.get('ref');
     const p = ref ? parseReference(ref) : null;
     return { ...saved, tr: params.get('tr') || saved.tr, ...(p ? { book: BOOK_CODES[p.book], chapter: p.chapter } : {}) };
   });
   const [mark, setMark] = useState<number | null>(() => { const p = parseReference(params.get('ref') ?? ''); return p?.from ?? null; });
   const [size, setSize] = useState(() => load('fw.bible.size', 18));
-  const [picker, setPicker] = useState<null | 'tr' | 'tr2' | 'book' | 'marks' | 'search'>(null);
+  const [picker, setPicker] = useState<null | 'tr' | 'add' | 'book' | 'marks' | 'search'>(null);
   const [seeAlso, setSeeAlso] = useState<number | null>(null);
   const [study, setStudy] = useState<number | null>(null);
   const [notes, setNotes] = useState<number | null>(null);
@@ -70,9 +73,8 @@ export function MemberBiblePage() {
   const all = list.data?.translations ?? FEATURED_BIBLES;
   const info = (id: string | null) => (id ? all.find((x) => x.id === id) ?? FEATURED_BIBLES.find((x) => x.id === id) ?? null : null);
   const tr = info(place.tr);
-  const tr2 = info(place.tr2);
   const ch = useApi(() => PublicApi.bibleChapter(place.tr, place.book, place.chapter), [place.tr, place.book, place.chapter]);
-  const ch2 = useApi(() => (place.tr2 ? PublicApi.bibleChapter(place.tr2, place.book, place.chapter) : Promise.resolve(null)), [place.tr2, place.book, place.chapter]);
+  const others = useApi(() => Promise.all(place.more.map((id) => PublicApi.bibleChapter(id, place.book, place.chapter).catch(() => null))), [place.more.join(','), place.book, place.chapter]);
   const books = useApi(() => PublicApi.bibleBooks(place.tr), [place.tr]);
   const marks = useApi(() => MemberApi.bibleMarks(place.book, place.chapter), [place.book, place.chapter]);
   const markMap = useMemo(() => new Map((marks.data ?? []).map((m) => [m.verse, m])), [marks.data]);
@@ -87,7 +89,12 @@ export function MemberBiblePage() {
       <div className="bib-bar">
         <button className="btn sm" onClick={() => setPicker('book')}><BookOpen size={15} /> <b>{title}</b> <ChevronDown size={14} /></button>
         <button className="btn sm" onClick={() => setPicker('tr')} title={t('bibleTranslation')}><Languages size={15} /> {tr ? `${tr.native} · ${shortName(tr)}` : place.tr}</button>
-        <button className={`btn sm ${place.tr2 ? 'primary' : ''}`} onClick={() => (place.tr2 ? go({ tr2: null }) : setPicker('tr2'))} title={t('bibleCompare')}><Columns2 size={15} /> <span className="bib-hide-sm">{place.tr2 && tr2 ? shortName(tr2) : t('bibleCompare')}</span>{place.tr2 && <X size={13} />}</button>
+        {!place.more.length ? <button className="btn sm" onClick={() => setPicker('add')} title={t('bibleCompare')}><Columns2 size={15} /> <span className="bib-hide-sm">{t('bibleCompare')}</span></button> : (
+          <>
+            {place.more.map((id) => { const x = info(id); return <button key={id} className="btn sm primary" onClick={() => go({ more: place.more.filter((m) => m !== id) })} title={t('bibleCompareRemove')}><Columns2 size={15} /> {x ? shortName(x) : id} <X size={13} /></button>; })}
+            {place.more.length < 3 && <button className="btn sm ghost icon" onClick={() => setPicker('add')} aria-label={t('bibleCompareAdd')} title={t('bibleCompareAdd')}><Plus size={15} /></button>}
+          </>
+        )}
         <button className="btn sm ghost" onClick={() => setPicker('search')} title={t('bibleSearchTitle')}><Search size={15} /> <span className="bib-hide-sm">{t('bibleSearchTitle')}</span></button>
         <button className="btn sm ghost" onClick={() => setNotes(0)} title={t('bibleCommentary')}><ScrollText size={15} /> <span className="bib-hide-sm">{t('bibleCommentary')}</span></button>
         <button className="btn sm ghost" onClick={() => setPicker('marks')} title={t('bibleMarks')}><NotebookPen size={15} /> <span className="bib-hide-sm">{t('bibleMarks')}</span></button>
@@ -100,7 +107,7 @@ export function MemberBiblePage() {
 
       <LiveVerseCard />
       {ch.error ? <ErrorState error={ch.error} onRetry={ch.reload} /> : !ch.data ? <Loading /> : (
-        <Reader ch={ch.data} ch2={place.tr2 ? ch2.data : null} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} onCommentary={setNotes} />
+        <Reader ch={ch.data} others={(others.data ?? []).filter((x): x is BibleChapter => !!x)} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} onCommentary={setNotes} />
       )}
 
       {ch.data && (
@@ -116,15 +123,15 @@ export function MemberBiblePage() {
       {study !== null && <WordStudy book={place.book} chapter={place.chapter} verse={study} names={books.data} onClose={() => setStudy(null)} onOpen={(book, chapter, verse) => { setStudy(null); go({ book, chapter }); setMark(verse); }} />}
       {notes !== null && <Commentary book={place.book} chapter={place.chapter} verse={notes || null} title={title} onClose={() => setNotes(null)} />}
       {picker === 'marks' && <MarksList onClose={() => setPicker(null)} onOpen={(m) => { go({ book: m.book, chapter: m.chapter }); setMark(m.verse); setPicker(null); }} />}
-      {(picker === 'tr' || picker === 'tr2') && (
-        <TranslationPicker all={all} featured={list.data?.featured ?? FEATURED_BIBLES.map((b) => b.id)} current={picker === 'tr' ? place.tr : place.tr2} myLang={session?.member.language ?? lang}
-          onClose={() => setPicker(null)} onPick={(id) => { go(picker === 'tr' ? { tr: id } : { tr2: id }); setPicker(null); }} />
+      {(picker === 'tr' || picker === 'add') && (
+        <TranslationPicker all={all} featured={list.data?.featured ?? FEATURED_BIBLES.map((b) => b.id)} current={picker === 'tr' ? place.tr : null} myLang={session?.member.language ?? lang}
+          onClose={() => setPicker(null)} onPick={(id) => { go(picker === 'tr' ? { tr: id } : { more: [...place.more.filter((m) => m !== id), id].slice(0, 3) }); setPicker(null); }} />
       )}
     </>
   );
 }
 
-function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStudy, onCommentary }: { ch: BibleChapter; ch2: BibleChapter | null; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void; onCommentary: (verse: number) => void }) {
+function Reader({ ch, others, size, mark, setMark, marks, onMark, onSeeAlso, onStudy, onCommentary }: { ch: BibleChapter; others: BibleChapter[]; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void; onCommentary: (verse: number) => void }) {
   const { t } = useT();
   const toast = useToast();
   const [showNotes, setShowNotes] = useState(false);
@@ -138,18 +145,19 @@ function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStud
   useEffect(() => { setNoteOpen(false); setNote(mine?.note ?? ''); }, [mark]); // eslint-disable-line react-hooks/exhaustive-deps
   const markClass = (n: number) => { const m = marks.get(n); return m?.color ? ` hl-${m.color}` : ''; };
   const markIcons = (n: number) => { const m = marks.get(n); return m && (m.bookmark || m.note) ? <span className="bib-icons">{m.bookmark && <Bookmark size={12} />}{m.note && <StickyNote size={12} />}</span> : null; };
-  const byVerse = useMemo(() => new Map((ch2?.verses ?? []).map((v) => [v.n, v])), [ch2]);
+  const byVerse = useMemo(() => others.map((o) => new Map(o.verses.map((v) => [v.n, v]))), [others]);
+  const cols = others.length > 0;
 
   return (
-    <article className={`bib-read ${ch2 ? 'bib-two' : ''}`} style={{ fontSize: size }}>
+    <article className={`bib-read ${cols ? 'bib-two' : ''} ${others.length > 1 ? 'bib-many' : ''}`} style={{ fontSize: size, ['--cols' as string]: 1 + others.length }}>
       <h1 className="bib-title" dir={ch.translation.rtl ? 'rtl' : undefined}>{ch.bookName} {ch.chapter}</h1>
-      {ch2 && <div className="bib-cols bib-colhead small muted"><span>{shortName(ch.translation)}</span><span>{shortName(ch2.translation)}</span></div>}
+      {cols && <div className="bib-cols bib-colhead small muted"><span>{shortName(ch.translation)}</span>{others.map((o) => <span key={o.translation.id}>{shortName(o.translation)}</span>)}</div>}
       {ch.intro && <p className="bib-intro">{ch.intro}</p>}
-      {ch2 ? (
+      {cols ? (
         ch.verses.map((v) => (
           <div key={v.n} className={`bib-cols ${mark === v.n ? 'on' : ''}${markClass(v.n)}`} id={`v${v.n}`} onClick={() => setMark(mark === v.n ? null : v.n)}>
             <VerseText v={v} rtl={ch.translation.rtl} icons={markIcons(v.n)} />
-            {byVerse.get(v.n) ? <VerseText v={byVerse.get(v.n)!} rtl={ch2.translation.rtl} /> : <span />}
+            {others.map((o, i) => { const w = byVerse[i].get(v.n); return <div key={o.translation.id} className="bib-alt" data-tr={shortName(o.translation)}>{w && <VerseText v={w} rtl={o.translation.rtl} />}</div>; })}
           </div>
         ))
       ) : (
@@ -175,7 +183,7 @@ function Reader({ ch, ch2, size, mark, setMark, marks, onMark, onSeeAlso, onStud
           {showNotes && <ol className="bib-notes">{ch.notes.map((n, i) => <li key={i}><b>{ch.chapter}:{n.verse}</b> {n.text}</li>)}</ol>}
         </div>
       )}
-      <p className="small muted bib-source">{ch.source}{ch2 && <><br />{ch2.source}</>}</p>
+      <p className="small muted bib-source">{ch.source}{others.map((o) => <span key={o.translation.id}><br />{o.source}</span>)}</p>
 
       {verse && (
         <div className="bib-actions card stack" role="toolbar" style={{ gap: 8 }}>
