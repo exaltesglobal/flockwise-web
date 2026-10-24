@@ -99,6 +99,7 @@ import { LeaderPipelinePage } from '@/admin/pages/leader-pipeline';
 import { MeetingsPage } from '@/admin/pages/meetings';
 import { MonthlyReportPage } from '@/admin/pages/monthly-report';
 import { AnnualReportPage } from '@/admin/pages/annual-report';
+import { CompliancePage } from '@/admin/pages/compliance';
 import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
 import { AskLivePage } from '@/admin/pages/ask-live';
@@ -190,6 +191,7 @@ const routes = [
       { path: 'benevolence', element: <BenevolencePage /> },
       { path: 'assets', element: <AssetsPage /> },
       { path: 'bank', element: <BankPage /> },
+      { path: 'compliance', element: <CompliancePage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },

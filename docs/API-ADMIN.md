@@ -1559,3 +1559,22 @@ The general body meeting pack for a financial year (India: April to March; label
 | GET | /admin/annual-report | insights or settings | `?year=2025` (start year) | AnnualReport `{ year, church, currency, membership, attendance, rites, giving, expenses, ministries, draft, preparedAt }` |
 | PUT | /admin/annual-report/:year | insights or settings | `{ letter?, highlights?, thanks?, photos?[{ url, caption }], hide?: AnnualReportSection[], baptismNames? }` | AnnualReport |
 | POST | /admin/annual-report/:year/letter | insights or settings | `{ language? }` | `{ letter }` (AI draft from the figures) |
+
+## FCRA and 80G guard (feature `fcra-guard`)
+
+For churches in India. Keeps a list of foreign givers (foreign citizen, OCI card holder, foreign organisation; an Indian citizen abroad is listed as `nri_indian`, a local source). When a listed foreign giver's gift is recorded on the local side, `POST /admin/giving/donations` and the member's `POST /giving/intents` answer 422 `fcra_wrong_account`; the office can send `indianSource: true` when that gift came from an Indian account. Warnings: foreign giver's gifts in the main account, gifts recorded both ways, unregistered church with foreign gifts, foreign-looking credits on the main bank statement, FCRA spending ahead of receipts, administrative share above 20%, FCRA money passed to another body, cash FCRA payments, registration validity, 80G PAN gaps and cash above ₹2,000. Due dates: 10BD and 10BE (31 May), FC-4 (31 December), quarterly foreign receipts (15 days after each quarter), renewal. Staff with giving.edit or settings get `compliance.due` a month and a week before each, and once per new stop-level warning. Working figures, not legal advice.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/compliance | giving.view or settings | `?year=2026` | ComplianceGuard `{ year, india, registered, fcra, receipts80g, summary, warnings, deadlines, donors, heads, currency }` |
+| GET | /admin/compliance/fc4 | giving.view or settings | `?year=` | Fc4Figures (opening, donors with country and purpose, received, interest, utilisation by head, admin share, closing) |
+| GET | /admin/compliance/fc4.csv | giving.view or settings | `?year=` | `{ csv, filename }` |
+| GET | /admin/compliance/10bd | giving.view or settings | `?year=` | Form10bd (rows grouped by giver ID, mode and type; missing ID/address counts; cash over limit and foreign gifts left out) |
+| GET | /admin/compliance/10bd.csv | giving.view or settings | `?year=` | `{ csv, filename }` in the income tax portal's 10BD column order |
+| PUT | /admin/compliance/settings | giving.edit or settings | `{ registrationValidTo?, adminHeadIds?, openingBalance?: { year, amount } }` | ComplianceGuard |
+| POST | /admin/compliance/donors | giving.edit or settings | `{ personId? , name?, kind, country, note? }` (country required unless `nri_indian`) | ComplianceGuard |
+| DELETE | /admin/compliance/donors/:id | giving.edit or settings | | ComplianceGuard |
+| POST | /admin/compliance/gifts/foreign | giving.edit or settings | `{ donationIds }` moves gifts to the FCRA side (PAN dropped) | ComplianceGuard |
+| POST | /admin/compliance/dismiss | giving.edit or settings | `{ id }` (only `bank:` and inferred `local:` warnings) | ComplianceGuard |
+| POST | /admin/compliance/filed | giving.edit or settings | `{ key, ack? }` key like `fc4:2025-26`, `10bd:2025-26`, `fcq:2026-27:Q1` | ComplianceGuard |
+| DELETE | /admin/compliance/filed/:key | giving.edit or settings | | ComplianceGuard |

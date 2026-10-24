@@ -160,4 +160,6 @@ export const OFFICE_PHRASES = [
   "Family altar",
   "Talent bank",
   "Annual report",
+  "FCRA and 80G guard",
+  "Foreign givers",
 ];

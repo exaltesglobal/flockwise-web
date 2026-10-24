@@ -789,10 +789,10 @@ export function seedDemo(db: Db, env: Env) {
   ];
   for (const [hid, name, rupees] of headDefs) db.put('accountHeads', { id: hid, name, tallyName: null, tallyGroup: 'Indirect Expenses', budgets: rupees ? { [fyLabel]: rupees * 100 } : {}, active: true });
   let pv = 0;
-  const exp = (daysAgo: number, headId: string, rupees: number, payee: string, description: string, status: Collections['expenses']['status'], method: Collections['expenses']['method'] = 'bank_transfer', by = 'Leena George') => {
+  const exp = (daysAgo: number, headId: string, rupees: number, payee: string, description: string, status: Collections['expenses']['status'], method: Collections['expenses']['method'] = 'bank_transfer', by = 'Leena George', fcra = false) => {
     const date = iso(now - daysAgo * DAY).slice(0, 10);
     const paid = status === 'paid';
-    db.put('expenses', { id: id('ex'), voucherNumber: paid ? `PV/${fyLabel}/${String(++pv).padStart(4, '0')}` : null, date, headId, amount: rupees * 100, payee, description, method: paid || status === 'approved' ? method : null, reference: paid && method !== 'cash' ? `UTR${100000 + pv * 7919}` : null, fcra: false, billUrl: null, status, submittedBy: by, submittedById: by === 'Leena George' ? 'st_2' : 'st_5', submittedAt: iso(now - (daysAgo + 1) * DAY), decidedBy: status === 'submitted' ? null : 'Vinod Mathew', decidedAt: status === 'submitted' ? null : iso(now - daysAgo * DAY), decisionNote: status === 'rejected' ? 'Please get a second quote first.' : null, paidAt: paid ? iso(now - daysAgo * DAY) : null });
+    db.put('expenses', { id: id('ex'), voucherNumber: paid ? `PV/${fyLabel}/${String(++pv).padStart(4, '0')}` : null, date, headId, amount: rupees * 100, payee, description, method: paid || status === 'approved' ? method : null, reference: paid && method !== 'cash' ? `UTR${100000 + pv * 7919}` : null, fcra, billUrl: null, status, submittedBy: by, submittedById: by === 'Leena George' ? 'st_2' : 'st_5', submittedAt: iso(now - (daysAgo + 1) * DAY), decidedBy: status === 'submitted' ? null : 'Vinod Mathew', decidedAt: status === 'submitted' ? null : iso(now - daysAgo * DAY), decisionNote: status === 'rejected' ? 'Please get a second quote first.' : null, paidAt: paid ? iso(now - daysAgo * DAY) : null });
   };
   for (let m = 0; m < 6; m++) {
     exp(5 + m * 30, 'ah_salary', 145_000, 'Staff salaries', `Salaries for ${new Date(now - (5 + m * 30) * DAY).toLocaleDateString('en-IN', { month: 'long' })}`, 'paid');
@@ -806,6 +806,13 @@ export function seedDemo(db: Db, env: Env) {
   exp(1, 'ah_media', 64_000, 'Musicland, Abids', 'New keyboard for the worship team', 'submitted', null, 'David Samuel');
   exp(2, 'ah_print', 4_200, 'Om Printers', 'Christmas programme flyers, 1,000 copies', 'submitted', null, 'Leena George');
   exp(15, 'ah_events', 90_000, 'Shamiana Tent House', 'Tent and chairs for the outdoor carol service', 'rejected', null, 'David Samuel');
+  // FCRA: children's education paid from the FCRA account, givers abroad on the guard's list.
+  exp(26, 'ah_benev', 40_000, 'St. Mary\'s High School', 'School fees for 8 children (FCRA)', 'paid', 'bank_transfer', 'Leena George', true);
+  exp(56, 'ah_salary', 18_000, 'Leena George', 'Office assistant salary, FCRA share', 'paid', 'bank_transfer', 'Leena George', true);
+  const abroad = [...new Set(db.all('donations').filter((d) => d.fcra && d.donorId).map((d) => d.donorId!))];
+  const kinds: [Collections['foreignDonors']['kind'], string][] = [['foreign_citizen', 'United Kingdom'], ['oci', 'United States'], ['foreign_citizen', 'Canada']];
+  abroad.slice(0, 3).forEach((pid, i) => { const p = db.get('people', pid); if (p) db.put('foreignDonors', { id: `fg_${i + 1}`, personId: pid, name: `${p.firstName} ${p.lastName}`, kind: kinds[i][0], country: kinds[i][1], note: '', by: 'Leena George', at: iso(now - 90 * DAY) }); });
+  db.put('complianceState', { id: 'main', registrationValidTo: `${fyStart + 1}-03-31`, adminHeadIds: ['ah_salary', 'ah_rent', 'ah_power', 'ah_print', 'ah_travel', 'ah_bank'], openingBalances: { [fyLabel]: 1_25_000_00 }, filed: {}, dismissed: [] });
   db.put('settings', { ...db.get('settings', 'church')!, tally: { companyName: 'Grace Community Church Trust', bankLedger: 'HDFC Bank A/c 4821', cashLedger: 'Cash', fcraBankLedger: 'SBI FCRA A/c (New Delhi Main Branch)' } });
   db.put('meta', { id: `voucher:pv:${fyLabel}`, value: String(pv) });
 }

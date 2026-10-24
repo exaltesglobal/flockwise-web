@@ -208,6 +208,7 @@ function OfflineGiftForm({ funds, currency, onClose, onSaved, batch }: { funds: 
   const [method, setMethod] = useState<OfflineDonationInput['method']>('cash');
   const [pan, setPan] = useState('');
   const [foreign, setForeign] = useState(false);
+  const [indianSource, setIndianSource] = useState(false);
   const [receivedAt, setReceivedAt] = useState(new Date().toISOString().slice(0, 10));
   const save = useAction(AdminApi.giving.recordOffline);
   const amt = Math.round(Number(amount) * 100);
@@ -224,11 +225,11 @@ function OfflineGiftForm({ funds, currency, onClose, onSaved, batch }: { funds: 
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const r = await save.run({ donorId, donorName: donorName.trim(), fundId, amount: amt, method, pan: pan.trim().toUpperCase() || undefined, donorCitizenship: foreign ? 'OTHER' : 'IN', receivedAt, batchId: batch?.id ?? null });
+    const r = await save.run({ donorId, donorName: donorName.trim(), fundId, amount: amt, method, pan: pan.trim().toUpperCase() || undefined, donorCitizenship: foreign ? 'OTHER' : 'IN', indianSource: indianSource || undefined, receivedAt, batchId: batch?.id ?? null });
     if (!r) return;
     if (batch) {
       // Batch entry: stay open for the next envelope.
-      setDonorName(''); setDonorId(null); setAmount(''); setPan(''); setForeign(false);
+      setDonorName(''); setDonorId(null); setAmount(''); setPan(''); setForeign(false); setIndianSource(false);
     }
     onSaved();
   }
@@ -267,6 +268,15 @@ function OfflineGiftForm({ funds, currency, onClose, onSaved, batch }: { funds: 
               <input type="checkbox" checked={foreign} onChange={(e) => setForeign(e.target.checked)} />
               <span>Donor is a foreign citizen or OCI holder <span className="small muted">(must go to the FCRA account)</span></span>
             </label>
+            {save.error?.code === 'fcra_wrong_account' && !foreign && (
+              <div className="alert warn stack" style={{ gap: 8 }}>
+                <span>This giver is on the foreign givers list, so the gift should go to the FCRA account.</span>
+                <div className="row wrap" style={{ gap: 8 }}>
+                  <button type="button" className="btn sm primary" onClick={() => { setForeign(true); setPan(''); }}>Record as a foreign (FCRA) gift</button>
+                  <label className="check"><input type="checkbox" checked={indianSource} onChange={(e) => setIndianSource(e.target.checked)} /><span>From an Indian source (Indian bank account)</span></label>
+                </div>
+              </div>
+            )}
           </>
         )}
       </form>

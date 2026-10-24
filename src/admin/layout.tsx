@@ -134,6 +134,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       { label: 'Accounts', icon: Landmark, pages: [
         { to: '/admin/accounts', label: 'Accounts & expenses', icon: Landmark, feature: 'accounts' },
         { to: '/admin/bank', label: 'Bank reconciliation', icon: Scale, perm: ['giving.view'], feature: 'bank' },
+        { to: '/admin/compliance', label: 'FCRA and 80G guard', icon: ShieldCheck, perm: ['giving.view', 'settings'], feature: 'fcra-guard' },
         { to: '/admin/assets', label: 'Assets', icon: Armchair, feature: 'assets' },
         { to: '/admin/annual-return', label: 'Annual return', icon: FileSpreadsheet, perm: ['settings', 'insights'], feature: 'annual-return' },
       ] },

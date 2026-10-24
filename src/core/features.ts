@@ -84,6 +84,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'accounts', label: 'Accounts & expenses', body: 'Income, expenses, vouchers and budgets.', group: 'money', on: true },
   { key: 'offerings', label: 'Special offerings', body: 'Harvest festival, building fund and other special collections.', group: 'money', on: false },
   { key: 'missions', label: 'Missions', body: 'Missionaries you support and what they need.', group: 'money', on: false },
+  { key: 'fcra-guard', label: 'FCRA and 80G guard', body: 'Keeps foreign and local money apart, warns before a foreign gift lands in the wrong account, and prepares FC-4, 10BD and 80G figures.', group: 'money', on: true },
   { key: 'bank', label: 'Bank reconciliation', body: 'Match the bank statement with gifts and expenses.', group: 'money', on: false },
   { key: 'assets', label: 'Assets', body: 'Furniture, instruments and equipment with service dates.', group: 'money', on: false },
   { key: 'annual-return', label: 'Annual return', body: 'The yearly figures for the registrar or diocese.', group: 'money', on: false },

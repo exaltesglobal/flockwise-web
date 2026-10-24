@@ -21,6 +21,7 @@ import { griefDue } from './grief.js';
 import { storyLineDue } from './story-line.js';
 import { altarDue } from './family-altar.js';
 import { outreachDue } from './outreach.js';
+import { complianceDue } from './compliance.js';
 import { libraryReminders } from './library.js';
 import { occasionReminders } from './occasions.js';
 import { practiceReminders } from './practice.js';
@@ -232,6 +233,7 @@ export async function runDue(ctx: Ctx) {
   await storyLineDue(ctx, today);
   await altarDue(ctx, today);
   await outreachDue(ctx, today);
+  await complianceDue(ctx, today);
   if (a.welcome.enabled) {
     const welcomed = new Set((ctx.db.get('meta', 'automations:welcomed')?.value ?? '').split(',').filter(Boolean));
     const fresh = people.filter((p) => p.status === 'visitor' && !welcomed.has(p.id) && ctx.now.getTime() - new Date(p.joinedAt).getTime() < 7 * DAY);

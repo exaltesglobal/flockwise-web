@@ -23,6 +23,7 @@ import {
   settings,
 } from '../util.js';
 import { onTicketPaid } from './church.js';
+import { checkGiftAccount } from './compliance.js';
 import { onFormPaid } from './forms.js';
 import { onRentalPaid } from './rentals.js';
 import { monthsLeft, startRecurring } from './recurring.js';
@@ -65,6 +66,7 @@ async function giftIntent(ctx: Ctx, input: Record<string, any>, extra: { pledgeI
   if (!fund || !fund.active || fund.system) throw new ApiError(404, 'fund_not_found', 'That fund is not accepting gifts right now.');
   const fcra = s.country === 'IN' && input.donorCitizenship === 'OTHER';
   if (fcra && !s.fcra.registered) throw new ApiError(422, 'fcra_not_registered', 'This church cannot accept gifts from foreign citizens or OCI holders.');
+  checkGiftAccount(ctx, { donorId: me.id, foreign: fcra, member: true });
   const d: Collections['donations'] = {
     id: ctx.id('dn'),
     donorId: me.id,
@@ -141,6 +143,7 @@ export function recordGift(ctx: Ctx, b: Record<string, any>) { // eslint-disable
   if (!(Number(b.amount) > 0)) throw new ApiError(422, 'invalid', 'Enter the amount.', { amount: 'Required' });
   if (b.pan && !PAN_RE.test(b.pan)) throw new ApiError(422, 'invalid', 'PAN should look like ABCDE1234F.', { pan: 'Invalid PAN' });
   const donor = b.donorId ? ctx.db.get('people', b.donorId) : undefined;
+  checkGiftAccount(ctx, { donorId: donor?.id ?? null, donorName: String(b.donorName), foreign: b.donorCitizenship === 'OTHER', indianSource: b.indianSource === true });
   const batch = b.batchId ? find(ctx, 'batches', String(b.batchId), 'Batch') : null;
   if (batch && batch.status !== 'open') throw new ApiError(409, 'batch_committed', `The batch “${batch.name}” is committed. Reopen it to add gifts.`);
   const at = b.receivedAt ? new Date(b.receivedAt).toISOString() : ctx.now.toISOString();

@@ -492,7 +492,7 @@ export type AdminDonation = Donation & {
   fcra: boolean;
   receiptNumber: string | null;
 };
-export type OfflineDonationInput = { donorId: string | null; donorName: string; fundId: string; amount: number; method: 'cash' | 'cheque' | 'bank_transfer'; pan?: string; donorCitizenship: 'IN' | 'OTHER'; receivedAt: string };
+export type OfflineDonationInput = { donorId: string | null; donorName: string; fundId: string; amount: number; method: 'cash' | 'cheque' | 'bank_transfer'; pan?: string; donorCitizenship: 'IN' | 'OTHER'; receivedAt: string; /** The giver is on the foreign givers list, but this gift came from an Indian account. */ indianSource?: boolean };
 export type DonationQuery = { fundId?: string; from?: string; to?: string; q?: string; cursor?: string };
 export type DonationPage = { data: AdminDonation[]; nextCursor: string | null; total: number; totalAmount: number };
 
@@ -1658,7 +1658,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder' | 'compliance.due';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1949,6 +1949,8 @@ export type Collections = {
   outreaches: Outreach;
   outreachSignups: OutreachSignup;
   annualReports: AnnualReportDraft;
+  foreignDonors: ForeignDonor;
+  complianceState: ComplianceState;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2053,7 +2055,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3640,4 +3642,82 @@ export type AnnualReport = {
   ministries: { groups: number; groupMeetings: number; sundaySchoolClasses: number; sundaySchoolChildren: number; volunteers: number; coursesCompleted: number; outreachDays: number; outreachHelped: number; events: number; sermons: number; prayers: number; visits: number };
   draft: AnnualReportDraft;
   preparedAt: string;
+};
+
+// ----- FCRA and trust compliance guard: keeps foreign and local money apart, warns before a foreign gift lands in the main account, and prepares FC-4, 10BD and 80G figures -----
+/** Who the giver is for FCRA. An Indian citizen living abroad (NRI) is a local source; a foreign citizen, an OCI card holder or a foreign body is not. */
+export type ForeignDonorKind = 'foreign_citizen' | 'oci' | 'foreign_org' | 'nri_indian';
+export type ForeignDonor = { id: string; personId: string | null; name: string; kind: ForeignDonorKind; country: string; note: string; by: string; at: string };
+export type ComplianceFiled = { at: string; by: string; ack: string };
+/** One per church, id 'main'. */
+export type ComplianceState = {
+  id: 'main';
+  /** YYYY-MM-DD the FCRA registration certificate is valid to. */
+  registrationValidTo: string | null;
+  /** Expense heads that count as administrative expenses for the FCRA 20% limit. */
+  adminHeadIds: string[];
+  /** FCRA account balance at the start of each financial year, by year label, in minor units. */
+  openingBalances: Record<string, number>;
+  /** Returns marked as filed, by key: fc4:2025-26, 10bd:2025-26, 10be:2025-26, fcq:2026-27:Q1, renew:2027-03-31. */
+  filed: Record<string, ComplianceFiled>;
+  /** Warnings the office checked and set aside. */
+  dismissed: string[];
+};
+export type ComplianceWarning = {
+  id: string;
+  level: 'stop' | 'warn' | 'info';
+  title: string;
+  detail: string;
+  fix: string;
+  donationIds?: string[];
+  expenseIds?: string[];
+  bankLineId?: string;
+  personId?: string | null;
+  /** The gifts can be moved to the FCRA side with POST /admin/compliance/gifts/foreign. */
+  canMarkForeign?: boolean;
+  canDismiss?: boolean;
+};
+export type ComplianceDeadline = { key: string; label: string; body: string; due: string; status: 'filed' | 'overdue' | 'due' | 'upcoming'; filed: ComplianceFiled | null; link: string | null };
+export type ComplianceYear = { label: string; from: string; to: string };
+export type Fc4Figures = {
+  year: ComplianceYear;
+  bank: { registrationNumber: string | null; accountLast4: string | null };
+  openingBalance: number;
+  donors: { key: string; name: string; kind: ForeignDonorKind | 'unknown'; country: string; address: string | null; purpose: string; gifts: number; amount: number }[];
+  received: number;
+  interest: number;
+  utilisation: { headId: string; name: string; amount: number; admin: boolean }[];
+  utilised: number;
+  adminSpent: number;
+  /** Administrative spending as a share of foreign money received this year (0 to 1). */
+  adminShare: number | null;
+  closingBalance: number;
+};
+export type Form10bdMode = 'Cash' | 'Kind' | 'Electronic modes including account payee cheque/draft' | 'Others';
+export type Form10bdRow = { key: string; donorId: string | null; idCode: '' | '1'; idNumber: string; name: string; address: string; donationType: 'Corpus' | 'Specific grant' | 'Others'; mode: Form10bdMode; gifts: number; amount: number; missing: ('ID' | 'address')[] };
+export type Form10bd = {
+  year: ComplianceYear;
+  registration: string | null;
+  pan: string | null;
+  rows: Form10bdRow[];
+  total: number;
+  missingId: number;
+  missingAddress: number;
+  /** Cash gifts above ₹2,000 to tax-deductible funds: not deductible, so left out. */
+  cashOverLimit: { gifts: number; amount: number };
+  /** Gifts in the FCRA account: not part of 10BD. */
+  foreignLeftOut: { gifts: number; amount: number };
+};
+export type ComplianceGuard = {
+  year: ComplianceYear;
+  india: boolean;
+  registered: boolean;
+  fcra: { registrationNumber: string | null; accountLast4: string | null; validTo: string | null };
+  receipts80g: { enabled: boolean; registrationNumber: string | null; pan: string | null };
+  summary: { foreignReceived: number; foreignGifts: number; foreignSpent: number; localReceived: number; adminShare: number | null };
+  warnings: ComplianceWarning[];
+  deadlines: ComplianceDeadline[];
+  donors: (ForeignDonor & { gifts: number; amount: number })[];
+  heads: { id: string; name: string; admin: boolean }[];
+  currency: Currency;
 };

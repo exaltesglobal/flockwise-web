@@ -18,6 +18,7 @@ import type { AltarHub, AltarWeek, MyAltar } from '@/core/types';
 import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { AnnualReport, AnnualReportDraft } from '@/core/types';
+import type { ComplianceGuard, Fc4Figures, ForeignDonorKind, Form10bd } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -668,6 +669,20 @@ export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  compliance: {
+    get: (year?: string) => a.get<ComplianceGuard>(`/admin/compliance${qs({ year })}`),
+    fc4: (year?: string) => a.get<Fc4Figures>(`/admin/compliance/fc4${qs({ year })}`),
+    fc4Csv: (year?: string) => a.get<{ csv: string; filename: string }>(`/admin/compliance/fc4.csv${qs({ year })}`),
+    form10bd: (year?: string) => a.get<Form10bd>(`/admin/compliance/10bd${qs({ year })}`),
+    form10bdCsv: (year?: string) => a.get<{ csv: string; filename: string }>(`/admin/compliance/10bd.csv${qs({ year })}`),
+    settings: (body: { registrationValidTo?: string | null; adminHeadIds?: string[]; openingBalance?: { year: string; amount: number } }, year?: string) => a.put<ComplianceGuard>(`/admin/compliance/settings${qs({ year })}`, body),
+    addDonor: (body: { personId?: string; name?: string; kind: ForeignDonorKind; country: string; note?: string }, year?: string) => a.post<ComplianceGuard>(`/admin/compliance/donors${qs({ year })}`, body),
+    removeDonor: (id: string, year?: string) => a.del<ComplianceGuard>(`/admin/compliance/donors/${id}${qs({ year })}`),
+    markForeign: (donationIds: string[], year?: string) => a.post<ComplianceGuard>(`/admin/compliance/gifts/foreign${qs({ year })}`, { donationIds }),
+    dismiss: (id: string, year?: string) => a.post<ComplianceGuard>(`/admin/compliance/dismiss${qs({ year })}`, { id }),
+    filed: (key: string, ack: string, year?: string) => a.post<ComplianceGuard>(`/admin/compliance/filed${qs({ year })}`, { key, ack }),
+    unfile: (key: string, year?: string) => a.del<ComplianceGuard>(`/admin/compliance/filed/${encodeURIComponent(key)}${qs({ year })}`),
+  },
   annualReport: {
     get: (year?: string) => a.get<AnnualReport>(`/admin/annual-report${year ? `?year=${encodeURIComponent(year)}` : ''}`),
     save: (year: string, body: Partial<Omit<AnnualReportDraft, 'id' | 'by' | 'updatedAt'>>) => a.put<AnnualReport>(`/admin/annual-report/${encodeURIComponent(year)}`, body),
