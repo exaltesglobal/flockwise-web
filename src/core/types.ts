@@ -1941,6 +1941,7 @@ export type Collections = {
   stories: Story;
   storyListeners: StoryListener;
   storySends: StorySend;
+  journeyMarks: JourneyMark;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2045,7 +2046,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3516,3 +3517,15 @@ export type StoryLineHub = {
 };
 /** What the listen page shows. */
 export type StoryListen = { title: string; reference: string; audioUrl: string; language: LanguageCode; church: string; listened: boolean; prayer: boolean };
+
+/** Journey map: the steps of someone's walk with the church, mostly worked out from their records. */
+export type JourneyKind = 'first_visit' | 'regular' | 'faith' | 'baptised' | 'group' | 'course' | 'serving' | 'mentored' | 'mentoring' | 'leading' | 'custom';
+/** A step the office writes down by hand: when someone gave their life to Jesus, or anything else worth remembering. */
+export type JourneyMark = { id: string; personId: string; kind: 'faith' | 'custom'; label: string; date: string; by: string; createdAt: string };
+export type JourneyStep = { kind: JourneyKind; label: string; date: string | null; detail: string | null; markId: string | null };
+export type JourneyStageKey = 'came' | 'regular' | 'group' | 'baptised' | 'serving' | 'leading';
+export type JourneyStage = { key: JourneyStageKey; label: string; count: number; /** Median days from the step before, where both dates are known. */ medianDays: number | null };
+export type JourneyStuck = { stage: JourneyStageKey; label: string; next: string; people: { id: string; name: string; since: string | null; days: number | null }[] };
+export type JourneyHelp = { text: string; withRate: number; withoutRate: number; withCount: number; withoutCount: number };
+export type JourneyHub = { stages: JourneyStage[]; stuck: JourneyStuck[]; helps: JourneyHelp[]; people: number };
+export type MyJourney = { steps: JourneyStep[]; next: { label: string; link: string } | null };

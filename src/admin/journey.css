@@ -1,0 +1,6 @@
+/* A person's journey as a vertical line of steps (office and member pages). */
+.journey-line { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.journey-line li { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 0 0 14px 2px; }
+.journey-line li::before { content: ''; position: absolute; left: 8px; top: 18px; bottom: 0; width: 2px; background: var(--border); }
+.journey-line li:last-child::before { display: none; }
+.journey-dot { flex: none; width: 14px; height: 14px; margin-top: 4px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); position: relative; z-index: 1; }

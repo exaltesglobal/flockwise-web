@@ -13,6 +13,7 @@ import type { MorningCallOutcome, MorningListView } from '@/core/types';
 import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
 import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } from '@/core/types';
 import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
+import type { JourneyHub, JourneyStep, MyJourney } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -432,6 +433,7 @@ export const MemberApi = {
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
+  journey: () => m.get<MyJourney>('/me/journey'),
   move: {
     get: (city?: string) => m.get<MyMove>(`/me/move${city ? `?city=${encodeURIComponent(city)}` : ''}`),
     save: (body: { toCity: string; movingOn?: string; note?: string; partnerRef?: string; consent?: boolean }) => m.post<MyMove>('/me/move', body),
@@ -648,6 +650,12 @@ export type BlockoutView = Blockout & { name: string };
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  journey: {
+    get: () => a.get<JourneyHub>('/admin/journey'),
+    person: (id: string) => a.get<JourneyStep[]>(`/admin/people/${id}/journey`),
+    add: (id: string, body: { kind: 'faith' | 'custom'; label?: string; date: string }) => a.post<JourneyStep[]>(`/admin/people/${id}/journey`, body),
+    removeMark: (id: string) => a.del<JourneyStep[]>(`/admin/journey-marks/${id}`),
+  },
   stories: {
     get: () => a.get<StoryLineHub>('/admin/stories'),
     add: (body: { title: string; reference?: string; summary?: string; order?: number }) => a.post<StoryLineHub>('/admin/stories', body),

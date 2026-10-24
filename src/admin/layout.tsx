@@ -48,6 +48,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
     hubs: [
       { label: 'People', icon: Users, pages: [
         { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'], feature: 'people' },
+        { to: '/admin/journey', label: 'Journey map', icon: Footprints, perm: ['people.view'], feature: 'journey-map' },
         { to: '/admin/lists', label: 'Saved lists', icon: Filter, perm: ['people.view'], feature: 'lists' },
         { to: '/admin/zones', label: 'Area visits', icon: MapPin, perm: ['people.view'], feature: 'zones' },
         { to: '/admin/registrations', label: 'Registrations', icon: UserPlus, perm: ['people.view'], feature: 'registration' },

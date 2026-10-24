@@ -28,6 +28,7 @@ export const FEATURE_GROUPS: { id: FeatureGroup; label: string }[] = [
 export const FEATURES: FeatureInfo[] = [
   // People and groups
   { key: 'people', label: 'People', body: 'Everyone in the church, families and their history.', group: 'people', on: true, core: true },
+  { key: 'journey-map', label: 'Journey map', body: 'Each person’s walk with the church as a timeline: first visit, coming regularly, a group, baptism, courses, serving and mentoring. See how many are at each step, who has been stuck for months, and what helps people move on.', group: 'people', on: true },
   { key: 'groups', label: 'Groups', body: 'Small groups, cells and fellowships with meetings and attendance.', group: 'people', on: true, core: true },
   { key: 'lists', label: 'Saved lists', body: 'Lists that keep themselves up to date, such as "youth not seen in a month".', group: 'people', on: true },
   { key: 'zones', label: 'Area visits', body: 'Zones or prayer cells with leaders and home visits.', group: 'people', on: true },

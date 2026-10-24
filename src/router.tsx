@@ -120,6 +120,8 @@ import { HospitalPage } from '@/admin/pages/hospital';
 import { MovesPage } from '@/admin/pages/moves';
 import { GriefPage } from '@/admin/pages/grief';
 import { StoryLinePage } from '@/admin/pages/story-line';
+import { JourneyPage } from '@/admin/pages/journey';
+import { MemberJourneyPage } from '@/member/journey';
 import { PublicStoryPage } from '@/public/story';
 import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
@@ -208,6 +210,7 @@ const routes = [
       { path: 'moves', element: <MovesPage /> },
       { path: 'grief', element: <GriefPage /> },
       { path: 'stories', element: <StoryLinePage /> },
+      { path: 'journey', element: <JourneyPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -278,6 +281,7 @@ const routes = [
       { path: 'cues/:eventId', element: <MemberCuesPage /> },
       { path: 'hospital', element: <MemberHospitalPage /> },
       { path: 'moving', element: <MemberMovingPage /> },
+      { path: 'journey', element: <MemberJourneyPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },

@@ -1493,3 +1493,15 @@ For people who cannot read. Each story is recorded per language (a link, or a me
 | GET | /public/story/:token | | StoryListen |
 | POST | /public/story/:token/listened, /prayer | | `{ ok }` |
 | GET/POST | /webhooks/story-line/:church/:key | provider fields (From/CallFrom…, Digits) | `?format=twiml` TwiML, `?format=url` plain audio link, else JSON |
+
+## Journey map (feature `journey-map`)
+
+Each person's timeline, worked out from their records (first visit, third service = coming regularly, groups, baptism, finished courses, first accepted serving, mentoring, leading) plus steps the office writes by hand (`faith`, `custom`).
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/journey | people.view | | JourneyHub `{ stages, stuck, helps, people }` |
+| GET | /admin/people/:id/journey | people.view | | JourneyStep[] |
+| POST | /admin/people/:id/journey | people.edit | `{ kind: faith\|custom, label?, date }` | JourneyStep[] |
+| DELETE | /admin/journey-marks/:id | people.edit | | JourneyStep[] |
+| GET | /me/journey | member | | MyJourney `{ steps, next }` |

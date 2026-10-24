@@ -1,4 +1,4 @@
-import { ChevronRight, Download, LogOut, MapPinned, Pencil, QrCode as QrIcon, UsersRound } from 'lucide-react';
+import { ChevronRight, Download, Footprints, LogOut, MapPinned, Pencil, QrCode as QrIcon, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -71,6 +71,14 @@ export function MemberMePage() {
         <div className="grow" style={{ minWidth: 0 }}>
           <b>{t('familyTitle')}</b>
           <div className="small muted">{t('familyBody')}</div>
+        </div>
+        <ChevronRight size={18} className="muted" />
+      </Link>
+      <Link to="/app/journey" className="card card-pad row" style={{ gap: 12 }}>
+        <Footprints size={22} className="muted" />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <b>{t('journeyCard')}</b>
+          <div className="small muted">{t('journeyCardBody')}</div>
         </div>
         <ChevronRight size={18} className="muted" />
       </Link>
