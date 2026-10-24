@@ -1384,3 +1384,11 @@ Counselling notes (feature `counselling`): encrypted in the browser (PBKDF2-SHA2
 - `POST /admin/devotions` `{ date, passage, title, thought, question, prayer }` (permission `care`; one per day), `PUT|DELETE /admin/devotions/:id`.
 - `POST /admin/devotions/draft` `{ passage, text? }` → `{ title, thought, question, prayer }` written by AI.
 - `POST /admin/devotions/:id/checkin` `{ note? }` and `DELETE` (any staff; not before its day). Each morning today's devotional is pushed to the office staff once (`devotion.today`). `MyDay.devotion` shows it when the feature is on.
+
+## Bible dictionary, people, places, timeline (public)
+
+From Theographic Bible Metadata (CC BY-SA 4.0) and Easton's Bible Dictionary (public domain), shipped in `data/atlas` (rebuild with `node scripts/build-atlas.mjs`). Every response carries `source`; show it.
+- `GET /public/bible/atlas/chapter/:book/:chapter` → people, places (with lat/lon) and events in that chapter, each with the verses.
+- `GET /public/bible/people/:slug`, `GET /public/bible/places/:slug` → entry with Easton text, references, family (people), events.
+- `GET /public/bible/timeline` → all events in order (`year` negative = BC, traditional dating).
+- `GET /public/bible/dictionary?q=` → headword hits; `GET /public/bible/dictionary/:term` → all senses with linked person/place.

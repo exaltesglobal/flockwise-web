@@ -1293,6 +1293,28 @@ export type DevotionsHub = { today: DevotionView | null; upcoming: DevotionView[
 export type CounselNote = { id: string; staffId: string; iv: string; data: string; followUp: string | null; followUpNotified: string | null; createdAt: string; updatedAt: string };
 /** Per pastor: the salt for the passphrase and a known text encrypted with it, to check the passphrase. */
 export type CounselKey = { id: string; staffId: string; salt: string; iv: string; check: string; createdAt: string };
+/** Bible dictionary, people, places and timeline (Theographic, CC BY-SA 4.0; Easton's dictionary, public domain). */
+export type AtlasRef = { key: string; label: string };
+export type AtlasName = { slug: string; name: string };
+export type ChapterAtlas = {
+  book: string; chapter: number;
+  people: { slug: string; name: string; verses: number[]; summary: string }[];
+  places: { slug: string; name: string; type: string | null; lat: number | null; lon: number | null; verses: number[] }[];
+  events: { id: number; title: string; year: number | null; duration: string | null }[];
+  source: string;
+};
+export type AtlasPerson = {
+  slug: string; name: string; gender: 'm' | 'f' | null; born: number | null; died: number | null; text: string; verseCount: number; refs: AtlasRef[];
+  father: AtlasName[]; mother: AtlasName[]; children: AtlasName[]; siblings: AtlasName[]; partners: AtlasName[];
+  birthPlace: AtlasName | null; deathPlace: AtlasName | null; events: { id: number; title: string; year: number | null }[]; source: string;
+};
+export type AtlasPlace = {
+  slug: string; name: string; type: string | null; subtype: string | null; lat: number | null; lon: number | null; comment: string; text: string; otherNames: string[];
+  verseCount: number; refs: AtlasRef[]; events: { id: number; title: string; year: number | null }[]; source: string;
+};
+export type AtlasEvent = { id: number; title: string; year: number | null; duration: string | null; refs: AtlasRef[]; people: AtlasName[]; places: AtlasName[] };
+export type DictionaryHit = { term: string; snippet: string; senses: number };
+export type DictionaryEntry = { term: string; senses: string[]; person: AtlasName | null; place: AtlasName | null; source: string };
 /** One Greek or Hebrew word behind a verse (STEPBible.org, CC BY). */
 export type BibleWord = { word: string; translit: string; gloss: string; strong: string; grammar: string; parsing: string };
 export type BibleWords = { book: string; chapter: number; verse: number; language: 'greek' | 'hebrew'; words: BibleWord[]; source: string };

@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -471,6 +471,12 @@ export const PublicApi = {
   strongs: (id: string) => m.get<StrongsStudy>(`/public/bible/strongs/${id}`),
   commentaries: () => m.get<BibleCommentaryInfo[]>('/public/bible/commentaries'),
   commentary: (id: string, book: string, chapter: number) => m.get<BibleCommentary>(`/public/bible/commentary/${id}/${book}/${chapter}`),
+  chapterAtlas: (book: string, chapter: number) => m.get<ChapterAtlas>(`/public/bible/atlas/chapter/${book}/${chapter}`),
+  biblePerson: (slug: string) => m.get<AtlasPerson>(`/public/bible/people/${encodeURIComponent(slug)}`),
+  biblePlace: (slug: string) => m.get<AtlasPlace>(`/public/bible/places/${encodeURIComponent(slug)}`),
+  bibleTimeline: () => m.get<AtlasEvent[]>('/public/bible/timeline'),
+  dictionarySearch: (q: string) => m.get<DictionaryHit[]>(`/public/bible/dictionary?q=${encodeURIComponent(q)}`),
+  dictionaryEntry: (term: string) => m.get<DictionaryEntry>(`/public/bible/dictionary/${encodeURIComponent(term)}`),
   bibleReady: (tr: string) => m.get<{ ready: boolean; failed?: string }>(`/public/bible/${encodeURIComponent(tr)}/ready`),
   bibleSearch: (tr: string, q: string, scope?: string) => m.get<BibleSearch>(`/public/bible/${encodeURIComponent(tr)}/search${qs({ q, scope })}`),
   bibleRefs: (tr: string, book: string, chapter: number, verse: number) => m.get<{ refs: BibleCrossRef[]; source: string }>(`/public/bible/${encodeURIComponent(tr)}/refs/${book}/${chapter}/${verse}`),

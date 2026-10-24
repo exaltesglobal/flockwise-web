@@ -2,7 +2,7 @@
 // about 890 more languages), book and chapter pickers, headings and poetry as printed, footnotes, a
 // second translation side by side, and a tap on a verse to copy it or send it on WhatsApp.
 // Opens at ?tr=hin2017&ref=John 3:16 from reading plans and shared links; otherwise where they left off.
-import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, ImageIcon, Languages, Link2, Sigma, Minus, NotebookPen, Pause, Plus, ScrollText, Search, Share2, StickyNote, Volume2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, ImageIcon, Languages, Link2, MapPinned, Sigma, Minus, NotebookPen, Pause, Plus, ScrollText, Search, Share2, StickyNote, Volume2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -18,6 +18,7 @@ import { useApi } from '@/lib/use-api';
 import { shareCard } from '@/lib/invitation';
 import { renderVerseCard, type VerseCardStyle } from '@/lib/verse-card';
 
+import { BibleAtlas } from '../bible-atlas';
 import { LiveVerseCard } from '../live-verse';
 
 /** `more`: up to three other Bibles shown beside the main one. */
@@ -61,6 +62,7 @@ export function MemberBiblePage() {
   const [seeAlso, setSeeAlso] = useState<number | null>(null);
   const [study, setStudy] = useState<number | null>(null);
   const [notes, setNotes] = useState<number | null>(null);
+  const [atlas, setAtlas] = useState(false);
   const toast = useToast();
   const list = useApi(PublicApi.bibleTranslations);
   const go = (p: Partial<Place>) => {
@@ -104,6 +106,7 @@ export function MemberBiblePage() {
         <button className="btn sm ghost" onClick={() => setPicker('search')} title={t('bibleSearchTitle')}><Search size={15} /> <span className="bib-hide-sm">{t('bibleSearchTitle')}</span></button>
         {aloud.supported && <button className={`btn sm ${aloud.on ? 'primary' : 'ghost'}`} onClick={aloud.toggle} title={aloud.on ? t('bibleStop') : t('bibleListen')}>{aloud.on ? <Pause size={15} /> : <Volume2 size={15} />} <span className="bib-hide-sm">{aloud.on ? t('bibleStop') : t('bibleListen')}</span></button>}
         <button className="btn sm ghost" onClick={() => setNotes(0)} title={t('bibleCommentary')}><ScrollText size={15} /> <span className="bib-hide-sm">{t('bibleCommentary')}</span></button>
+        <button className="btn sm ghost" onClick={() => setAtlas(true)} title={t('bibleAtlas')}><MapPinned size={15} /> <span className="bib-hide-sm">{t('bibleAtlas')}</span></button>
         <button className="btn sm ghost" onClick={() => setPicker('marks')} title={t('bibleMarks')}><NotebookPen size={15} /> <span className="bib-hide-sm">{t('bibleMarks')}</span></button>
         <span className="grow" />
         <div className="row" style={{ gap: 2 }} aria-label={t('bibleTextSize')}>
@@ -129,6 +132,7 @@ export function MemberBiblePage() {
       {seeAlso !== null && <SeeAlso tr={place.tr} book={place.book} chapter={place.chapter} verse={seeAlso} names={books.data} onClose={() => setSeeAlso(null)} onOpen={(book, chapter, verse) => { setSeeAlso(null); go({ book, chapter }); setMark(verse); }} />}
       {study !== null && <WordStudy book={place.book} chapter={place.chapter} verse={study} names={books.data} onClose={() => setStudy(null)} onOpen={(book, chapter, verse) => { setStudy(null); go({ book, chapter }); setMark(verse); }} />}
       {notes !== null && <Commentary book={place.book} chapter={place.chapter} verse={notes || null} title={title} onClose={() => setNotes(null)} />}
+      {atlas && <BibleAtlas book={place.book} chapter={place.chapter} title={title} onClose={() => setAtlas(false)} onOpen={(book, chapter, verse) => { setAtlas(false); go({ book, chapter }); setMark(verse); }} />}
       {picker === 'marks' && <MarksList onClose={() => setPicker(null)} onOpen={(m) => { go({ book: m.book, chapter: m.chapter }); setMark(m.verse); setPicker(null); }} />}
       {(picker === 'tr' || picker === 'add') && (
         <TranslationPicker all={all} featured={list.data?.featured ?? FEATURED_BIBLES.map((b) => b.id)} current={picker === 'tr' ? place.tr : null} myLang={session?.member.language ?? lang}
