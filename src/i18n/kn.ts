@@ -793,6 +793,15 @@ export const kn: Strings = {
   askYours: "ನಿಮ್ಮದು",
   askLanguage: "ಭಾಷೆ",
   askAnonymous: "ಹೆಸರಿಲ್ಲದೆ ಕೇಳಲು ಹೆಸರನ್ನು ಖಾಲಿ ಬಿಡಿ.",
+  singTitle: "ಜೊತೆಗೆ ಹಾಡಿ",
+  singWaiting: "ಪರದೆಯ ಮೇಲೆ ಹಾಡು ಇದ್ದಾಗ, ಅದರ ಸಾಲುಗಳು ಬದಲಾದಂತೆ ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.",
+  singOnScreen: "ಪರದೆಯ ಮೇಲಿನ ಹಾಡು",
+  singOpen: "ಜೊತೆಗೆ ಹಾಡಿ",
+  singMeaning: "ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಅರ್ಥ, ಹಾಡಲು ಅಲ್ಲ",
+  singNext: "ಮುಂದೆ: {label}",
+  singOf: "{m}ರಲ್ಲಿ {n}",
+  singLetters: "ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳು",
+  singIntro: "ಪರದೆಯ ಹಾಡನ್ನು ನೀವು ಆರಿಸಿದ ಭಾಷೆಯಲ್ಲಿ ಅನುಸರಿಸಿ.",
 };
 
 export default kn;

@@ -793,6 +793,15 @@ export const te: Strings = {
   askYours: "మీది",
   askLanguage: "భాష",
   askAnonymous: "పేరు లేకుండా అడగడానికి పేరు ఖాళీగా ఉంచండి.",
+  singTitle: "కలిసి పాడండి",
+  singWaiting: "తెరపై పాట ఉన్నప్పుడు, దాని పదాలు మారుతూ ఇక్కడ కనిపిస్తాయి.",
+  singOnScreen: "తెరపై పాట",
+  singOpen: "కలిసి పాడండి",
+  singMeaning: "మీ భాషలో భావం, పాడటానికి కాదు",
+  singNext: "తర్వాత: {label}",
+  singOf: "{m}లో {n}",
+  singLetters: "ఆంగ్ల అక్షరాలు",
+  singIntro: "తెరపై పాటను మీరు ఎంచుకున్న భాషలో చూడండి.",
 };
 
 export default te;

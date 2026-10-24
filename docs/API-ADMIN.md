@@ -1414,3 +1414,10 @@ A QR code on the screen opens `/ask/:code` on the web app. People send questions
 - `POST /admin/ask/:id/polls` `{ question, options[2..6] }` opens it and closes any other; `PUT /admin/ask/:id/polls/:pid` `{ open, show? }`; `DELETE`.
 - Stage: `GET /admin/ask/:id/stage` (staff) or `GET /screens/ask/:id?key=<screenKey>` → `{ title, code, stage, groups: [{ theme, questions }], poll, open }`.
 - Phones: `GET /public/ask/:code?device=`, `POST /public/ask/:code/questions` `{ text, name?, device }` (5 per 10 minutes per phone), `POST /public/ask/:code/questions/:qid/vote` `{ device }` (toggles), `POST /public/ask/:code/poll` `{ option, device }`. With `moderate`, others see a question only once it is approved.
+
+## Sing in my language
+
+While the screen shows a song, phones follow it slide by slide. Feature `sing-along`.
+
+- Members: `GET /me/live-song?lang=<code|roman>`; visitors: `GET /public/live-song?lang=` (also returns `churchName`). Both return `{ live: LiveSong | null }`; `null` when nothing or no song is on the screen (or it is blank).
+- `LiveSong`: `{ eventTitle, at, songTitle, copyright, label, lines, kind: 'original'|'second'|'roman'|'meaning', language, sung, versions: [{ key, label, kind }], slide, slides, next }`. `versions` lists what can be sung: the song's own language (detected from its script), its second language (`lyricsAlt`), and English letters for Indian scripts. Any other language gets an AI translation of the meaning (`kind: 'meaning'`, cached per slide; twenty slides count as one AI request), with the sung words in `sung`.

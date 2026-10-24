@@ -67,6 +67,27 @@ export async function translateCaption(ctx: Ctx, text: string, from: string, to:
   return textOf(res.content);
 }
 
+/**
+ * A few lines of a worship song, translated for their meaning so someone can follow along in their
+ * own language. Counted like captions: twenty slides make one request.
+ */
+export async function translateLyrics(ctx: Ctx, lines: string[], to: string): Promise<string[]> {
+  if (!ctx.env.ai) throw new ApiError(503, 'ai_off', 'AI features are not switched on for this server yet.');
+  const st = status(ctx);
+  if (st.used >= st.limit) throw new ApiError(429, 'ai_limit', `You have used all ${st.limit} AI requests for this month.`);
+  const key = `ai:lyrics:${st.month}`;
+  const n = Number(ctx.db.get('meta', key)?.value ?? 0) + 1;
+  ctx.db.put('meta', { id: key, value: String(n) });
+  if (n % 20 === 1) ctx.db.put('meta', { id: `ai:${st.month}`, value: String(st.used + 1) });
+  const res = await ctx.env.ai({
+    system: `Translate the lines of a Christian worship song into ${LANGS[to] ?? to}, in its own script, for their meaning so a worshipper can follow along. Keep one line out for each line in, in the same order, plain and reverent. Keep names of God and Bible names. Reply with only the translated lines.`,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+    maxTokens: 600,
+    effort: 'low',
+  }).catch((e: Error) => { throw new ApiError(502, 'ai_failed', e.message || 'The AI service did not answer.'); });
+  return textOf(res.content).split('\n').map((l) => l.trim()).filter(Boolean).slice(0, lines.length + 2);
+}
+
 const textOf = (blocks: AiBlock[]) => blocks.filter((b): b is Extract<AiBlock, { type: 'text' }> => b.type === 'text').map((b) => b.text).join('\n').trim();
 
 function json<T>(blocks: AiBlock[]): T {

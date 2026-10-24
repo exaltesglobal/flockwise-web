@@ -13,6 +13,7 @@ import { FEATURED_BIBLES } from '@/core/bible-texts';
 import { AdminApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Field, FormError, Loading, Modal, useToast } from '@/components/ui';
 import { transliterateLines } from '@/core/transliterate';
+import { churchUrl } from '@/lib/church';
 import { useCan } from '@/lib/perms';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
@@ -353,6 +354,7 @@ function PhonesPanel({ view, act }: { view: PresentationView; act: Act }) {
     <div className="pres-panel stack" style={{ gap: 6 }}>
       <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={on} onChange={(e) => void act('phones', { on: e.target.checked })} /> <Smartphone size={14} /> Bible readings on members' phones</label>
       <span className="small muted">{!on ? 'Off for this service.' : view.phoneVerse ? `Showing now: ${view.phoneVerse}` : 'When a reading is on the screen, members see it in their own Bible.'}</span>
+      <span className="small muted">Songs follow on phones too, in each person's language: <a href={churchUrl('/sing')} target="_blank" rel="noreferrer">{churchUrl('/sing').replace(/^https?:\/\//, '')}</a> (members also find it on the app's Home).</span>
     </div>
   );
 }

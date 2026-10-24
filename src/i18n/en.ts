@@ -790,6 +790,15 @@ export const en = {
   askYours: "Yours",
   askLanguage: "Language",
   askAnonymous: "Leave your name empty to ask without it.",
+  singTitle: "Sing along",
+  singWaiting: "When a song is on the screen, its words show here as it changes.",
+  singOnScreen: "Song on the screen",
+  singOpen: "Sing along",
+  singMeaning: "The meaning in your language, not for singing",
+  singNext: "Next: {label}",
+  singOf: "{n} of {m}",
+  singLetters: "English letters",
+  singIntro: "Follow the song on the screen in the language you choose.",
 };
 
 export type Strings = typeof en;

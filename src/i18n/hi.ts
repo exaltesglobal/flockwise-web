@@ -793,6 +793,15 @@ export const hi: Strings = {
   askYours: "आपका",
   askLanguage: "भाषा",
   askAnonymous: "बिना नाम पूछने के लिए नाम खाली छोड़ें।",
+  singTitle: "साथ गाएँ",
+  singWaiting: "जब स्क्रीन पर गीत होगा, उसके शब्द यहाँ बदलते हुए दिखेंगे।",
+  singOnScreen: "स्क्रीन पर गीत",
+  singOpen: "साथ गाएँ",
+  singMeaning: "आपकी भाषा में अर्थ, गाने के लिए नहीं",
+  singNext: "अगला: {label}",
+  singOf: "{m} में से {n}",
+  singLetters: "अंग्रेज़ी अक्षर",
+  singIntro: "स्क्रीन के गीत को अपनी चुनी भाषा में देखें।",
 };
 
 export default hi;

@@ -226,6 +226,14 @@ function verseOnScreen(state: PresentationState, items: PlanItem[], slides: Slid
   return parseReference(ref) ? ref : null;
 }
 
+/** The service's slides and the one on the screen now, with English letters worked out, for phones that sing along. */
+export function deckNow(ctx: Ctx, ev: Collections['events']) {
+  const state = stateFor(ctx, ev.id);
+  const items = [...liveView(ctx, ev).plan.items, ...addedItems(state.added)];
+  const slides = buildDeck(ctx, items, { ...themeOf(ctx), transliterate: true });
+  return { items, slides, state, index: Math.min(state.index, slides.length - 1) };
+}
+
 // What each service's screen shows, worked out once per change of slide (members' phones ask often).
 const onScreen = new Map<string, { at: string; ref: string | null; title: string }>();
 

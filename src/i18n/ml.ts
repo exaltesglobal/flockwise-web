@@ -793,6 +793,15 @@ export const ml: Strings = {
   askYours: "നിങ്ങളുടേത്",
   askLanguage: "ഭാഷ",
   askAnonymous: "പേരില്ലാതെ ചോദിക്കാൻ പേര് ശൂന്യമായി വിടുക.",
+  singTitle: "കൂടെ പാടുക",
+  singWaiting: "സ്ക്രീനിൽ പാട്ടുള്ളപ്പോൾ, അതിന്റെ വരികൾ മാറുന്നതനുസരിച്ച് ഇവിടെ കാണാം.",
+  singOnScreen: "സ്ക്രീനിലെ പാട്ട്",
+  singOpen: "കൂടെ പാടുക",
+  singMeaning: "നിങ്ങളുടെ ഭാഷയിൽ അർത്ഥം, പാടാനുള്ളതല്ല",
+  singNext: "അടുത്തത്: {label}",
+  singOf: "{m}-ൽ {n}",
+  singLetters: "ഇംഗ്ലീഷ് അക്ഷരങ്ങൾ",
+  singIntro: "സ്ക്രീനിലെ പാട്ട് നിങ്ങൾ തിരഞ്ഞെടുക്കുന്ന ഭാഷയിൽ പിന്തുടരുക.",
 };
 
 export default ml;

@@ -3266,3 +3266,14 @@ export type AskPublic = { churchName: string; logoUrl: string | null; title: str
 export type AskSessionSummary = AskSession & { questions: number; waiting: number; eventTitle: string | null };
 export type AskAdmin = { session: AskSession; eventTitle: string | null; questions: AskQuestionView[]; polls: AskPollView[]; screenKey: string | null };
 export type AskStage = { title: string; code: string; stage: AskSession['stage']; groups: { theme: string | null; questions: AskQuestionView[] }[]; poll: AskPollView | null; open: boolean };
+
+/** The song on the church's screen now, for a phone following along in the language it chose. */
+export type LiveSongVersion = { key: string; label: string; kind: 'original' | 'second' | 'roman' };
+export type LiveSong = {
+  eventTitle: string; at: string; songTitle: string; copyright: string | null; label: string;
+  lines: string[]; kind: 'original' | 'second' | 'roman' | 'meaning'; language: string;
+  /** The words as sung on the screen, shown small under a translation. */
+  sung: string[];
+  versions: LiveSongVersion[]; slide: number; slides: number; next: string | null;
+};
+

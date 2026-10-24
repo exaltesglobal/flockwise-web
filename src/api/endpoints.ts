@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -426,6 +426,7 @@ export const MemberApi = {
   sermonNotes: (id: string) => m.get<{ fill: SermonFill | null }>(`/me/sermons/${id}/notes`),
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
+  liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
   missions: {
     list: () => m.get<MemberMission[]>('/missions'),
@@ -484,6 +485,7 @@ export const PublicApi = {
   church: () => m.get<PublicChurch>('/public/church'),
   sermons: () => m.get<Sermon[]>('/public/sermons'),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/public/sermons/${id}/transcript`),
+  liveSong: (lang: string) => m.get<{ live: LiveSong | null; churchName: string }>(`/public/live-song?lang=${encodeURIComponent(lang)}`),
   ask: {
     get: (code: string, device: string) => m.get<AskPublic>(`/public/ask/${encodeURIComponent(code)}?device=${encodeURIComponent(device)}`),
     send: (code: string, body: { text: string; name?: string; device: string }) => m.post<AskQuestionView>(`/public/ask/${encodeURIComponent(code)}/questions`, body),

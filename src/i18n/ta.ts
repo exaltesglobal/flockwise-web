@@ -793,6 +793,15 @@ export const ta: Strings = {
   askYours: "உங்களுடையது",
   askLanguage: "மொழி",
   askAnonymous: "பெயர் இல்லாமல் கேட்க பெயரை காலியாக விடுங்கள்.",
+  singTitle: "சேர்ந்து பாடுங்கள்",
+  singWaiting: "திரையில் பாடல் இருக்கும்போது, அதன் வரிகள் மாறும்போது இங்கே தெரியும்.",
+  singOnScreen: "திரையில் பாடல்",
+  singOpen: "சேர்ந்து பாடுங்கள்",
+  singMeaning: "உங்கள் மொழியில் பொருள், பாடுவதற்கு அல்ல",
+  singNext: "அடுத்து: {label}",
+  singOf: "{m}-இல் {n}",
+  singLetters: "ஆங்கில எழுத்துகள்",
+  singIntro: "திரையில் உள்ள பாடலை நீங்கள் தேர்ந்த மொழியில் பின்பற்றுங்கள்.",
 };
 
 export default ta;

@@ -15,6 +15,7 @@ import type { MemberCelebration } from '@/api/admin-types';
 import { useToast } from '@/components/ui';
 
 import { LiveVerseCard } from '../live-verse';
+import { LiveSongCard } from '../sing';
 import { EventCard } from './shared';
 
 export function MemberHomePage() {
@@ -30,6 +31,7 @@ export function MemberHomePage() {
       </div>
       <QuickLinks />
       <LiveVerseCard />
+      <LiveSongCard />
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
         <div className="home-grid">
           <div>

@@ -102,6 +102,7 @@ import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
 import { AskLivePage } from '@/admin/pages/ask-live';
 import { AskCodePage, AskPhonePage, AskScreenPage } from '@/public/ask';
+import { MemberSingPage, PublicSingPage } from '@/member/sing';
 import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
 import { OccasionsPage } from '@/admin/pages/occasions';
@@ -223,6 +224,7 @@ const routes = [
   { path: '/r/:id', element: <PublicRecapPage /> },
   { path: '/g/:token', element: <GreetingPage /> },
   { path: '/qr/:id', element: <PublicQrPage /> },
+  { path: '/sing', element: <PublicSingPage /> },
   { path: '/ask', element: <AskCodePage /> },
   { path: '/ask/:code', element: <AskPhonePage /> },
   { path: '/ask/:id/screen', element: <AskScreenPage mode="screen" /> },
@@ -257,6 +259,7 @@ const routes = [
       { path: 'aid', element: <MemberAidPage /> },
       { path: 'reading', element: <MemberReadingPage /> },
       { path: 'bible', element: <MemberBiblePage /> },
+      { path: 'sing', element: <MemberSingPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },
