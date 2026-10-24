@@ -1451,3 +1451,14 @@ Feature `hospital-mode`. Notifications `hospital.admitted` (zone leaders and car
 - `POST /admin/hospital` `{personId, hospital, ward?, note?, admittedOn?, days? (1–14, default 5), meals?, visits?, tellChain?}`: opens an urgent hospital care case and the rota.
 - `PATCH /admin/hospital/:id` `{hospital?, ward?, note?, addDays?}`; `POST /admin/hospital/:id/discharge` `{date?, checkIn?}`; `DELETE /admin/hospital/:id`.
 - `GET /me/hospital`: stays the member can help with (family, same zone, a shared group, or the prayer chain), no private note. `POST /me/hospital/:id/slots/:slotId` `{take: boolean, note?}`.
+
+## Moving to another city (migrant link)
+
+Feature `migrant-link`, notification `move.new`. Churches on the same server appear for others only when their public page is on and `welcomeIntroductions` is not false.
+
+- `GET /admin/moves` (perm care): `MovesHub` with moves (open first), the church's own partner churches, and the welcome switch.
+- `GET /admin/moves/suggest?city=`: own partners in that city first, then welcoming churches on Flockwise (`PartnerChurch`, ref `p:<id>` or `f:<slug>`).
+- `POST /admin/moves` `{personId, toCity, movingOn?, note?}`; `PATCH /admin/moves/:id` `{toCity?, movingOn?, note?, status?, checkBackOn?}`; `DELETE`.
+- `POST /admin/moves/:id/introduce` `{partnerRef, consent: true}`: refused until the person agreed. A Flockwise church gets the person as a visitor with a welcome care case; a partner with email gets an email; a phone-only partner gives back `introText` for the office to send on WhatsApp. Sets a check-back date 30 days on.
+- `PUT /admin/partner-churches` `{partners: [{id?, name, city, contactName?, phone?, email?, note?}], welcomeIntroductions?}`.
+- `GET /me/move?city=` and `POST /me/move` `{toCity, movingOn?, note?, partnerRef?, consent?}` for members.

@@ -817,6 +817,10 @@ export type ChurchSettings = Church & {
   screenKey?: string;
   /** Festival-season care: which festivals to prepare for (see modules/festival-care.ts). */
   festivalCare?: Partial<FestivalCareSettings>;
+  /** Churches in other cities the church trusts, for members who move (see modules/migrant-link.ts). */
+  partnerChurches?: OwnPartnerChurch[];
+  /** Whether other churches on Flockwise may find this church and introduce people moving here. Default on while the public page is on. */
+  welcomeIntroductions?: boolean;
   /** Secret in the lobby prayer-wall kiosk link (see modules/prayer-wall.ts). */
   prayerKioskKey?: string;
   /** Whether anyone can send a prayer request from /pray (QR cards, kiosk). Default on. */
@@ -1648,7 +1652,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1928,6 +1932,7 @@ export type Collections = {
   festivalFamilies: FestivalFamily;
   festivalCare: FestivalCareRecord;
   hospitalStays: HospitalStay;
+  moves: Move;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2032,7 +2037,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3374,3 +3379,28 @@ export type HospitalStay = {
 export type HospitalStayView = HospitalStay & { name: string; phone: string | null; zone: string | null; filled: number; open: number };
 /** What a member who can help sees: no private note. */
 export type MemberHospitalStay = { id: string; name: string; hospital: string; ward: string | null; admittedOn: string; family: boolean; slots: (Omit<HospitalSlot, 'takenBy'> & { mine: boolean })[] };
+/** Village and migrant link: when a member moves city, a warm introduction to a church there, with their consent. */
+export type OwnPartnerChurch = { id: string; name: string; city: string; contactName: string; phone: string; email: string; note: string };
+export type PartnerChurch = {
+  /** `p:<id>` for the church's own partner list, `f:<slug>` for a church on Flockwise. */
+  ref: string; name: string; city: string; contact: string | null; onFlockwise: boolean; url: string | null;
+};
+export type MoveStatus = 'planning' | 'introduced' | 'settled' | 'lost';
+export type Move = {
+  id: string; personId: string; toCity: string; movingOn: string | null;
+  partner: PartnerChurch | null;
+  /** When the person agreed to be introduced, and who recorded it. */
+  consentAt: string | null; consentBy: 'member' | 'office' | null;
+  status: MoveStatus; introducedAt: string | null;
+  /** WhatsApp text for the office to send when the partner has only a phone number. */
+  introText: string | null;
+  checkBackOn: string | null; note: string | null; source: 'member' | 'office';
+  createdAt: string; updatedAt: string;
+};
+export type MoveView = Move & { name: string; phone: string | null };
+export type MovesHub = { moves: MoveView[]; partners: OwnPartnerChurch[]; welcomeIntroductions: boolean; onFlockwise: boolean };
+/** What another church sends when introducing someone who is moving. */
+export type MoveIntroduction = { firstName: string; lastName: string; phone: string | null; email: string | null; fromChurch: string; fromCity: string; movingOn: string | null; note: string | null };
+/** The host's directory of churches on the same Flockwise server that welcome introductions. */
+export type ChurchPartnerHost = { near(city: string): PartnerChurch[]; introduce(slug: string, intro: MoveIntroduction): Promise<void> };
+export type MyMove = { move: Move | null; suggestions: PartnerChurch[] };

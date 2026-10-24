@@ -9,6 +9,8 @@ import { ApiError } from './errors.js';
 import type { createChurchEngine } from './index.js';
 import { activePeople } from './modules/people.js';
 import { createNetworks } from './network.js';
+import { receiveIntroduction, welcomesIntroductions } from './modules/migrant-link.js';
+import type { ChurchPartnerHost } from './types.js';
 import { songTeamRoute, storedSongs } from './catalog/team.js';
 import { teamChitthiRow, teamUpdateChitthi } from './modules/chitthi-setup.js';
 import { SETUP_FEE, teamReadDoc, teamSetupRow, teamUpdateSetup } from './modules/razorpay-setup.js';
@@ -162,6 +164,33 @@ export function createPlatform({ db, env, host, admins }: PlatformOpts) {
       return { email: otp.email, done };
     },
   });
+
+  // ----- migrant link: churches on this server that welcome people moving to their city -----
+  const partners = {
+    hostFor(churchId: string): ChurchPartnerHost {
+      const welcoming = () =>
+        entries()
+          .filter((e) => e.id !== churchId && e.status === 'active')
+          .map((e) => ({ e, s: host.get(e.id)?.db.get('settings', 'church') }))
+          .filter((x): x is { e: ChurchEntry; s: NonNullable<typeof x.s> } => !!x.s && welcomesIntroductions(x.s));
+      return {
+        near(city) {
+          const c = norm(city);
+          if (c.length < 2) return [];
+          return welcoming()
+            .filter(({ e, s }) => [e.city, s.city].some((v) => { const n = norm(v); return !!n && (n.includes(c) || c.includes(n)); }))
+            .slice(0, 8)
+            .map(({ e, s }) => ({ ref: `f:${e.slug}`, name: s.name || e.name, city: s.city || e.city, contact: null, onFlockwise: true, url: `${env.webUrl}/c/${e.slug}` }));
+        },
+        async introduce(slug, intro) {
+          const target = welcoming().find((x) => x.e.slug === slug);
+          const engine = target ? host.get(target.e.id) : undefined;
+          if (!engine) throw new ApiError(404, 'not_found', 'That church is not taking introductions now.');
+          await receiveIntroduction(engine.systemCtx(), intro);
+        },
+      };
+    },
+  };
 
   // ----- the Flockwise team -----
   function teamSession(token: string | null | undefined) {
@@ -491,7 +520,7 @@ export function createPlatform({ db, env, host, admins }: PlatformOpts) {
     }
   }
 
-  return { handle, resolve, lookup, ensureChurch, entries, entry, tickAll, slugProblem, suggestSlug, db, networks, songs: () => storedSongs(db) };
+  return { handle, resolve, lookup, ensureChurch, entries, entry, tickAll, slugProblem, suggestSlug, db, networks, partners, songs: () => storedSongs(db) };
 }
 
 export type Platform = ReturnType<typeof createPlatform>;

@@ -11,6 +11,7 @@ import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettin
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
 import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
+import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
@@ -429,6 +430,10 @@ export const MemberApi = {
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
+  move: {
+    get: (city?: string) => m.get<MyMove>(`/me/move${city ? `?city=${encodeURIComponent(city)}` : ''}`),
+    save: (body: { toCity: string; movingOn?: string; note?: string; partnerRef?: string; consent?: boolean }) => m.post<MyMove>('/me/move', body),
+  },
   hospital: {
     list: () => m.get<MemberHospitalStay[]>('/me/hospital'),
     slot: (id: string, slotId: string, take: boolean, note?: string) => m.post<MemberHospitalStay>(`/me/hospital/${id}/slots/${slotId}`, { take, note }),
@@ -637,6 +642,15 @@ export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
 
 export const AdminApi = {
+  moves: {
+    get: () => a.get<MovesHub>('/admin/moves'),
+    suggest: (city: string) => a.get<PartnerChurch[]>(`/admin/moves/suggest?city=${encodeURIComponent(city)}`),
+    add: (body: { personId: string; toCity: string; movingOn?: string; note?: string }) => a.post<MovesHub>('/admin/moves', body),
+    update: (id: string, body: { toCity?: string; movingOn?: string | null; note?: string; status?: MoveStatus; checkBackOn?: string | null }) => a.patch<MovesHub>(`/admin/moves/${id}`, body),
+    introduce: (id: string, partnerRef: string, consent: boolean) => a.post<MovesHub>(`/admin/moves/${id}/introduce`, { partnerRef, consent }),
+    remove: (id: string) => a.del<MovesHub>(`/admin/moves/${id}`),
+    partners: (partners: Partial<OwnPartnerChurch>[], welcomeIntroductions?: boolean) => a.put<MovesHub>('/admin/partner-churches', { partners, welcomeIntroductions }),
+  },
   hospital: {
     list: () => a.get<HospitalStayView[]>('/admin/hospital'),
     admit: (body: { personId: string; hospital: string; ward?: string; note?: string; days?: number; meals?: boolean; visits?: boolean; tellChain?: boolean }) => a.post<HospitalStayView>('/admin/hospital', body),

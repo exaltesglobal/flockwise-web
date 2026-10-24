@@ -40,6 +40,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'workflows', label: 'Follow-ups', body: 'Step-by-step follow-up for visitors and new believers.', group: 'care', on: true },
   { key: 'festival-care', label: 'Festival-season care', body: 'Before Diwali, Pongal, Onam or Christmas, see who may feel left out at home (first-generation believers, other-faith homes) with a visit or gift to plan for each.', group: 'care', on: true },
   { key: 'hospital-mode', label: 'Hospital mode', body: 'One tap marks someone as admitted: the zone leader, prayer chain and pastors are told, a meal and visit rota opens in the app, and they get a check-in after going home.', group: 'care', on: true },
+  { key: 'migrant-link', label: 'Moving to another city', body: 'When a member moves for work, suggest a church in the new city and, with their consent, send a warm introduction. A month later, a reminder to check they found a home.', group: 'care', on: true },
   { key: 'vigils', label: 'Prayer vigils', body: 'Fill a 24-hour or night prayer chain, slot by slot.', group: 'care', on: false },
   { key: 'benevolence', label: 'Benevolence', body: 'Requests for help, approvals and payments from the welfare fund.', group: 'care', on: false },
   { key: 'occasions', label: 'Weddings & funerals', body: 'Plan weddings, funerals and dedications with checklists.', group: 'care', on: false },

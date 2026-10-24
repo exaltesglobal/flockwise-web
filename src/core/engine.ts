@@ -5,7 +5,7 @@ import { ApiError } from './errors.js';
 import { withChurchMail } from './mail.js';
 import { permsOf, scopeOf, type Scope } from './perms.js';
 import { atLeast, checkPlan, effectivePlan, getSubscription, type BillingInterval, type PlanId } from './plans.js';
-import type { BibleTranslationInfo, CatalogSong, Channel, ChannelStatus, ChurchNetworkHost, Collections, DonationRecord, Kind, Permission, StaffRole } from './types.js';
+import type { BibleTranslationInfo, CatalogSong, Channel, ChannelStatus, ChurchNetworkHost, ChurchPartnerHost, Collections, DonationRecord, Kind, Permission, StaffRole } from './types.js';
 
 export type BillingCheckout = { churchId: string; churchName: string; plan: PlanId; interval: BillingInterval; currency: 'INR' | 'USD'; amount: number; email: string; name: string; /** Add-ons billed with the plan, e.g. ['chitthi']. */ addons?: string[] };
 /** `html` is the branded version of `text`; providers send both when it is there. */
@@ -98,6 +98,8 @@ export type Env = {
   serverPaymentKeys?: boolean;
   /** Church networks and dioceses this church belongs to, kept by the host (many-church servers). */
   network?: ChurchNetworkHost;
+  /** Other churches on this server that welcome people moving to their city (migrant link). */
+  partners?: ChurchPartnerHost;
   /** Public base URL for incoming webhooks (…/v1/webhooks). Absent in the demo. */
   webhookBase?: string;
   /** Our Razorpay partner sign-up link for assisted setup. */

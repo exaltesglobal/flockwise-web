@@ -52,6 +52,7 @@ export const CATALOG: Record<NotificationKind, Entry> = {
   'counsel.followup': { label: 'Counselling follow-up', description: 'On the day a follow-up is due. It never says who the note is about.', audience: 'The pastor who wrote the note', rule: { email: false, push: true, whatsapp: false } },
   'hospital.admitted': { label: 'Someone is in hospital', description: 'The office marks a member as admitted: their zone leader and the pastors are told, with a link to the meal and visit rota.', audience: 'Zone leaders and care team', rule: { email: false, push: true, whatsapp: true } },
   'hospital.checkin': { label: 'Home from hospital', description: 'Two days after someone is discharged, a short message to them asking how they are.', audience: 'The person who was in hospital', rule: { email: false, push: true, whatsapp: true } },
+  'move.new': { label: 'A member is moving', description: 'A member says in the app that they are moving to another city, or a church introduces someone moving to yours.', audience: 'Pastors and care team', rule: { email: true, push: true, whatsapp: false } },
   'devotion.today': { label: "Leaders' devotional", description: "Each morning when the day's devotional for the leadership team is ready.", audience: 'Office staff', rule: { email: false, push: true, whatsapp: false } },
   'task.assigned': { label: 'Task given', description: 'A task on the team hub is given to someone.', audience: 'The person it is given to', rule: { email: true, push: true, whatsapp: false } },
 };

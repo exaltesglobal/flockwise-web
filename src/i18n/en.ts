@@ -836,6 +836,23 @@ export const en = {
   hospCard: "{name} is in hospital",
   hospHelp: "Help with meals and visits",
   hospFamily: "Your family: see who is coming",
+  moveTitle: "Moving to another city",
+  moveIntro: "Tell us where you are going. We will help you find a church there, so you are welcomed from your first Sunday.",
+  moveSaved: "Thank you. Your pastors know you are moving.",
+  moveIntroduced: "We have told {church} you are coming. They will reach out to welcome you.",
+  moveContact: "Contact",
+  moveCity: "Which city are you moving to?",
+  moveCityPh: "e.g. Pune",
+  moveFind: "Find churches",
+  moveWhen: "When are you moving? (optional)",
+  moveNote: "Anything you would like us to know (optional)",
+  moveChurches: "Churches in {city}",
+  moveConsent: "Share my name, phone and email with this church so they can welcome me",
+  moveIntroduce: "Introduce me",
+  moveSave: "Tell my church",
+  moveCard: "Moving away?",
+  moveCardBody: "Find a church in your new city",
+  movePending: "Your pastors will introduce you to {church} and let them know you are coming.",
 };
 
 export type Strings = typeof en;
