@@ -1,7 +1,7 @@
 // Sundays › Sermon workspace, the planning tabs: series laid out Sunday by Sunday, the illustration
 // bank, and the preaching history. Also the pieces the sermon editor borrows: "preached before",
 // the illustration picker and the translation check.
-import { CalendarRange, History, Languages, Lightbulb, Plus, Trash2 } from 'lucide-react';
+import { CalendarRange, History, Languages, Lightbulb, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { AdminApi } from '@/api/endpoints';
@@ -10,6 +10,7 @@ import { BOOK_CODES, FEATURED_BIBLES } from '@/core/bible-texts';
 import { LANGUAGES } from '@/core/languages';
 import type { GroupKit, Illustration, IllustrationKind, SermonPrep, SermonPrepStatus, SermonSeriesView, SermonSeriesWeek } from '@/core/types';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast, useUndoableDelete } from '@/components/ui';
+import { LightMarkdown } from '@/components/markdown';
 import { formatDate } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -374,5 +375,40 @@ export function KitView({ kit }: { kit: GroupKit }) {
       {kit.memoryVerse.reference && <div><b className="small">Memory verse · {kit.memoryVerse.reference}</b>{kit.memoryVerse.text && <p style={{ margin: '2px 0 0', fontStyle: 'italic' }}>{kit.memoryVerse.text}</p>}</div>}
       <div><b className="small">Pray together</b><p style={{ margin: '2px 0 0' }}>{kit.prayer}</p></div>
     </div>
+  );
+}
+
+/** Questions about the passage, answered by AI with the verses each point rests on; tap a verse to read it. */
+export function StudyHelper({ passage, translation, onRef }: { passage: string; translation: string; onRef: (ref: string) => void }) {
+  const [q, setQ] = useState('');
+  const [turns, setTurns] = useState<{ q: string; answer: string; refs: string[] }[]>([]);
+  useEffect(() => setTurns([]), [passage]);
+  const ask = useAction(async (question: string) => {
+    const history = turns.flatMap((x) => [{ role: 'user' as const, content: x.q }, { role: 'assistant' as const, content: x.answer }]);
+    const r = await AdminApi.studyAsk({ passage, translation, question, history });
+    setTurns((t) => [...t, { q: question, ...r }]);
+    setQ('');
+  });
+  const starters = ['What is the background to this passage?', 'Which words matter most here, in the Greek or Hebrew?', 'How does this fit the whole book?', 'How could this land with people in our church this week?'];
+  return (
+    <details className="card card-pad sp-study">
+      <summary><Sparkles size={15} /> <b>Study helper</b> <span className="small muted">Ask about {passage}</span></summary>
+      <div className="stack" style={{ gap: 10, marginTop: 10 }}>
+        {turns.map((x, i) => (
+          <div key={i} className="stack" style={{ gap: 6 }}>
+            <b className="small">{x.q}</b>
+            <LightMarkdown text={x.answer} />
+            {x.refs.length > 0 && <div className="chips">{x.refs.map((r) => <button key={r} className="chip" style={{ padding: '3px 10px', cursor: 'pointer' }} onClick={() => onRef(r)}>{r}</button>)}</div>}
+          </div>
+        ))}
+        {!turns.length && <div className="chips">{starters.map((s) => <button key={s} className="chip off" style={{ padding: '3px 10px', cursor: 'pointer' }} onClick={() => void ask.run(s)} disabled={ask.busy}>{s}</button>)}</div>}
+        <FormError error={ask.error} />
+        <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); if (q.trim()) void ask.run(q.trim()); }}>
+          <input className="grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask a question about the passage" aria-label="Question" disabled={ask.busy} />
+          <button className="btn sm primary" disabled={ask.busy || !q.trim()}>{ask.busy ? 'Thinking…' : 'Ask'}</button>
+        </form>
+        <span className="small muted">Answers come from AI. Check every verse it gives before you preach it.</span>
+      </div>
+    </details>
   );
 }

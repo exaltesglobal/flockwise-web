@@ -160,6 +160,22 @@ export async function writeRecap(ctx: Ctx, facts: RecapFacts, language: string):
   return { headline: str(out.headline, 120) || slides[0].title, caption: str(out.caption, 600), slides };
 }
 
+/** Answers a pastor's question about a passage, tying every point to verses. */
+export async function studyAnswer(ctx: Ctx, passage: { reference: string; translation: string; text: string }, question: string, history: AiMessage[]): Promise<string> {
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou are a careful Bible study helper for a pastor preparing a sermon. Answer questions about the passage: its background, key words (with the Greek or Hebrew where it helps), how it fits the book and the whole Bible, and how it applies today. Tie every point to verses and cite them in full as (Book chapter:verse), so the pastor can check each one. Where Christians or scholars differ, say so briefly and fairly. Never invent quotations, dates or sources; say when you are not sure. Keep to mainstream Christian teaching. Answer in the language of the question. Use short paragraphs and Markdown lists.`,
+    messages: [
+      { role: 'user', content: `The passage is ${passage.reference} (${passage.translation}):\n\n${passage.text}` },
+      { role: 'assistant', content: 'I have the passage. What would you like to know?' },
+      ...history.slice(-6),
+      { role: 'user', content: question },
+    ],
+    maxTokens: 3000,
+    effort: 'medium',
+  });
+  return textOf(res.content);
+}
+
 /** A cell group's meeting from Sunday's sermon: icebreaker, four questions, summary and prayer focus. */
 export async function writeGroupKit(ctx: Ctx, sermon: { title: string; passage: string; bigIdea: string; outline: string; memoryVerse: string }, language: string): Promise<{ summary: string; icebreaker: string; questions: string[]; prayer: string }> {
   const lang = LANGS[language] ?? 'English';

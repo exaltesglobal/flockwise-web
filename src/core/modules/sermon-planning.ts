@@ -8,6 +8,7 @@ import { ApiError } from '../errors.js';
 import { LANGUAGES } from '../languages.js';
 import type { Illustration, IllustrationKind, PreachedSermon, PreachingHistory, SermonSeries, SermonSeriesView, SermonSeriesWeek, TranslationCheck } from '../types.js';
 import { find } from '../util.js';
+import { studyAnswer } from './ai.js';
 import { lookupPassage, tidyReference } from './bible.js';
 import { blankPrep } from './sermon-prep.js';
 
@@ -75,6 +76,18 @@ function history(ctx: Ctx): PreachingHistory {
     by.set(name, p);
   }
   return { sermons, books, preachers: [...by.values()].sort((a, b) => b.count - a.count) };
+}
+
+/** Verse references written in an answer ("(Romans 5:8)", "1 John 4:9-10"), tidied, in order, without repeats. */
+export function refsIn(answer: string): string[] {
+  const out: string[] = [];
+  for (const m of answer.matchAll(/\b((?:[1-3]\s?)?[A-Z][a-z]+(?:\s(?:of\s)?[A-Z][a-z]+)?)\.?\s(\d{1,3}):(\d{1,3}(?:\s?[-–]\s?\d{1,3})?)/g)) {
+    const ref = `${m[1]} ${m[2]}:${m[3].replace(/\s/g, '').replace('–', '-')}`;
+    if (!parseReference(ref)) continue;
+    const tidy = tidyReference(ref);
+    if (!out.includes(tidy)) out.push(tidy);
+  }
+  return out.slice(0, 20);
 }
 
 // ---------- Translation check ----------
@@ -198,4 +211,15 @@ export function registerSermonPlanning(r: Router) {
     return { chapter: others.filter((s) => s.chapter === p.chapter), book: others.filter((s) => s.chapter !== p.chapter).slice(0, 10) };
   });
   r.get('/admin/translation-check', PERM, (ctx) => translationCheck(ctx, String(ctx.query.ref ?? '')));
+
+  /** The study helper: a question about a passage, answered with the verses it rests on. */
+  r.post('/admin/ai/study', PERM, async (ctx) => {
+    const b = ctx.body as Record<string, unknown>;
+    const question = text(b.question, 2000);
+    if (!question) throw new ApiError(422, 'invalid', 'Ask a question about the passage.', { question: 'Needed' });
+    const p = await lookupPassage(ctx, text(b.passage, 80), text(b.translation, 40) || 'eng-kjv2006');
+    const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m: Record<string, unknown>) => ({ role: m?.role === 'assistant' ? 'assistant' as const : 'user' as const, content: text(m?.content, 6000) })).filter((m) => m.content);
+    const answer = await studyAnswer(ctx, { reference: p.reference, translation: p.translation, text: p.verses.map((v) => `${v.verse} ${v.text}`).join('\n') }, question, history);
+    return { answer, refs: refsIn(answer) };
+  });
 }

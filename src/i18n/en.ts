@@ -719,6 +719,14 @@ export const en = {
   kitQuestions: "Questions",
   kitVerse: "Memory verse",
   kitPray: "Pray together",
+  bibleListen: "Listen",
+  bibleStop: "Stop",
+  bibleNoVoice: "This phone has no voice for this language yet. Add one in the phone's text-to-speech settings.",
+  bibleImage: "Image",
+  bibleImageShare: "Share the image",
+  bibleImageSquare: "Square",
+  bibleImageStory: "Status",
+  bibleImageStyle: "Style",
 };
 
 export type Strings = typeof en;

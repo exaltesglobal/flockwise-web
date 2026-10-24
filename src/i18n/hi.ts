@@ -722,6 +722,14 @@ export const hi: Strings = {
   kitQuestions: "प्रश्न",
   kitVerse: "याद करने का पद",
   kitPray: "साथ मिलकर प्रार्थना करें",
+  bibleListen: "सुनें",
+  bibleStop: "रोकें",
+  bibleNoVoice: "इस फ़ोन में इस भाषा की आवाज़ नहीं है। फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में जोड़ें।",
+  bibleImage: "चित्र",
+  bibleImageShare: "चित्र साझा करें",
+  bibleImageSquare: "चौकोर",
+  bibleImageStory: "स्टेटस",
+  bibleImageStyle: "शैली",
 };
 
 export default hi;

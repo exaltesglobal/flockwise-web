@@ -839,6 +839,7 @@ export const AdminApi = {
   preachingHistory: () => a.get<PreachingHistory>('/admin/preaching-history'),
   preachedBefore: (passage: string, except?: string) => a.get<{ chapter: PreachedSermon[]; book: PreachedSermon[] }>(`/admin/preaching-history/check${qs({ passage, except })}`),
   translationCheck: (ref: string) => a.get<TranslationCheck>(`/admin/translation-check${qs({ ref })}`),
+  studyAsk: (input: { passage: string; translation: string; question: string; history: { role: 'user' | 'assistant'; content: string }[] }) => a.post<{ answer: string; refs: string[] }>('/admin/ai/study', input),
   discipleship: {
     hub: () => a.get<DiscipleshipHub>('/admin/discipleship'),
     get: (id: string) => a.get<MentorshipDetail>(`/admin/discipleship/${id}`),

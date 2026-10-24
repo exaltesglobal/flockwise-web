@@ -722,6 +722,14 @@ export const te: Strings = {
   kitQuestions: "ప్రశ్నలు",
   kitVerse: "కంఠస్థ వచనం",
   kitPray: "కలిసి ప్రార్థించండి",
+  bibleListen: "వినండి",
+  bibleStop: "ఆపండి",
+  bibleNoVoice: "ఈ ఫోన్‌లో ఈ భాషకు వాయిస్ లేదు. ఫోన్ టెక్స్ట్-టు-స్పీచ్ సెట్టింగ్స్‌లో జోడించండి.",
+  bibleImage: "చిత్రం",
+  bibleImageShare: "చిత్రాన్ని పంచుకోండి",
+  bibleImageSquare: "చతురస్రం",
+  bibleImageStory: "స్టేటస్",
+  bibleImageStyle: "శైలి",
 };
 
 export default te;

@@ -722,6 +722,14 @@ export const kn: Strings = {
   kitQuestions: "ಪ್ರಶ್ನೆಗಳು",
   kitVerse: "ಕಂಠಪಾಠ ವಚನ",
   kitPray: "ಒಟ್ಟಾಗಿ ಪ್ರಾರ್ಥಿಸಿ",
+  bibleListen: "ಕೇಳಿ",
+  bibleStop: "ನಿಲ್ಲಿಸಿ",
+  bibleNoVoice: "ಈ ಫೋನ್‌ನಲ್ಲಿ ಈ ಭಾಷೆಗೆ ಧ್ವನಿ ಇಲ್ಲ. ಫೋನ್‌ನ ಪಠ್ಯದಿಂದ ಮಾತು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸೇರಿಸಿ.",
+  bibleImage: "ಚಿತ್ರ",
+  bibleImageShare: "ಚಿತ್ರ ಹಂಚಿಕೊಳ್ಳಿ",
+  bibleImageSquare: "ಚೌಕ",
+  bibleImageStory: "ಸ್ಟೇಟಸ್",
+  bibleImageStyle: "ಶೈಲಿ",
 };
 
 export default kn;

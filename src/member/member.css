@@ -217,3 +217,13 @@ input.switch:checked::after { transform: translateX(18px); }
 .fill-blank input.ok { border-bottom-color: var(--ok, #2e7d32); }
 .fill-blank input.miss { border-bottom-color: var(--danger, #c62828); }
 .fill-answer { color: var(--ok, #2e7d32); line-height: 1.2; }
+
+/* Read aloud and verse images */
+.bib-v.bib-reading, .bib-cols.bib-reading .bib-v { background: color-mix(in srgb, var(--accent, #f2a93b) 30%, transparent); border-radius: 4px; }
+.bib-card-preview { display: flex; justify-content: center; background: var(--tint); border-radius: 12px; padding: 10px; }
+.bib-card-preview img { max-width: 100%; max-height: 56vh; border-radius: 8px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18); }
+.bib-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; }
+.bib-swatch.on { outline: 2px solid var(--primary); outline-offset: 2px; }
+.bib-swatch.sw-brand { background: var(--primary); }
+.bib-swatch.sw-light { background: #fffaf2; }
+.bib-swatch.sw-dark { background: #0b1110; }

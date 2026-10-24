@@ -722,6 +722,14 @@ export const ta: Strings = {
   kitQuestions: "கேள்விகள்",
   kitVerse: "மனப்பாட வசனம்",
   kitPray: "ஒன்றாக ஜெபியுங்கள்",
+  bibleListen: "கேளுங்கள்",
+  bibleStop: "நிறுத்து",
+  bibleNoVoice: "இந்த மொழிக்கு இந்த போனில் குரல் இல்லை. போனின் உரை-பேச்சு அமைப்புகளில் சேர்க்கவும்.",
+  bibleImage: "படம்",
+  bibleImageShare: "படத்தைப் பகிரவும்",
+  bibleImageSquare: "சதுரம்",
+  bibleImageStory: "ஸ்டேட்டஸ்",
+  bibleImageStyle: "பாணி",
 };
 
 export default ta;

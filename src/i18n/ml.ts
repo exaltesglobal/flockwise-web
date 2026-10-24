@@ -722,6 +722,14 @@ export const ml: Strings = {
   kitQuestions: "ചോദ്യങ്ങൾ",
   kitVerse: "മനഃപാഠ വാക്യം",
   kitPray: "ഒന്നിച്ച് പ്രാർത്ഥിക്കുക",
+  bibleListen: "കേൾക്കുക",
+  bibleStop: "നിർത്തുക",
+  bibleNoVoice: "ഈ ഫോണിൽ ഈ ഭാഷയ്ക്ക് ശബ്ദമില്ല. ഫോണിന്റെ ടെക്സ്റ്റ്-ടു-സ്പീച്ച് ക്രമീകരണങ്ങളിൽ ചേർക്കുക.",
+  bibleImage: "ചിത്രം",
+  bibleImageShare: "ചിത്രം പങ്കിടുക",
+  bibleImageSquare: "ചതുരം",
+  bibleImageStory: "സ്റ്റാറ്റസ്",
+  bibleImageStyle: "ശൈലി",
 };
 
 export default ml;

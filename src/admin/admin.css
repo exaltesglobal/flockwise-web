@@ -781,3 +781,5 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 .sp-book { padding: 4px 9px; border-radius: 8px; font-size: 13px; border: 1px solid transparent; }
 .sp-book.none { border: 1px dashed var(--border); color: var(--muted); }
 .sp-before { display: flex; gap: 6px; align-items: baseline; margin: -6px 0 0; color: var(--muted); }
+.sp-study summary { cursor: pointer; display: flex; gap: 8px; align-items: center; list-style: none; }
+.sp-study summary::-webkit-details-marker { display: none; }

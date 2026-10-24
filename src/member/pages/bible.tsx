@@ -2,7 +2,7 @@
 // about 890 more languages), book and chapter pickers, headings and poetry as printed, footnotes, a
 // second translation side by side, and a tap on a verse to copy it or send it on WhatsApp.
 // Opens at ?tr=hin2017&ref=John 3:16 from reading plans and shared links; otherwise where they left off.
-import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, Languages, Link2, Sigma, Minus, NotebookPen, Plus, ScrollText, Search, Share2, StickyNote, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, ChevronDown, Columns2, Copy, Highlighter, ImageIcon, Languages, Link2, Sigma, Minus, NotebookPen, Pause, Plus, ScrollText, Search, Share2, StickyNote, Volume2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 
@@ -10,11 +10,13 @@ import { memberSession } from '@/api/client';
 import { MemberApi, PublicApi } from '@/api/endpoints';
 import { BOOKS } from '@/core/bible';
 import { BOOK_CODES, FEATURED_BIBLES, parseReference } from '@/core/bible-texts';
-import type { BibleBookInfo, BibleChapter, BibleCrossRef, BibleHit, BibleMark, BibleMarkColor, BibleTranslationInfo, BibleVerse } from '@/core/types';
+import type { BrandKit, BibleBookInfo, BibleChapter, BibleCrossRef, BibleHit, BibleMark, BibleMarkColor, BibleTranslationInfo, BibleVerse } from '@/core/types';
 import { ErrorState, Loading, Modal, Segmented, useToast } from '@/components/ui';
 import { useT } from '@/i18n';
 import { useSession } from '@/lib/session';
 import { useApi } from '@/lib/use-api';
+import { shareCard } from '@/lib/invitation';
+import { renderVerseCard, type VerseCardStyle } from '@/lib/verse-card';
 
 import { LiveVerseCard } from '../live-verse';
 
@@ -59,6 +61,7 @@ export function MemberBiblePage() {
   const [seeAlso, setSeeAlso] = useState<number | null>(null);
   const [study, setStudy] = useState<number | null>(null);
   const [notes, setNotes] = useState<number | null>(null);
+  const toast = useToast();
   const list = useApi(PublicApi.bibleTranslations);
   const go = (p: Partial<Place>) => {
     const next = { ...place, ...p };
@@ -82,6 +85,9 @@ export function MemberBiblePage() {
     const { mark: m } = await MemberApi.bibleMark(place.book, place.chapter, verse, patch);
     marks.setData([...(marks.data ?? []).filter((x) => x.verse !== verse), ...(m ? [m] : [])]);
   };
+  const sc = session?.church;
+  const church = useMemo(() => (sc ? { name: sc.name, logoUrl: sc.logoUrl ?? null, brand: sc.brand ?? null } : null), [sc]);
+  const aloud = useReadAloud(ch.data ?? null, () => toast(t('bibleNoVoice')));
   const title = ch.data ? `${ch.data.bookName} ${ch.data.chapter}` : `${books.data?.find((b) => b.code === place.book)?.name ?? place.book} ${place.chapter}`;
 
   return (
@@ -96,6 +102,7 @@ export function MemberBiblePage() {
           </>
         )}
         <button className="btn sm ghost" onClick={() => setPicker('search')} title={t('bibleSearchTitle')}><Search size={15} /> <span className="bib-hide-sm">{t('bibleSearchTitle')}</span></button>
+        {aloud.supported && <button className={`btn sm ${aloud.on ? 'primary' : 'ghost'}`} onClick={aloud.toggle} title={aloud.on ? t('bibleStop') : t('bibleListen')}>{aloud.on ? <Pause size={15} /> : <Volume2 size={15} />} <span className="bib-hide-sm">{aloud.on ? t('bibleStop') : t('bibleListen')}</span></button>}
         <button className="btn sm ghost" onClick={() => setNotes(0)} title={t('bibleCommentary')}><ScrollText size={15} /> <span className="bib-hide-sm">{t('bibleCommentary')}</span></button>
         <button className="btn sm ghost" onClick={() => setPicker('marks')} title={t('bibleMarks')}><NotebookPen size={15} /> <span className="bib-hide-sm">{t('bibleMarks')}</span></button>
         <span className="grow" />
@@ -107,7 +114,7 @@ export function MemberBiblePage() {
 
       <LiveVerseCard />
       {ch.error ? <ErrorState error={ch.error} onRetry={ch.reload} /> : !ch.data ? <Loading /> : (
-        <Reader ch={ch.data} others={(others.data ?? []).filter((x): x is BibleChapter => !!x)} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} onCommentary={setNotes} />
+        <Reader ch={ch.data} others={(others.data ?? []).filter((x): x is BibleChapter => !!x)} size={size} mark={mark} setMark={setMark} marks={markMap} onMark={saveMark} onSeeAlso={setSeeAlso} onStudy={setStudy} onCommentary={setNotes} reading={aloud.verse} church={church} />
       )}
 
       {ch.data && (
@@ -131,7 +138,7 @@ export function MemberBiblePage() {
   );
 }
 
-function Reader({ ch, others, size, mark, setMark, marks, onMark, onSeeAlso, onStudy, onCommentary }: { ch: BibleChapter; others: BibleChapter[]; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void; onCommentary: (verse: number) => void }) {
+function Reader({ ch, others, reading, church, size, mark, setMark, marks, onMark, onSeeAlso, onStudy, onCommentary }: { ch: BibleChapter; others: BibleChapter[]; reading: number | null; church: { name: string; logoUrl: string | null; brand?: BrandKit | null } | null; size: number; mark: number | null; setMark: (n: number | null) => void; marks: Map<number, BibleMark>; onMark: (verse: number, patch: MarkPatch) => Promise<void>; onSeeAlso: (verse: number) => void; onStudy: (verse: number) => void; onCommentary: (verse: number) => void }) {
   const { t } = useT();
   const toast = useToast();
   const [showNotes, setShowNotes] = useState(false);
@@ -143,7 +150,8 @@ function Reader({ ch, others, size, mark, setMark, marks, onMark, onSeeAlso, onS
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState('');
   useEffect(() => { setNoteOpen(false); setNote(mine?.note ?? ''); }, [mark]); // eslint-disable-line react-hooks/exhaustive-deps
-  const markClass = (n: number) => { const m = marks.get(n); return m?.color ? ` hl-${m.color}` : ''; };
+  const [image, setImage] = useState(false);
+  const markClass = (n: number) => { const m = marks.get(n); return `${m?.color ? ` hl-${m.color}` : ''}${reading === n ? ' bib-reading' : ''}`; };
   const markIcons = (n: number) => { const m = marks.get(n); return m && (m.bookmark || m.note) ? <span className="bib-icons">{m.bookmark && <Bookmark size={12} />}{m.note && <StickyNote size={12} />}</span> : null; };
   const byVerse = useMemo(() => others.map((o) => new Map(o.verses.map((v) => [v.n, v]))), [others]);
   const cols = others.length > 0;
@@ -201,6 +209,7 @@ function Reader({ ch, others, size, mark, setMark, marks, onMark, onSeeAlso, onS
             <button className="btn sm" onClick={() => onSeeAlso(verse.n)}><Link2 size={14} /> {t('bibleSeeAlso')}</button>
             <button className="btn sm" onClick={() => onStudy(verse.n)}><Sigma size={14} /> {t('bibleWordStudy')}</button>
             <button className="btn sm" onClick={() => onCommentary(verse.n)}><ScrollText size={14} /> {t('bibleCommentary')}</button>
+            <button className="btn sm" onClick={() => setImage(true)}><ImageIcon size={14} /> {t('bibleImage')}</button>
             <span className="grow" />
             <button className="btn sm" onClick={() => void copy()}><Copy size={14} /> {t('bibleCopy')}</button>
             <a className="btn sm primary" href={`https://wa.me/?text=${encodeURIComponent(share)}`} target="_blank" rel="noreferrer"><Share2 size={14} /> {t('bibleShare')}</a>
@@ -213,6 +222,7 @@ function Reader({ ch, others, size, mark, setMark, marks, onMark, onSeeAlso, onS
           )}
         </div>
       )}
+      {image && verse && church && <VerseImage church={church} text={verse.text} reference={`${ch.bookName} ${ch.chapter}:${verse.label ?? verse.n}`} translation={shortName(ch.translation)} onClose={() => setImage(false)} />}
     </article>
   );
 }
@@ -554,5 +564,65 @@ function StrongsView({ id, names, onBack, onOpen }: { id: string; names: BibleBo
       </div>
       <p className="small muted">{res.data.source}</p>
     </div>
+  );
+}
+
+/** BCP 47 tags for the phone's voices, from eBible's language codes. */
+const VOICE_LANG: Record<string, string> = { eng: 'en-IN', hin: 'hi-IN', tel: 'te-IN', tam: 'ta-IN', mal: 'ml-IN', kan: 'kn-IN', ben: 'bn-IN', mar: 'mr-IN', guj: 'gu-IN', pan: 'pa-IN', ory: 'or-IN', asm: 'as-IN', urd: 'ur-IN', npi: 'ne-NP', mya: 'my-MM', sin: 'si-LK', spa: 'es-ES', fra: 'fr-FR', por: 'pt-BR', deu: 'de-DE', ind: 'id-ID', swh: 'sw-KE', arb: 'ar-SA', zho: 'zh-CN', cmn: 'zh-CN', kor: 'ko-KR', jpn: 'ja-JP', rus: 'ru-RU', tha: 'th-TH', vie: 'vi-VN', tgl: 'fil-PH' };
+
+/** Reads the chapter aloud with the phone's own voice, verse by verse, marking the verse being read. */
+function useReadAloud(ch: BibleChapter | null, onNoVoice: () => void) {
+  const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  const [on, setOn] = useState(false);
+  const [verse, setVerse] = useState<number | null>(null);
+  const stop = () => { if (supported) window.speechSynthesis.cancel(); setOn(false); setVerse(null); };
+  useEffect(() => stop, [ch?.translation.id, ch?.book, ch?.chapter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const start = () => {
+    if (!ch || !supported) return;
+    const tag = VOICE_LANG[ch.translation.lang] ?? ch.translation.lang.slice(0, 2);
+    const base = tag.split('-')[0];
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.lang.replace('_', '-') === tag) ?? voices.find((v) => v.lang.toLowerCase().startsWith(base));
+    if (voices.length && !voice) { onNoVoice(); return; }
+    window.speechSynthesis.cancel();
+    setOn(true);
+    ch.verses.forEach((v, i) => {
+      const u = new SpeechSynthesisUtterance(v.text.replace(/\n/g, ' '));
+      u.lang = voice?.lang ?? tag;
+      if (voice) u.voice = voice;
+      u.rate = 0.95;
+      u.onstart = () => { setVerse(v.n); document.getElementById(`v${v.n}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+      if (i === ch.verses.length - 1) u.onend = () => { setOn(false); setVerse(null); };
+      window.speechSynthesis.speak(u);
+    });
+  };
+  return { supported, on, verse, toggle: () => (on ? stop() : start()) };
+}
+
+/** The verse as a picture in the church's colours, to share on WhatsApp or Instagram. */
+function VerseImage({ church, text, reference, translation, onClose }: { church: { name: string; logoUrl: string | null; brand?: BrandKit | null }; text: string; reference: string; translation: string; onClose: () => void }) {
+  const { t } = useT();
+  const [shape, setShape] = useState<'square' | 'story'>('square');
+  const [style, setStyle] = useState<VerseCardStyle>('brand');
+  const [url, setUrl] = useState<string | null>(null);
+  const canvas = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    let live = true;
+    void renderVerseCard({ church, text, reference, translation, shape, style }).then((c) => { if (live) { canvas.current = c; setUrl(c.toDataURL('image/png')); } });
+    return () => { live = false; };
+  }, [church, text, reference, translation, shape, style]);
+  return (
+    <Modal title={t('bibleImage')} onClose={onClose}>
+      <div className="stack" style={{ gap: 10 }}>
+        <div className="row wrap" style={{ gap: 8 }}>
+          <Segmented value={shape} options={[{ value: 'square', label: t('bibleImageSquare') }, { value: 'story', label: t('bibleImageStory') }]} onChange={setShape} />
+          <span className="row" style={{ gap: 6 }} aria-label={t('bibleImageStyle')}>
+            {(['brand', 'light', 'dark'] as VerseCardStyle[]).map((s) => <button key={s} className={`bib-swatch sw-${s} ${style === s ? 'on' : ''}`} onClick={() => setStyle(s)} aria-label={s} aria-pressed={style === s} />)}
+          </span>
+        </div>
+        <div className="bib-card-preview">{url ? <img src={url} alt={`${reference}: ${text}`} /> : <Loading />}</div>
+        <button className="btn primary" disabled={!url} onClick={() => canvas.current && void shareCard(canvas.current, `${reference.replace(/[^\w]+/g, '-')}.png`, `${text}\n${reference}`)}><Share2 size={15} /> {t('bibleImageShare')}</button>
+      </div>
+    </Modal>
   );
 }

@@ -15,7 +15,7 @@ import { useOpenParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
-import { HistoryTab, IllustrationPicker, IllustrationsTab, KitModal, PreachedBefore, SeriesTab, SlidesModal, TranslationCheckModal } from './sermon-planning';
+import { HistoryTab, IllustrationPicker, IllustrationsTab, KitModal, StudyHelper, PreachedBefore, SeriesTab, SlidesModal, TranslationCheckModal } from './sermon-planning';
 
 const STATUS: Record<SermonPrepStatus, string> = { draft: 'Draft', ready: 'Ready', preached: 'Preached' };
 const BADGE: Record<SermonPrepStatus, string> = { draft: 'gray', ready: 'ok', preached: '' };
@@ -114,6 +114,7 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
   const copy = useAction(async () => { await flush(); const c = await AdminApi.sermonPrep.copy(id); toast(`Made a copy: “${c.title}”.`); });
   const [picking, setPicking] = useState<number | null>(null);
   const [langs, setLangs] = useState(false);
+  const [lookup, setLookup] = useState<{ ref: string; at: number } | null>(null);
   const [slides, setSlides] = useState(false);
   const [kit, setKit] = useState(false);
 
@@ -174,7 +175,8 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
         </div>
 
         <div className="stack">
-          <BiblePane passage={d.passage} translation={d.translation} onTranslation={(t) => set({ translation: t })} onAdd={d.points.length ? (ref) => setPoint(d.points.length - 1, { refs: [...d.points[d.points.length - 1].refs.filter(Boolean), ref] }) : undefined} />
+          <BiblePane lookup={lookup} passage={d.passage} translation={d.translation} onTranslation={(t) => set({ translation: t })} onAdd={d.points.length ? (ref) => setPoint(d.points.length - 1, { refs: [...d.points[d.points.length - 1].refs.filter(Boolean), ref] }) : undefined} />
+          {d.passage.trim() && <StudyHelper passage={d.passage} translation={d.translation} onRef={(r) => setLookup({ ref: r, at: Date.now() })} />}
           <Field label="Study notes" hint="Only for you and the office. Never shown to members."><textarea rows={12} value={d.study} onChange={(e) => set({ study: e.target.value })} placeholder="Background, word studies, commentary quotes, questions" /></Field>
           {prep.sermonId && <Link className="small" to={`/admin/sermons?open=${prep.sermonId}`}><ExternalLink size={13} /> Open it in the sermon library</Link>}
         </div>
@@ -188,10 +190,11 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
 }
 
 /** The passage (or any verse looked up) in the sermon's translation, with a button to add it to the last point. */
-function BiblePane({ passage, translation, onTranslation, onAdd }: { passage: string; translation: string; onTranslation: (t: string) => void; onAdd?: (ref: string) => void }) {
+function BiblePane({ lookup, passage, translation, onTranslation, onAdd }: { lookup: { ref: string; at: number } | null; passage: string; translation: string; onTranslation: (t: string) => void; onAdd?: (ref: string) => void }) {
   const [ref, setRef] = useState('');
   const [shown, setShown] = useState<string>(passage);
   useEffect(() => { if (!ref) setShown(passage); }, [passage, ref]);
+  useEffect(() => { if (lookup) { setRef(lookup.ref); setShown(lookup.ref); } }, [lookup]);
   const q = useApi(() => (shown.trim() ? AdminApi.bible(shown, translation) : Promise.resolve(null as BiblePassage | null)), [shown, translation]);
   return (
     <div className="card card-pad stack sp-bible" style={{ gap: 8 }}>
