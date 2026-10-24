@@ -645,3 +645,88 @@ a.card:hover { text-decoration: none; border-color: var(--primary); }
 /* Care › Today's calls */
 .ml-card.ml-done { opacity: 0.7; }
 .ml-card .badge { white-space: normal; text-align: left; }
+
+/* ---------- premium look: glass surfaces, ambient light, motion ----------
+   Surfaces are the theme's own --card made partly see-through and blurred, over a soft wash of
+   the church's primary and accent colours, so every scheme, dark mode and brand kit keeps working. */
+:root { --glass-alpha: 76%; --glass-blur: 16px; --glass-edge: rgba(255, 255, 255, 0.6); --lift: 0 1px 2px rgba(20, 33, 31, 0.05), 0 8px 24px -6px rgba(20, 33, 31, 0.12); }
+:root[data-theme='dark'] { --glass-alpha: 70%; --glass-edge: rgba(255, 255, 255, 0.07); --lift: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px -8px rgba(0, 0, 0, 0.55); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --glass-alpha: 70%; --glass-edge: rgba(255, 255, 255, 0.07); --lift: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px -8px rgba(0, 0, 0, 0.55); } }
+
+body {
+  background:
+    radial-gradient(1100px 620px at 8% -12%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 62%),
+    radial-gradient(900px 560px at 104% 2%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 60%),
+    radial-gradient(900px 700px at 60% 118%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+.card, .plan-card, .signup-plans {
+  background: color-mix(in srgb, var(--card) var(--glass-alpha), transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  border-color: color-mix(in srgb, var(--border) 55%, var(--glass-edge));
+  box-shadow: var(--lift);
+}
+/* A card inside a card does not need a second blur. */
+.card .card { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--card) 60%, transparent); box-shadow: none; }
+a.card, button.card, .card.clickable, .card[role='button'] { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+a.card:hover, button.card:hover, .card.clickable:hover, .card[role='button']:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--lift), 0 12px 28px -12px color-mix(in srgb, var(--primary) 45%, transparent); text-decoration: none; }
+
+.overlay { background: rgba(10, 22, 20, 0.38); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.modal {
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, var(--glass-edge));
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.45);
+  animation: pop 0.18s ease-out;
+}
+.overlay.right .modal { animation: slide 0.2s ease-out; }
+@keyframes pop { from { transform: translateY(6px) scale(0.985); opacity: 0; } }
+.theme-pop, .lang-pop { background: color-mix(in srgb, var(--card) 88%, transparent); -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%); }
+.toast { background: color-mix(in srgb, var(--fw-ink) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+.btn { transition: background 0.15s ease, box-shadow 0.18s ease, transform 0.12s ease, border-color 0.15s ease; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary { background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 82%, var(--accent))); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 6px 16px -6px color-mix(in srgb, var(--primary) 70%, transparent); }
+.btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary-hover), color-mix(in srgb, var(--primary-hover) 80%, var(--accent))); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 10px 22px -8px color-mix(in srgb, var(--primary) 80%, transparent); }
+.btn:not(.primary):not(.accent):not(.ghost) { background: color-mix(in srgb, var(--card) 70%, transparent); }
+.btn:not(.primary):not(.accent):not(.ghost):hover:not(:disabled) { background: var(--tint); }
+
+.hero { position: relative; isolation: isolate; overflow: hidden; border-radius: var(--radius-lg); padding: 22px 24px; min-height: 108px; display: flex; flex-direction: column; justify-content: center;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--card) 72%, transparent), color-mix(in srgb, var(--tint) 70%, transparent));
+  border: 1px solid color-mix(in srgb, var(--border) 55%, var(--glass-edge)); box-shadow: var(--lift);
+  -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); }
+.hero > :not(.hero-art) { position: relative; z-index: 1; }
+.hero-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.hero h1 { font-size: 30px; letter-spacing: -0.02em; }
+
+.empty-icon { position: relative; display: inline-grid; place-items: center; width: 120px; height: 120px; margin-bottom: 2px; }
+.empty-icon > .empty-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.empty-icon > :not(.empty-art) { position: relative; color: var(--primary); }
+.empty-icon > svg:not(.empty-art) { opacity: 0.85; }
+.inline-icon { display: inline-block; vertical-align: -2px; color: var(--accent); }
+
+.progress > i, .bars .bar i { background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent))); }
+.bars .bar i { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 75%, var(--accent)), var(--primary)); }
+
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } }
+.admin-main > *, .member-main > * { animation: enter 0.32s ease-out both; }
+.admin-main > :nth-child(2), .member-main > :nth-child(2) { animation-delay: 0.03s; }
+.admin-main > :nth-child(3), .member-main > :nth-child(3) { animation-delay: 0.06s; }
+.admin-main > :nth-child(n+4), .member-main > :nth-child(n+4) { animation-delay: 0.09s; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .plan-card, .signup-plans, .modal, .hero, .theme-pop, .lang-pop { background: var(--card); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-main > *, .member-main > *, .modal, .toast { animation: none !important; }
+  a.card:hover, button.card:hover, .card.clickable:hover { transform: none; }
+}
+@media print {
+  body { background: #fff; }
+  .card, .modal, .hero { -webkit-backdrop-filter: none; backdrop-filter: none; background: #fff; box-shadow: none; }
+  .hero-art, .empty-art { display: none; }
+}

@@ -256,3 +256,11 @@ input.switch:checked::after { transform: translateX(18px); }
 .hsm-slot { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; }
 .hsm-slot.taken { background: color-mix(in srgb, var(--primary) 7%, transparent); }
 .hsm-home { text-decoration: none; color: inherit; border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+
+/* premium: glass top bar and tab bar over the ambient background */
+.member-top { background: color-mix(in srgb, var(--card) 72%, transparent); -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); border-bottom-color: color-mix(in srgb, var(--border) 60%, transparent); }
+@media (max-width: 900px) {
+  .member-tabs { background: color-mix(in srgb, var(--card) 78%, transparent); -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); }
+}
+.amount-grid button, .fund-option { background: color-mix(in srgb, var(--card) 75%, transparent); transition: border-color 0.15s ease, transform 0.12s ease; }
+.amount-grid button:hover, .fund-option:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
