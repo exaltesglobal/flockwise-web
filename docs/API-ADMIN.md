@@ -1343,3 +1343,11 @@ All need the services or comms permission.
 **Preaching history.** `GET /admin/preaching-history` returns `sermons` (library sermons plus workspace sermons marked preached, or ready with a past date, that were never published), `books` (all 66 with `count` and `last`) and `preachers`. `GET /admin/preaching-history/check?passage&except=prepId` returns earlier sermons on the same `chapter`, and others from the same `book`.
 
 **Translation check.** `GET /admin/translation-check?ref=John 3:16` returns the verse in the main Bible of each language the church's people speak (English always included, most spoken first): `{ reference, rows: [{ language, english, native, people, translation, name, reference, text }] }`. `text` is null when there is no Bible for that language or it could not be read.
+
+## Sermon to Sunday
+
+**Slides.** `GET /admin/sermon-prep/:id/services` lists services within a day of the sermon's date (or the next three weeks), with `hasSlides`. `POST /admin/sermon-prep/:id/slides { eventId, second? }` puts a reading item (the passage, one verse per slide) and one sermon item per point (the point, then each verse) into that service's plan, after the plan's own sermon slot if it has one. `second` is another Bible id whose words go under each verse. Running it again replaces the items it made (ids `sp-{prepId}-…`).
+
+**Fill-in notes.** In a point heading, words in [brackets] are blanks: "God [loves] the world". Publishing stores `outline: { bigIdea, points: [{ heading, refs }] }` on the sermon (the written `notes` drop the brackets). Members: `GET /me/sermons/:id/notes` returns `{ fill }`, `PUT /me/sermons/:id/notes { answers: string[], note }` saves one answer per blank (private, never exported), `GET /me/sermon-notes` lists theirs.
+
+**Cell-group kit.** `POST /admin/sermon-prep/:id/kit { language }` makes `{ language, summary, icebreaker, questions (4), memoryVerse { reference, text }, prayer, madeBy }` with AI in that language, or from the outline in English when AI is off or unavailable (`madeBy: 'outline'`). Kits are kept on the prep and the published sermon as `kits[language]`. `POST /admin/sermon-prep/:id/kit/send` tells every cell group leader (groups of type cell with a leader) through the `kit.ready` notification, linking to `/app/sermons?open={sermonId}`; the sermon must be in the library.

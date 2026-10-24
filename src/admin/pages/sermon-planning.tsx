@@ -6,8 +6,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { AdminApi } from '@/api/endpoints';
 import { BOOKS } from '@/core/bible';
-import { BOOK_CODES } from '@/core/bible-texts';
-import type { Illustration, IllustrationKind, SermonPrepStatus, SermonSeriesView, SermonSeriesWeek } from '@/core/types';
+import { BOOK_CODES, FEATURED_BIBLES } from '@/core/bible-texts';
+import { LANGUAGES } from '@/core/languages';
+import type { GroupKit, Illustration, IllustrationKind, SermonPrep, SermonPrepStatus, SermonSeriesView, SermonSeriesWeek } from '@/core/types';
 import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast, useUndoableDelete } from '@/components/ui';
 import { formatDate } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
@@ -301,5 +302,77 @@ export function TranslationCheckModal({ initial, onClose }: { initial: string; o
         ))}
       </div>
     </Modal>
+  );
+}
+
+// ---------- Sunday ----------
+
+/** Puts the outline into a service's plan as projector slides, optionally with a second Bible under each verse. */
+export function SlidesModal({ prepId, onClose }: { prepId: string; onClose: () => void }) {
+  const toast = useToast();
+  const services = useApi(() => AdminApi.sermonPrep.services(prepId), [prepId]);
+  const [eventId, setEventId] = useState('');
+  const [second, setSecond] = useState('');
+  useEffect(() => { if (!eventId && services.data?.[0]) setEventId(services.data[0].eventId); }, [services.data, eventId]);
+  const add = useAction(async () => { const r = await AdminApi.sermonPrep.slides(prepId, eventId, second || undefined); toast(`Added ${r.added} item${r.added === 1 ? '' : 's'} to the service. Open Presenter to see the slides.`); onClose(); });
+  const pick = services.data?.find((s) => s.eventId === eventId);
+  return (
+    <Modal title="Sermon slides" onClose={onClose} footer={<><button className="btn ghost" onClick={onClose}>Cancel</button><button className="btn primary" onClick={() => void add.run()} disabled={add.busy || !eventId}>{pick?.hasSlides ? 'Replace the slides' : 'Add to the service'}</button></>}>
+      <div className="stack">
+        <p className="small muted" style={{ margin: 0 }}>The passage becomes a reading, one verse per slide, and each point becomes slides with its verses. Blanks show their words on screen.</p>
+        <FormError error={add.error} />
+        {services.error ? <ErrorState error={services.error} onRetry={services.reload} /> : !services.data ? <Loading /> : !services.data.length ? (
+          <p className="small muted">No service near this sermon's Sunday. Set the Sunday on the sermon, or add the service in the calendar first.</p>
+        ) : (
+          <Field label="Service"><select value={eventId} onChange={(e) => setEventId(e.target.value)}>{services.data.map((s) => <option key={s.eventId} value={s.eventId}>{s.title} · {formatDate(s.startsAt)}{s.hasSlides ? ' (has slides)' : ''}</option>)}</select></Field>
+        )}
+        <Field label="Second language" hint="Optional. Its words show under each verse.">
+          <select value={second} onChange={(e) => setSecond(e.target.value)}>
+            <option value="">Only the sermon's Bible</option>
+            {FEATURED_BIBLES.map((b) => <option key={b.id} value={b.id}>{b.native} · {b.name}</option>)}
+          </select>
+        </Field>
+      </div>
+    </Modal>
+  );
+}
+
+const KIT_LANGS = LANGUAGES.filter((l) => l.region === 'india' || l.code === 'en');
+
+/** The week's cell-group kit from the sermon, and sending it to every cell leader. */
+export function KitModal({ prep, onChange, onClose }: { prep: SermonPrep; onChange: (p: SermonPrep) => void; onClose: () => void }) {
+  const toast = useToast();
+  const kits = Object.values(prep.kits ?? {});
+  const [lang, setLang] = useState(kits[0]?.language ?? 'en');
+  const kit = prep.kits?.[lang] ?? kits[0];
+  const make = useAction(async () => { const r = await AdminApi.sermonPrep.kit(prep.id, lang); onChange(r.prep); setLang(r.kit.language); if (r.kit.madeBy === 'outline') toast('Made from your outline, in English. AI was not available.'); });
+  const send = useAction(async () => { const r = await AdminApi.sermonPrep.sendKit(prep.id); onChange(r.prep); toast(`Sent to ${r.leaders} cell leader${r.leaders === 1 ? '' : 's'}.`); });
+  return (
+    <Modal title="Cell-group kit" onClose={onClose} wide footer={<>
+      <span className="small muted" style={{ marginRight: 'auto' }}>{prep.kitSentAt ? `Last sent ${formatDate(prep.kitSentAt)}` : prep.sermonId ? 'Not sent yet' : 'Put the sermon in the library before sending.'}</span>
+      <button className="btn" onClick={() => void send.run()} disabled={send.busy || !kits.length || !prep.sermonId}>Send to cell leaders</button>
+    </>}>
+      <div className="stack">
+        <p className="small muted" style={{ margin: 0 }}>For this week's home groups: a short summary, an icebreaker, four questions, the memory verse and a prayer focus. Leaders open it on the sermon in the app.</p>
+        <div className="row wrap" style={{ gap: 8 }}>
+          <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">{KIT_LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}{prep.kits?.[l.code] ? ' ✓' : ''}</option>)}</select>
+          <button className="btn primary" onClick={() => void make.run()} disabled={make.busy}>{make.busy ? 'Writing…' : prep.kits?.[lang] ? 'Write it again' : 'Make the kit'}</button>
+        </div>
+        <FormError error={make.error ?? send.error} />
+        {kit ? <KitView kit={kit} /> : <p className="small muted">No kit yet. Pick the language your groups use and make it.</p>}
+      </div>
+    </Modal>
+  );
+}
+
+export function KitView({ kit }: { kit: GroupKit }) {
+  return (
+    <div className="card card-pad stack sp-kit" style={{ gap: 10 }}>
+      {kit.summary && <p style={{ margin: 0 }}>{kit.summary}</p>}
+      <div><b className="small">To start</b><p style={{ margin: '2px 0 0' }}>{kit.icebreaker}</p></div>
+      <div><b className="small">Questions</b><ol style={{ margin: '2px 0 0', paddingLeft: 20 }}>{kit.questions.map((q, i) => <li key={i}>{q}</li>)}</ol></div>
+      {kit.memoryVerse.reference && <div><b className="small">Memory verse · {kit.memoryVerse.reference}</b>{kit.memoryVerse.text && <p style={{ margin: '2px 0 0', fontStyle: 'italic' }}>{kit.memoryVerse.text}</p>}</div>}
+      <div><b className="small">Pray together</b><p style={{ margin: '2px 0 0' }}>{kit.prayer}</p></div>
+    </div>
   );
 }

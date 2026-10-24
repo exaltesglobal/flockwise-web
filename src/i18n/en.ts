@@ -708,6 +708,17 @@ export const en = {
   bibleCommentaryEnglish: "Commentaries are in English.",
   bibleCompareAdd: "Add another Bible",
   bibleCompareRemove: "Remove this Bible",
+  sermonFill: "Fill in the notes",
+  sermonFillHint: "Fill in the blanks as you listen. Only you can see your notes.",
+  sermonFillNote: "My notes",
+  sermonFillShow: "Show answers",
+  sermonFillHide: "Hide answers",
+  sermonFillSaved: "Saved",
+  sermonKit: "For cell groups",
+  kitStart: "To start",
+  kitQuestions: "Questions",
+  kitVerse: "Memory verse",
+  kitPray: "Pray together",
 };
 
 export type Strings = typeof en;

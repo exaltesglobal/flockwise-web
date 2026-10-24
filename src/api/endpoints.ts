@@ -222,6 +222,8 @@ import type {
   PreachingHistory,
   PreachedSermon,
   TranslationCheck,
+  GroupKit,
+  SermonFill,
   Celebration,
   CelebrationKind,
   Greeting,
@@ -407,6 +409,8 @@ export const MemberApi = {
     removeResource: (id: string, resId: string) => m.del<void>(`/groups/${id}/resources/${resId}`),
   },
   sermons: () => m.get<Sermon[]>('/sermons'),
+  sermonNotes: (id: string) => m.get<{ fill: SermonFill | null }>(`/me/sermons/${id}/notes`),
+  saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
   missions: {
     list: () => m.get<MemberMission[]>('/missions'),
@@ -813,6 +817,10 @@ export const AdminApi = {
     copy: (id: string) => a.post<SermonPrep>(`/admin/sermon-prep/${id}/copy`, {}),
     publish: (id: string, published?: boolean) => a.post<{ prep: SermonPrep; sermon: Sermon }>(`/admin/sermon-prep/${id}/publish`, published === undefined ? {} : { published }),
     preach: (id: string, tr?: string) => a.get<SermonPreach>(`/admin/sermon-prep/${id}/preach${qs({ tr })}`),
+    services: (id: string) => a.get<{ eventId: string; title: string; startsAt: string; hasSlides: boolean }[]>(`/admin/sermon-prep/${id}/services`),
+    slides: (id: string, eventId: string, second?: string) => a.post<{ plan: Plan; added: number }>(`/admin/sermon-prep/${id}/slides`, { eventId, second }),
+    kit: (id: string, language: string) => a.post<{ prep: SermonPrep; kit: GroupKit }>(`/admin/sermon-prep/${id}/kit`, { language }),
+    sendKit: (id: string) => a.post<{ prep: SermonPrep; leaders: number }>(`/admin/sermon-prep/${id}/kit/send`, {}),
   },
   sermonSeries: {
     list: () => a.get<SermonSeriesView[]>('/admin/sermon-series'),

@@ -711,6 +711,17 @@ export const ml: Strings = {
   bibleCommentaryEnglish: "വ്യാഖ്യാനങ്ങൾ ഇംഗ്ലീഷിലാണ്.",
   bibleCompareAdd: "മറ്റൊരു ബൈബിൾ ചേർക്കുക",
   bibleCompareRemove: "ഈ ബൈബിൾ നീക്കുക",
+  sermonFill: "കുറിപ്പുകൾ പൂരിപ്പിക്കുക",
+  sermonFillHint: "കേൾക്കുമ്പോൾ വിട്ടുപോയവ പൂരിപ്പിക്കുക. നിങ്ങളുടെ കുറിപ്പുകൾ നിങ്ങൾക്ക് മാത്രമേ കാണാനാകൂ.",
+  sermonFillNote: "എന്റെ കുറിപ്പുകൾ",
+  sermonFillShow: "ഉത്തരങ്ങൾ കാണിക്കുക",
+  sermonFillHide: "ഉത്തരങ്ങൾ മറയ്ക്കുക",
+  sermonFillSaved: "സേവ് ചെയ്തു",
+  sermonKit: "സെൽ ഗ്രൂപ്പുകൾക്ക്",
+  kitStart: "തുടക്കം",
+  kitQuestions: "ചോദ്യങ്ങൾ",
+  kitVerse: "മനഃപാഠ വാക്യം",
+  kitPray: "ഒന്നിച്ച് പ്രാർത്ഥിക്കുക",
 };
 
 export default ml;

@@ -2,7 +2,7 @@
 // Passage, big idea, an outline of points with verses and planned minutes, private study notes and
 // a Bible beside it. Saves as you type; "Preach" opens the preaching view; "Put in the library"
 // makes the sermon members see.
-import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Copy, ExternalLink, Languages, Library, Lightbulb, NotebookPen, Plus, Presentation, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Copy, MessagesSquare, MonitorPlay, ExternalLink, Languages, Library, Lightbulb, NotebookPen, Plus, Presentation, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -15,7 +15,7 @@ import { useOpenParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
-import { HistoryTab, IllustrationPicker, IllustrationsTab, PreachedBefore, SeriesTab, TranslationCheckModal } from './sermon-planning';
+import { HistoryTab, IllustrationPicker, IllustrationsTab, KitModal, PreachedBefore, SeriesTab, SlidesModal, TranslationCheckModal } from './sermon-planning';
 
 const STATUS: Record<SermonPrepStatus, string> = { draft: 'Draft', ready: 'Ready', preached: 'Preached' };
 const BADGE: Record<SermonPrepStatus, string> = { draft: 'gray', ready: 'ok', preached: '' };
@@ -114,6 +114,8 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
   const copy = useAction(async () => { await flush(); const c = await AdminApi.sermonPrep.copy(id); toast(`Made a copy: “${c.title}”.`); });
   const [picking, setPicking] = useState<number | null>(null);
   const [langs, setLangs] = useState(false);
+  const [slides, setSlides] = useState(false);
+  const [kit, setKit] = useState(false);
 
   if (q.error) return <><PageHeader title="Sermon workspace" /><ErrorState error={q.error} onRetry={q.reload} /></>;
   if (!d || !prep) return <><PageHeader title="Sermon workspace" /><Loading /></>;
@@ -127,6 +129,8 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
         <span className="grow" />
         <Link className="btn sm primary" to={`/preach/${id}`} target="_blank" onClick={() => void flush()}><Presentation size={15} /> Preach</Link>
         <button className="btn sm" onClick={() => void publish.run()} disabled={publish.busy}><Library size={15} /> {prep.sermonId ? 'Update the library' : 'Put in the library'}</button>
+        <button className="btn sm" onClick={() => { void flush(); setSlides(true); }} title="Put the passage and points into the service as projector slides"><MonitorPlay size={15} /> Slides</button>
+        <button className="btn sm" onClick={() => { void flush(); setKit(true); }} title="This week's discussion kit for cell groups"><MessagesSquare size={15} /> Cell kit</button>
         <button className="btn sm ghost" onClick={() => setLangs(true)} title="See the key verse in each language your people speak"><Languages size={15} /> Languages</button>
         <button className="btn sm ghost" onClick={() => void copy.run()} disabled={copy.busy} title="Start a new sermon from this one"><Copy size={15} /></button>
         <button className="btn sm ghost" onClick={() => onDelete(prep)} aria-label="Delete"><Trash2 size={15} /></button>
@@ -146,7 +150,7 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
           <Field label="The big idea" hint="The whole sermon in one sentence. Everything else serves it."><textarea rows={2} value={d.bigIdea} onChange={(e) => set({ bigIdea: e.target.value })} maxLength={400} /></Field>
           <Field label="Opening"><textarea rows={3} value={d.intro} onChange={(e) => set({ intro: e.target.value })} placeholder="A story, a question, why this matters today" /></Field>
 
-          <div className="row between"><b>Points</b><span className="small muted">{d.points.length} point{d.points.length === 1 ? '' : 's'} · {minutes} min planned</span></div>
+          <div className="row between"><b>Points <span className="small muted" style={{ fontWeight: 400 }}>· put [brackets] round a word to make it a blank in members' notes</span></b><span className="small muted">{d.points.length} point{d.points.length === 1 ? '' : 's'} · {minutes} min planned</span></div>
           {d.points.map((p, i) => (
             <div key={p.id} className="card card-pad stack sp-point" style={{ gap: 8 }}>
               <div className="row" style={{ gap: 6 }}>
@@ -176,6 +180,8 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
         </div>
       </div>
       {picking !== null && <IllustrationPicker prepId={id} onClose={() => setPicking(null)} onPick={(text) => { const pt = d.points[picking]; if (pt) setPoint(picking, { body: pt.body ? `${pt.body.trimEnd()}\n\n${text}` : text }); setPicking(null); toast('Added. The bank will remember this sermon used it.'); }} />}
+      {slides && <SlidesModal prepId={id} onClose={() => setSlides(false)} />}
+      {kit && <KitModal prep={prep} onChange={setPrep} onClose={() => setKit(false)} />}
       {langs && <TranslationCheckModal initial={d.passage} onClose={() => setLangs(false)} />}
     </>
   );

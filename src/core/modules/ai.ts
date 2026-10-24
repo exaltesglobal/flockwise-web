@@ -160,6 +160,28 @@ export async function writeRecap(ctx: Ctx, facts: RecapFacts, language: string):
   return { headline: str(out.headline, 120) || slides[0].title, caption: str(out.caption, 600), slides };
 }
 
+/** A cell group's meeting from Sunday's sermon: icebreaker, four questions, summary and prayer focus. */
+export async function writeGroupKit(ctx: Ctx, sermon: { title: string; passage: string; bigIdea: string; outline: string; memoryVerse: string }, language: string): Promise<{ summary: string; icebreaker: string; questions: string[]; prayer: string }> {
+  const lang = LANGS[language] ?? 'English';
+  const schema = {
+    type: 'object',
+    properties: { summary: { type: 'string' }, icebreaker: { type: 'string' }, questions: { type: 'array', items: { type: 'string' } }, prayer: { type: 'string' } },
+    required: ['summary', 'icebreaker', 'questions', 'prayer'],
+    additionalProperties: false,
+  };
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou write the week's cell-group kit from Sunday's sermon for home groups in India, where people meet in a home after work. Stay faithful to the passage and to what the sermon says; never invent what the preacher said. Plain words a new believer understands. Write in ${lang}${lang !== 'English' ? ' in its own script' : ''}. Reply with JSON only.`,
+    messages: [{ role: 'user', content: `Sermon: ${sermon.title}\nPassage: ${sermon.passage || '(none)'}\nBig idea: ${sermon.bigIdea || '(none)'}\nMemory verse: ${sermon.memoryVerse || '(none)'}\nOutline:\n${sermon.outline || '(none)'}\n\nWrite: summary (the sermon in 2 or 3 sentences, for anyone who missed Sunday), icebreaker (one light question everyone can answer, linked to the theme), questions (exactly 4, moving from what the passage says, to what it means, to how we live it this week, to how we can pray or help one another), prayer (one or two sentences: what to pray for together).` }],
+    schema,
+    maxTokens: 2000,
+    effort: 'low',
+  });
+  const out = json<{ summary: string; icebreaker: string; questions: string[]; prayer: string }>(res.content);
+  const questions = (Array.isArray(out.questions) ? out.questions : []).map((q) => str(q, 400)).filter(Boolean).slice(0, 6);
+  if (!questions.length) throw new ApiError(502, 'ai_error', 'The kit came back empty. Try again.');
+  return { summary: str(out.summary, 800), icebreaker: str(out.icebreaker, 300), questions, prayer: str(out.prayer, 400) };
+}
+
 export function registerAi(r: Router) {
   r.get('/admin/ai/status', { staff: true }, (ctx) => status(ctx));
 

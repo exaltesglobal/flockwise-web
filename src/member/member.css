@@ -208,3 +208,12 @@ input.switch:checked::after { transform: translateX(18px); }
 .bib-cm-text { white-space: pre-line; line-height: 1.6; font-size: 15px; max-width: 70ch; }
 .bib-cm-intro { display: grid; gap: 6px; }
 .bib-cm-pick { position: sticky; top: -1px; z-index: 1; background: var(--card); padding-block: 4px 6px; }
+
+/* Fill-in sermon notes */
+.sermon-card.on { border-color: var(--primary); }
+.fill-line { line-height: 2.1; }
+.fill-blank { display: inline-flex; flex-direction: column; vertical-align: top; margin: 0 2px; }
+.fill-blank input { border: 0; border-bottom: 2px solid var(--primary); background: var(--tint); border-radius: 4px 4px 0 0; padding: 0 6px; font: inherit; color: inherit; min-width: 3em; }
+.fill-blank input.ok { border-bottom-color: var(--ok, #2e7d32); }
+.fill-blank input.miss { border-bottom-color: var(--danger, #c62828); }
+.fill-answer { color: var(--ok, #2e7d32); line-height: 1.2; }

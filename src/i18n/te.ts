@@ -711,6 +711,17 @@ export const te: Strings = {
   bibleCommentaryEnglish: "వ్యాఖ్యానాలు ఆంగ్లంలో ఉన్నాయి.",
   bibleCompareAdd: "ఇంకో బైబిల్ జోడించండి",
   bibleCompareRemove: "ఈ బైబిల్ తీసివేయండి",
+  sermonFill: "నోట్స్ నింపండి",
+  sermonFillHint: "వింటూ ఖాళీలు నింపండి. మీ నోట్స్ మీకు మాత్రమే కనిపిస్తాయి.",
+  sermonFillNote: "నా నోట్స్",
+  sermonFillShow: "జవాబులు చూపించు",
+  sermonFillHide: "జవాబులు దాచు",
+  sermonFillSaved: "సేవ్ అయింది",
+  sermonKit: "సెల్ గ్రూపుల కోసం",
+  kitStart: "ప్రారంభం",
+  kitQuestions: "ప్రశ్నలు",
+  kitVerse: "కంఠస్థ వచనం",
+  kitPray: "కలిసి ప్రార్థించండి",
 };
 
 export default te;

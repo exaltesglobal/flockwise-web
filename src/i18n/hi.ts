@@ -711,6 +711,17 @@ export const hi: Strings = {
   bibleCommentaryEnglish: "टीकाएँ अंग्रेज़ी में हैं।",
   bibleCompareAdd: "एक और बाइबल जोड़ें",
   bibleCompareRemove: "यह बाइबल हटाएँ",
+  sermonFill: "नोट्स भरें",
+  sermonFillHint: "सुनते हुए खाली जगह भरें। आपके नोट्स केवल आप देख सकते हैं।",
+  sermonFillNote: "मेरे नोट्स",
+  sermonFillShow: "उत्तर दिखाएँ",
+  sermonFillHide: "उत्तर छिपाएँ",
+  sermonFillSaved: "सहेजा गया",
+  sermonKit: "सेल समूहों के लिए",
+  kitStart: "शुरुआत",
+  kitQuestions: "प्रश्न",
+  kitVerse: "याद करने का पद",
+  kitPray: "साथ मिलकर प्रार्थना करें",
 };
 
 export default hi;

@@ -66,13 +66,16 @@ const summary = (p: SermonPrep): SermonPrepSummary => ({
   points: p.points.length, minutes: p.points.reduce((n, x) => n + x.minutes, 0),
 });
 
+/** "God [loves] the world" → "God loves the world": brackets mark the blanks in fill-in notes. */
+export const unbracket = (s: string) => s.replace(/\[([^\]]*)\]/g, '$1');
+
 /** The outline as notes for members: big idea, points with their verses, and the close. */
 export function sermonNotes(p: SermonPrep): string {
   const out: string[] = [];
   if (p.bigIdea) out.push(`**${p.bigIdea}**`);
   if (p.intro) out.push(p.intro);
   p.points.forEach((x, i) => {
-    out.push(`## ${i + 1}. ${x.heading || 'Point'}`);
+    out.push(`## ${i + 1}. ${unbracket(x.heading) || 'Point'}`);
     if (x.body) out.push(x.body);
     if (x.refs.length) out.push(`_${x.refs.join('; ')}_`);
   });
@@ -116,7 +119,8 @@ export function registerSermonPrep(r: Router) {
     const sermon: Sermon = {
       ...(old ?? { id: ctx.id('sm'), description: '', videoUrl: '', audioUrl: '', notesUrl: '', imageUrl: '', eventId: null, createdAt: ctx.now.toISOString() }),
       title: p.title, speaker: p.preacher, date: p.date || ctx.now.toISOString().slice(0, 10), series: p.series, scripture: p.passage,
-      description: old?.description || p.bigIdea, notes: sermonNotes(p), published: ctx.body.published === undefined ? old?.published ?? true : !!ctx.body.published,
+      description: old?.description || p.bigIdea, notes: sermonNotes(p),
+      outline: p.points.length ? { bigIdea: p.bigIdea, points: p.points.map((x) => ({ heading: x.heading, refs: x.refs })) } : null, kits: p.kits ?? old?.kits, published: ctx.body.published === undefined ? old?.published ?? true : !!ctx.body.published,
     };
     ctx.db.put('sermons', sermon);
     const next = ctx.db.put('sermonPreps', { ...p, sermonId: sermon.id, updatedAt: ctx.now.toISOString() });

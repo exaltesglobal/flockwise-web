@@ -711,6 +711,17 @@ export const ta: Strings = {
   bibleCommentaryEnglish: "விளக்கவுரைகள் ஆங்கிலத்தில் உள்ளன.",
   bibleCompareAdd: "இன்னொரு வேதாகமம் சேர்க்கவும்",
   bibleCompareRemove: "இந்த வேதாகமத்தை நீக்கவும்",
+  sermonFill: "குறிப்புகளை நிரப்புங்கள்",
+  sermonFillHint: "கேட்கும்போது இடைவெளிகளை நிரப்புங்கள். உங்கள் குறிப்புகளை நீங்கள் மட்டுமே பார்க்க முடியும்.",
+  sermonFillNote: "என் குறிப்புகள்",
+  sermonFillShow: "விடைகளைக் காட்டு",
+  sermonFillHide: "விடைகளை மறை",
+  sermonFillSaved: "சேமிக்கப்பட்டது",
+  sermonKit: "செல் குழுக்களுக்காக",
+  kitStart: "தொடக்கம்",
+  kitQuestions: "கேள்விகள்",
+  kitVerse: "மனப்பாட வசனம்",
+  kitPray: "ஒன்றாக ஜெபியுங்கள்",
 };
 
 export default ta;

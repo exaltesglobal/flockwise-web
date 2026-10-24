@@ -1124,7 +1124,16 @@ export type Sermon = {
   published: boolean;
   eventId: string | null;
   createdAt: string;
+  /** The outline for fill-in notes on members' phones; words in [brackets] are the blanks. */
+  outline?: SermonOutline | null;
+  /** Discussion kits for cell groups, by language code. */
+  kits?: Record<string, GroupKit>;
 };
+export type SermonOutline = { bigIdea: string; points: { heading: string; refs: string[] }[] };
+/** A cell group's meeting, built from Sunday's sermon. */
+export type GroupKit = { language: string; summary: string; icebreaker: string; questions: string[]; memoryVerse: { reference: string; text: string }; prayer: string; madeBy: 'ai' | 'outline'; createdAt: string };
+/** A member's filled-in sermon notes: one answer per blank, in order, and their own note. Private. */
+export type SermonFill = { id: string; sermonId: string; personId: string; answers: string[]; note: string; updatedAt: string };
 export type PublicPage = { enabled: boolean; tagline: string; about: string; serviceTimes: string; heroImageUrl: string; showEvents: boolean; showGroups: boolean; showSermons: boolean; showGiving: boolean };
 export type PublicChurch = {
   church: Church;
@@ -1231,6 +1240,9 @@ export type SermonPrep = {
   intro: string; points: SermonPoint[]; close: string;
   /** Study notes for the preacher only; never published. */
   study: string;
+  /** Cell-group kits made from this sermon, by language, and when leaders were last sent them. */
+  kits?: Record<string, GroupKit>;
+  kitSentAt?: string | null;
   /** Bible the verses are shown in (eBible.org id). */
   translation: string;
   status: SermonPrepStatus;
@@ -1512,7 +1524,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1781,6 +1793,7 @@ export type Collections = {
   sermonPreps: SermonPrep;
   sermonSeries: SermonSeries;
   illustrations: Illustration;
+  sermonFills: SermonFill;
   captions: CaptionsLog;
   ballots: Ballot;
   ballotStubs: BallotStub;
@@ -1879,7 +1892,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

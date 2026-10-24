@@ -711,6 +711,17 @@ export const kn: Strings = {
   bibleCommentaryEnglish: "ವ್ಯಾಖ್ಯಾನಗಳು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿವೆ.",
   bibleCompareAdd: "ಇನ್ನೊಂದು ಬೈಬಲ್ ಸೇರಿಸಿ",
   bibleCompareRemove: "ಈ ಬೈಬಲ್ ತೆಗೆದುಹಾಕಿ",
+  sermonFill: "ಟಿಪ್ಪಣಿಗಳನ್ನು ತುಂಬಿ",
+  sermonFillHint: "ಕೇಳುತ್ತಾ ಖಾಲಿ ಜಾಗಗಳನ್ನು ತುಂಬಿ. ನಿಮ್ಮ ಟಿಪ್ಪಣಿಗಳು ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತವೆ.",
+  sermonFillNote: "ನನ್ನ ಟಿಪ್ಪಣಿಗಳು",
+  sermonFillShow: "ಉತ್ತರಗಳನ್ನು ತೋರಿಸಿ",
+  sermonFillHide: "ಉತ್ತರಗಳನ್ನು ಮರೆಮಾಡಿ",
+  sermonFillSaved: "ಉಳಿಸಲಾಗಿದೆ",
+  sermonKit: "ಸೆಲ್ ಗುಂಪುಗಳಿಗಾಗಿ",
+  kitStart: "ಆರಂಭ",
+  kitQuestions: "ಪ್ರಶ್ನೆಗಳು",
+  kitVerse: "ಕಂಠಪಾಠ ವಚನ",
+  kitPray: "ಒಟ್ಟಾಗಿ ಪ್ರಾರ್ಥಿಸಿ",
 };
 
 export default kn;

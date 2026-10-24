@@ -1,31 +1,35 @@
-import { BookOpen, FileText, Headphones, PlayCircle } from 'lucide-react';
-import { useState } from 'react';
+import { BookOpen, FileText, Headphones, MessagesSquare, PenLine, PlayCircle } from 'lucide-react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
-import type { Sermon } from '@/api/admin-types';
+import type { GroupKit, Sermon } from '@/api/admin-types';
 import { MemberApi } from '@/api/endpoints';
 import { LightMarkdown } from '@/components/markdown';
 import { ErrorState, Loading } from '@/components/ui';
 import { useT } from '@/i18n';
 import { formatDate } from '@/lib/format';
 import { useApi } from '@/lib/use-api';
+import { useOpenParam } from '@/lib/use-new-param';
 
 export function MemberSermonsPage() {
   const { t } = useT();
   const { data, error, reload } = useApi(MemberApi.sermons);
+  const [open, setOpen] = useState<string | null>(null);
+  useOpenParam('open', (id) => { setOpen(id); return true; });
+  useEffect(() => { if (open && data) document.getElementById(`sermon-${open}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, [open, data]);
   return (
     <>
       <div>
         <h1>{t('tabSermons')}</h1>
         <p className="muted">{t('sermonsBody')}</p>
       </div>
-      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : <SermonList sermons={data} />}
+      {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : <SermonList sermons={data} member open={open} />}
     </>
   );
 }
 
 /** Sermon cards with a series filter. Shared by the member app and the public church page. */
-export function SermonList({ sermons }: { sermons: Sermon[] }) {
-  const { t, locale } = useT();
+export function SermonList({ sermons, member = false, open = null }: { sermons: Sermon[]; member?: boolean; open?: string | null }) {
+  const { t, locale, lang } = useT();
   const [series, setSeries] = useState('');
   const all = [...new Set(sermons.map((s) => s.series).filter(Boolean))];
   const shown = sermons.filter((s) => !series || s.series === series);
@@ -40,7 +44,7 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
       )}
       <div className="tiles wide">
       {shown.map((s) => (
-        <article key={s.id} className="card sermon-card">
+        <article key={s.id} id={`sermon-${s.id}`} className={`card sermon-card ${open === s.id ? 'on' : ''}`}>
           {s.imageUrl ? <img src={s.imageUrl} alt="" /> : <div className="sermon-art"><BookOpen size={26} /></div>}
           <div className="card-pad stack" style={{ gap: 6 }}>
             {s.series && <span className="small" style={{ color: 'var(--primary)', fontWeight: 600 }}>{s.series}</span>}
@@ -58,10 +62,87 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
                 <LightMarkdown text={s.notes} className="notes-md" />
               </details>
             )}
+            {member && !!s.outline?.points.length && (
+              <details className="sermon-notes" open={open === s.id}>
+                <summary><PenLine size={14} /> {t('sermonFill')}</summary>
+                <FillNotes sermon={s} />
+              </details>
+            )}
+            {member && s.kits && Object.keys(s.kits).length > 0 && (
+              <details className="sermon-notes" open={open === s.id}>
+                <summary><MessagesSquare size={14} /> {t('sermonKit')}</summary>
+                <Kit kit={s.kits[lang] ?? s.kits.en ?? Object.values(s.kits)[0]} />
+              </details>
+            )}
           </div>
         </article>
       ))}
       </div>
+    </div>
+  );
+}
+
+/** Fill-in-the-blank notes for one sermon: words in [brackets] become boxes. Saved as they type, private to the member. */
+function FillNotes({ sermon }: { sermon: Sermon }) {
+  const { t } = useT();
+  const q = useApi(() => MemberApi.sermonNotes(sermon.id), [sermon.id]);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [note, setNote] = useState('');
+  const [show, setShow] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const dirty = useRef(false);
+  useEffect(() => { if (q.data) { setAnswers(q.data.fill?.answers ?? []); setNote(q.data.fill?.note ?? ''); } }, [q.data]);
+  useEffect(() => {
+    if (!dirty.current) return;
+    const id = setTimeout(() => { void MemberApi.saveSermonNotes(sermon.id, { answers, note }).then(() => setSaved(true), () => undefined); dirty.current = false; }, 800);
+    return () => clearTimeout(id);
+  }, [answers, note, sermon.id]);
+  if (q.error) return <ErrorState error={q.error} onRetry={q.reload} />;
+  if (!q.data) return <Loading />;
+  let n = -1;
+  const edit = (i: number, v: string) => { dirty.current = true; setSaved(false); setAnswers((a) => { const next = [...a]; next[i] = v; return next; }); };
+  return (
+    <div className="stack fill-notes" style={{ gap: 10 }}>
+      <p className="small muted" style={{ margin: 0 }}>{t('sermonFillHint')}</p>
+      {sermon.outline!.bigIdea && <p style={{ margin: 0 }}><b>{sermon.outline!.bigIdea}</b></p>}
+      {sermon.outline!.points.map((p, i) => (
+        <div key={i}>
+          <div className="fill-line">
+            <b>{i + 1}.</b>{' '}
+            {p.heading.split(/(\[[^\]]*\])/).map((part, j) => {
+              const m = /^\[([^\]]*)\]$/.exec(part);
+              if (!m) return <Fragment key={j}>{part}</Fragment>;
+              const k = ++n;
+              const right = (answers[k] ?? '').trim().toLowerCase() === m[1].trim().toLowerCase();
+              return (
+                <span key={j} className="fill-blank">
+                  <input value={answers[k] ?? ''} onChange={(e) => edit(k, e.target.value)} size={Math.max(4, m[1].length + 1)} aria-label={`${i + 1}`} className={show ? (right ? 'ok' : 'miss') : ''} />
+                  {show && !right && <span className="small fill-answer">{m[1]}</span>}
+                </span>
+              );
+            })}
+          </div>
+          {p.refs.length > 0 && <div className="small muted">{p.refs.join('; ')}</div>}
+        </div>
+      ))}
+      <textarea className="input" rows={3} value={note} onChange={(e) => { dirty.current = true; setSaved(false); setNote(e.target.value); }} placeholder={t('sermonFillNote')} />
+      <div className="row between">
+        <button type="button" className="btn sm ghost" onClick={() => setShow((x) => !x)}>{show ? t('sermonFillHide') : t('sermonFillShow')}</button>
+        {saved && <span className="small muted">{t('sermonFillSaved')}</span>}
+      </div>
+    </div>
+  );
+}
+
+function Kit({ kit }: { kit: GroupKit }) {
+  const { t } = useT();
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      {kit.summary && <p style={{ margin: 0 }}>{kit.summary}</p>}
+      <div><b className="small">{t('kitStart')}</b><p style={{ margin: '2px 0 0' }}>{kit.icebreaker}</p></div>
+      <div><b className="small">{t('kitQuestions')}</b><ol style={{ margin: '2px 0 0', paddingLeft: 20 }}>{kit.questions.map((q, i) => <li key={i}>{q}</li>)}</ol></div>
+      {kit.memoryVerse.reference && <div><b className="small">{t('kitVerse')} · {kit.memoryVerse.reference}</b>{kit.memoryVerse.text && <p style={{ margin: '2px 0 0', fontStyle: 'italic' }}>{kit.memoryVerse.text}</p>}</div>}
+      <div><b className="small">{t('kitPray')}</b><p style={{ margin: '2px 0 0' }}>{kit.prayer}</p></div>
     </div>
   );
 }
