@@ -1,4 +1,4 @@
-import { Building2, Flame, Armchair, BedDouble, Flower2, Headphones, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
+import { Building2, ShieldAlert, Flame, Armchair, BedDouble, Flower2, Headphones, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -87,6 +87,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       { label: 'Records', icon: BookMarked, pages: [
         { to: '/admin/registers', label: 'Registers', icon: BookMarked, perm: ['people.view'], feature: 'registers' },
         { to: '/admin/safeguarding', label: 'Safeguarding', icon: ShieldCheck, perm: ['people.view', 'volunteers'], feature: 'safeguarding' },
+        { to: '/admin/safety', label: 'Emergency alert', icon: ShieldAlert, perm: ['care'], feature: 'safety-alert' },
         { to: '/admin/elections', label: 'Elections & AGM', icon: Vote, perm: ['settings', 'people.edit'], feature: 'elections' },
       ] },
     ],

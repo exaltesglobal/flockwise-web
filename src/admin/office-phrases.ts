@@ -164,4 +164,6 @@ export const OFFICE_PHRASES = [
   "Foreign givers",
   "Building project",
   "Contractor bills",
+  "Emergency alert",
+  "Legal-aid contacts",
 ];

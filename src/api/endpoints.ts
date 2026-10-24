@@ -19,6 +19,7 @@ import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { AnnualReport, AnnualReportDraft } from '@/core/types';
 import type { ComplianceGuard, Fc4Figures, ForeignDonorKind, Form10bd } from '@/core/types';
+import type { MySafety, PublicSafetyAlert, SafetyAlertKind, SafetyHub, SafetyLegalContact } from '@/core/types';
 import type { BuildingBill, BuildingHub, BuildingPhoto, BuildingProject, BuildingProjectView, BuildingStage, MemberBuildingProject } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
@@ -441,6 +442,13 @@ export const MemberApi = {
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   journey: () => m.get<MyJourney>('/me/journey'),
   building: () => m.get<MemberBuildingProject[]>('/me/building'),
+  safety: {
+    get: () => m.get<MySafety>('/me/safety'),
+    alert: (body: { kind?: SafetyAlertKind; note?: string; lat?: number; lng?: number; accuracy?: number }) => m.post<MySafety>('/me/safety/alert', body),
+    location: (body: { lat: number; lng: number; accuracy?: number }) => m.post<MySafety>('/me/safety/location', body),
+    safe: () => m.post<MySafety>('/me/safety/safe', {}),
+    respond: (id: string, note: string) => m.post<MySafety>(`/me/safety/respond/${id}`, { note }),
+  },
   outreach: {
     get: () => m.get<MyOutreachInvite[]>('/me/outreach'),
     answer: (id: string, answer: 'yes' | 'no') => m.post<MyOutreachInvite[]>(`/me/outreach/${id}`, { answer }),
@@ -504,6 +512,7 @@ export const PublicApi = {
   story: (token: string) => m.get<StoryListen>(`/public/story/${encodeURIComponent(token)}`),
   storyListened: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/listened`, {}),
   outreach: (token: string) => m.get<PublicOutreach>(`/public/outreach/${encodeURIComponent(token)}`),
+  safetyAlert: (token: string) => m.get<PublicSafetyAlert>(`/public/alert/${encodeURIComponent(token)}`),
   outreachSignup: (token: string, body: { name: string; phone: string; need?: string; area?: string; remind?: boolean; website?: string }) => m.post<{ ok: true; again?: boolean }>(`/public/outreach/${encodeURIComponent(token)}`, body),
   storyPrayer: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/prayer`, {}),
   bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
@@ -673,6 +682,11 @@ export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  safety: {
+    get: () => a.get<SafetyHub>('/admin/safety'),
+    settings: (body: { leaderIds?: string[]; legal?: Partial<SafetyLegalContact>[]; prayerChain?: boolean; chainNames?: boolean; shareMinutes?: number }) => a.put<SafetyHub>('/admin/safety/settings', body),
+    update: (id: string, body: { followUp?: string; status?: 'closed' }) => a.patch<SafetyHub>(`/admin/safety/alerts/${id}`, body),
+  },
   building: {
     get: () => a.get<BuildingHub>('/admin/building'),
     create: (body: BuildingInput) => a.post<BuildingProjectView>('/admin/building', body),

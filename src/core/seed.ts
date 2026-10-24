@@ -819,6 +819,8 @@ export function seedDemo(db: Db, env: Env) {
   const kinds: [Collections['foreignDonors']['kind'], string][] = [['foreign_citizen', 'United Kingdom'], ['oci', 'United States'], ['foreign_citizen', 'Canada']];
   abroad.slice(0, 3).forEach((pid, i) => { const p = db.get('people', pid); if (p) db.put('foreignDonors', { id: `fg_${i + 1}`, personId: pid, name: `${p.firstName} ${p.lastName}`, kind: kinds[i][0], country: kinds[i][1], note: '', by: 'Leena George', at: iso(now - 90 * DAY) }); });
   db.put('complianceState', { id: 'main', registrationValidTo: `${fyStart + 1}-03-31`, adminHeadIds: ['ah_salary', 'ah_rent', 'ah_power', 'ah_print', 'ah_travel', 'ah_bank'], openingBalances: { [fyLabel]: 1_25_000_00 }, filed: {}, dismissed: [] });
+  // Emergency alert: the senior pastor and an elder respond; a Christian legal-aid lawyer is on call.
+  db.put('safetySettings', { id: 'main', leaderIds: ['p_samuel', ...db.all('people').filter((p) => p.status === 'member' && p.id !== DEMO_MEMBER && p.id !== 'p_samuel').slice(0, 1).map((p) => p.id)].filter((id) => db.get('people', id)), legal: [{ id: 'lg_1', name: 'Adv. Thomas Mathew', org: 'Religious liberty legal aid, Hyderabad', phone: '+919849000111' }], prayerChain: true, chainNames: false, shareMinutes: 120, updatedAt: iso(now - 30 * DAY) });
   // The new sanctuary: open to the members, with progress, stages and each contractor's bill.
   const d0 = (days: number) => iso(now + days * DAY).slice(0, 10);
   db.put('buildingProjects', {

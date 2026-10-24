@@ -1658,7 +1658,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder' | 'compliance.due' | 'building.update' | 'building.pledge';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder' | 'compliance.due' | 'building.update' | 'building.pledge' | 'alert.raised' | 'alert.update';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1954,6 +1954,8 @@ export type Collections = {
   buildingProjects: BuildingProject;
   buildingUpdates: BuildingUpdate;
   buildingBills: BuildingBill;
+  safetyAlerts: SafetyAlert;
+  safetySettings: SafetySettings;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2058,7 +2060,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'buildingProjects', 'buildingUpdates', 'buildingBills', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'buildingProjects', 'buildingUpdates', 'buildingBills', 'safetyAlerts', 'safetySettings', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3781,3 +3783,49 @@ export type MemberBuildingProject = Omit<BuildingProject, 'showBillFiles' | 'ple
   myPledge: { amount: number; given: number; endDate: string } | null;
   myGiven: number;
 };
+
+// ----- persecution and emergency alert: one discreet button, chosen leaders, legal aid, the prayer chain, location for 2 hours -----
+export type SafetyAlertKind = 'threat' | 'violence' | 'police' | 'mob' | 'medical' | 'other';
+export type SafetyLegalContact = { id: string; name: string; org: string; phone: string };
+/** One per church, id 'main'. */
+export type SafetySettings = {
+  id: 'main';
+  /** People who are told at once and can see the location while it is shared. */
+  leaderIds: string[];
+  legal: SafetyLegalContact[];
+  /** Ask the prayer chain to pray, without a name or place unless `chainNames`. */
+  prayerChain: boolean;
+  chainNames: boolean;
+  /** Minutes the location is shared, 30 to 240 (2 hours by default). */
+  shareMinutes: number;
+  updatedAt: string;
+};
+export type SafetyLocation = { lat: number; lng: number; accuracy: number | null; at: string };
+export type SafetyAlert = {
+  id: string;
+  personId: string;
+  kind: SafetyAlertKind;
+  note: string;
+  status: 'active' | 'safe' | 'closed';
+  startedAt: string;
+  shareUntil: string;
+  /** Wiped when the alert ends or the sharing time runs out. */
+  locations: SafetyLocation[];
+  acks: { personId: string; name: string; at: string; note: string }[];
+  /** For the legal-aid contact's link, which works only while the location is shared. */
+  token: string;
+  endedAt: string | null;
+  endedBy: string | null;
+  /** Office notes after the event (care staff only). */
+  followUp: string;
+};
+export type SafetyAlertView = Omit<SafetyAlert, 'token' | 'locations'> & {
+  name: string;
+  phone: string | null;
+  sharing: boolean;
+  location: SafetyLocation | null;
+  trail: SafetyLocation[];
+};
+export type MySafety = { ready: boolean; leaders: number; legal: number; prayerChain: boolean; shareMinutes: number; alert: SafetyAlertView | null; responding: SafetyAlertView[] };
+export type SafetyHub = { settings: SafetySettings; leaders: { id: string; name: string; phone: string | null }[]; alerts: SafetyAlertView[] };
+export type PublicSafetyAlert = { church: string; name: string; phone: string | null; kind: SafetyAlertKind; note: string; status: SafetyAlert['status']; startedAt: string; shareUntil: string; sharing: boolean; location: SafetyLocation | null; responders: number };

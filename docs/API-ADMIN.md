@@ -1596,3 +1596,19 @@ A church building open to the members. Money raised = succeeded gifts to the pro
 | DELETE | /admin/building/:id/bills/:bid | giving.edit or settings | | BuildingProjectView |
 | GET | /admin/building/:id/behind | giving.view or settings | | `[{ personId, name, phone, amount, given, short }]` pledges behind |
 | POST | /admin/building/:id/remind | giving.edit or settings | | `{ sent }` |
+
+## Emergency alert (feature `safety-alert`)
+
+One discreet button for a pastor or member facing threats, violence, a mob or a police complaint. Pressing it tells the chosen leaders at once (`alert.raised`: push, WhatsApp, email, with phone and a map link), sends the legal-aid contacts a WhatsApp and SMS with a link to `/alert/:token`, and asks the prayer chain to pray (no name or place unless `chainNames`). The location is shared for `shareMinutes` (default 120) and wiped when the person is safe, the office closes the alert, or the time runs out. Nothing is posted to the directory, prayer wall or any public page. Alerts left open are closed after a day.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /me/safety | member | | MySafety `{ ready, leaders, legal, prayerChain, shareMinutes, alert, responding }` (`responding` only for chosen leaders) |
+| POST | /me/safety/alert | member | `{ kind?: threat\|violence\|police\|mob\|medical\|other, note?, lat?, lng?, accuracy? }` (pressing again adds the location to the same alert) | MySafety |
+| POST | /me/safety/location | member | `{ lat, lng, accuracy? }` | MySafety |
+| POST | /me/safety/safe | member | | MySafety |
+| POST | /me/safety/respond/:id | chosen leader | `{ note? }` | MySafety |
+| GET | /public/alert/:token | public | | PublicSafetyAlert (location and phone only while sharing) |
+| GET | /admin/safety | care | | SafetyHub `{ settings, leaders, alerts }` |
+| PUT | /admin/safety/settings | care or settings | `{ leaderIds?, legal?[{ name, org, phone }], prayerChain?, chainNames?, shareMinutes? (30–240) }` | SafetyHub |
+| PATCH | /admin/safety/alerts/:id | care | `{ followUp?, status?: 'closed' }` | SafetyHub |

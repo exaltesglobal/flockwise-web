@@ -101,6 +101,9 @@ import { MonthlyReportPage } from '@/admin/pages/monthly-report';
 import { AnnualReportPage } from '@/admin/pages/annual-report';
 import { CompliancePage } from '@/admin/pages/compliance';
 import { BuildingPage } from '@/admin/pages/building';
+import { SafetyPage } from '@/admin/pages/safety';
+import { MemberSafetyPage } from '@/member/safety';
+import { PublicAlertPage } from '@/public/alert';
 import { MemberBuildingPage } from '@/member/building';
 import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
@@ -195,6 +198,7 @@ const routes = [
       { path: 'bank', element: <BankPage /> },
       { path: 'compliance', element: <CompliancePage /> },
       { path: 'building', element: <BuildingPage /> },
+      { path: 'safety', element: <SafetyPage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
@@ -258,6 +262,7 @@ const routes = [
   { path: '/sing', element: <PublicSingPage /> },
   { path: '/story/:token', element: <PublicStoryPage /> },
   { path: '/outreach/:token', element: <PublicOutreachPage /> },
+  { path: '/alert/:token', element: <PublicAlertPage /> },
   { path: '/ask', element: <AskCodePage /> },
   { path: '/ask/:code', element: <AskPhonePage /> },
   { path: '/ask/:id/screen', element: <AskScreenPage mode="screen" /> },
@@ -301,6 +306,8 @@ const routes = [
       { path: 'talent', element: <MemberTalentPage /> },
       { path: 'building', element: <MemberBuildingPage /> },
       { path: 'building/:id', element: <MemberBuildingPage /> },
+      { path: 'safety', element: <MemberSafetyPage /> },
+      { path: 'safety/respond/:id', element: <MemberSafetyPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },
