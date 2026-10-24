@@ -1,15 +1,18 @@
 // AI helpers in the church office: the assistant page, a writer for any message box, sermon
 // follow-up material and worship set suggestions. Everything hides when AI is off on the server.
-import { Copy, Languages, ListMusic, RotateCcw, Send, Sparkles, Wand2 } from 'lucide-react';
+import { Copy, Languages, ListMusic, Mic, RotateCcw, Send, Sparkles, Square, Volume2, VolumeX, Wand2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import type { AiPurpose, AiSermonKind, AiSetlist, AiStatus, Sermon } from '@/api/admin-types';
+import type { VoiceAction } from '@/core/types';
 import { adminSession } from '@/api/client';
 import { AdminApi } from '@/api/endpoints';
 import { FormError, Loading, Mark, Modal, Segmented, useToast } from '@/components/ui';
 import { LightMarkdown } from '@/components/markdown';
 import { useAction } from '@/lib/use-api';
 
+import { canDictate, DICTATION_LANGS, useDictation } from './components/dictate';
+import { VoiceActionCard } from './components/voice-actions';
 import { PageHeader } from './layout';
 
 export const AI_LANGS: { value: string; label: string }[] = [
@@ -86,8 +89,24 @@ export function AiWriter({ purpose, channel, body, onDraft }: { purpose: AiPurpo
 
 // ---------------------------------------------------------------- assistant page
 
-type Turn = { role: 'user' | 'assistant'; text: string; tools?: string[] };
+type Turn = { role: 'user' | 'assistant'; text: string; tools?: string[]; actions?: VoiceAction[] };
 const SUGGESTIONS = ['Give me my weekly briefing', 'Who has a birthday or anniversary in the next two weeks?', 'Which volunteers have not confirmed for Sunday?', 'Who are the newest visitors and have they been followed up?', 'Which small groups have the most members?'];
+
+const LANG_KEY = 'fw.voiceLang';
+const SPEAK_KEY = 'fw.voiceSpeak';
+const store = { get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* private window */ } } };
+
+/** Reads an answer aloud in the language it was asked in, when the browser has a voice for it. */
+function say(text: string, lang: string) {
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
+  if (!synth) return;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[*_#>`]/g, ''));
+  u.lang = lang;
+  const voice = synth.getVoices().find((v) => v.lang.replace('_', '-').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
+  if (voice) u.voice = voice;
+  synth.speak(u);
+}
 
 export function AssistantPage() {
   const { status, loaded } = useAiStatus();
@@ -95,23 +114,38 @@ export function AssistantPage() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [used, setUsed] = useState<number | null>(null);
   const [q, setQ] = useState('');
+  const [lang, setLang] = useState(() => store.get(LANG_KEY) ?? 'en-IN');
+  const [speak, setSpeak] = useState(() => store.get(SPEAK_KEY) === '1');
+  const heard = useRef('');
   const end = useRef<HTMLDivElement>(null);
-  const ask = useAction(async (question: string, history: Turn[]) =>
-    /weekly briefing/i.test(question) && !history.length ? AdminApi.ai.briefing() : AdminApi.ai.ask(question, history.map(({ role, text }) => ({ role, text }))));
+  const dict = useDictation(lang, (t) => { heard.current += t; setQ(heard.current); });
+  const ask = useAction(async (question: string, history: Turn[], spoken: boolean) =>
+    /weekly briefing/i.test(question) && !history.length ? AdminApi.ai.briefing().then((r) => ({ ...r, actions: [] as VoiceAction[] })) : AdminApi.ai.voice(question, lang.slice(0, 2), history.map(({ role, text }) => ({ role, text })), spoken));
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns, ask.busy]);
-  const send = async (question: string) => {
+  const send = async (question: string, spoken = false) => {
     if (!question.trim() || ask.busy) return;
     const history = turns;
     setTurns([...history, { role: 'user', text: question }]);
     setQ('');
-    const res = await ask.run(question, history);
-    if (res) setTurns((t) => [...t, { role: 'assistant', text: res.answer, tools: res.toolsUsed }]);
+    heard.current = '';
+    const res = await ask.run(question, history, spoken);
+    if (res) {
+      setTurns((t) => [...t, { role: 'assistant', text: res.answer, tools: res.toolsUsed, actions: res.actions }]);
+      if (spoken && speak) say(res.answer, lang);
+    }
     refreshAi();
     void AdminApi.ai.status().then((s) => setUsed(s.used), () => undefined);
   };
+  const mic = () => {
+    if (dict.listening) { dict.stop(); void send(heard.current, true); return; }
+    heard.current = '';
+    setQ('');
+    window.speechSynthesis?.cancel();
+    dict.start();
+  };
   return (
     <>
-      <PageHeader title="Assistant" subtitle="Ask about your church in plain words. It reads your Flockwise data with your permissions and never changes anything." />
+      <PageHeader title="Assistant" subtitle="Ask about your church in plain words, typed or spoken in your own language. It reads your Flockwise data with your permissions. Ask it to add a family, record a gift or a care follow-up, and it prepares a card for you to check and confirm; nothing changes until you do." />
       {!loaded ? <Loading /> : !ai ? (
         <div className="card card-pad"><p style={{ margin: 0 }}>The assistant isn’t switched on for this server yet. The Flockwise team turns it on with your plan.</p></div>
       ) : (
@@ -121,26 +155,40 @@ export function AssistantPage() {
               <div className="ai-welcome">
                 <Mark size={44} />
                 <h2>What would you like to know?</h2>
-                <p className="muted">Pick a question to start, or type your own below.</p>
-                <div className="ai-suggest">{SUGGESTIONS.map((s) => <button key={s} className="card" onClick={() => void send(s)}><Sparkles size={15} /> <span>{s}</span></button>)}</div>
+                <p className="muted">Pick a question, type your own, or press the microphone and speak, for example: “Add Ravi’s family, his wife Sunita and their son Anil” or “How much came for the building fund this month?”</p>
+                <div className="ai-suggest">{SUGGESTIONS.map((x) => <button key={x} className="card" onClick={() => void send(x)}><Sparkles size={15} /> <span>{x}</span></button>)}</div>
               </div>
             )}
             {turns.map((t, i) => (
               <div key={i} className={`ai-turn ${t.role}`}>
                 {t.role === 'assistant' ? <AiText text={t.text} /> : <p style={{ margin: 0 }}>{t.text}</p>}
-                {t.tools && t.tools.length > 0 && <div className="small muted">Looked at: {[...new Set(t.tools)].map((x) => x.replace(/_/g, ' ')).join(', ')}</div>}
+                {t.actions?.map((a, n) => <VoiceActionCard key={n} action={a} />)}
+                {t.tools && t.tools.filter((x) => !x.startsWith('propose_')).length > 0 && <div className="small muted">Looked at: {[...new Set(t.tools.filter((x) => !x.startsWith('propose_')))].map((x) => x.replace(/_/g, ' ')).join(', ')}</div>}
               </div>
             ))}
             {ask.busy && <div className="ai-turn assistant muted">Looking that up…</div>}
             <FormError error={ask.error} />
             <div ref={end} />
           </div>
-          <form className="ai-ask" onSubmit={(e) => { e.preventDefault(); void send(q); }}>
+          <form className="ai-ask" onSubmit={(e) => { e.preventDefault(); if (dict.listening) dict.stop(); void send(q); }}>
             {turns.length > 0 && <button type="button" className="btn ghost icon" aria-label="New conversation" title="New conversation" onClick={() => setTurns([])}><RotateCcw size={16} /></button>}
-            <input className="input grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask anything about your church…" maxLength={2000} aria-label="Question" />
+            {canDictate() && <button type="button" className={`btn icon ${dict.listening ? 'danger' : ''}`} onClick={mic} aria-pressed={dict.listening} aria-label={dict.listening ? 'Stop and send' : 'Speak'} title={dict.listening ? 'Stop and send' : 'Speak'}>{dict.listening ? <Square size={16} /> : <Mic size={16} />}</button>}
+            <input className="input grow" value={dict.listening ? `${q}${dict.interim}` : q} onChange={(e) => { heard.current = e.target.value; setQ(e.target.value); }} placeholder={dict.listening ? 'Listening… press the square to send' : 'Ask anything about your church…'} maxLength={2000} aria-label="Question" />
             <button className="btn primary" type="submit" disabled={!q.trim() || ask.busy}><Send size={15} /> Ask</button>
           </form>
-          <div className="small muted ai-usage">{used ?? ai.used} of {ai.limit} AI requests used this month</div>
+          <div className="row wrap small muted ai-usage" style={{ gap: 10 }}>
+            <span>{used ?? ai.used} of {ai.limit} AI requests used this month</span>
+            <span style={{ flex: 1 }} />
+            {canDictate() && (
+              <>
+                <select className="select" style={{ width: 'auto', height: 28 }} value={lang} disabled={dict.listening} onChange={(e) => { setLang(e.target.value); store.set(LANG_KEY, e.target.value); }} aria-label="Speak in">
+                  {DICTATION_LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+                </select>
+                <button type="button" className="btn ghost sm" onClick={() => { setSpeak(!speak); store.set(SPEAK_KEY, speak ? '0' : '1'); if (speak) window.speechSynthesis?.cancel(); }} aria-pressed={speak}>{speak ? <Volume2 size={14} /> : <VolumeX size={14} />} {speak ? 'Answers read aloud' : 'Read answers aloud'}</button>
+              </>
+            )}
+            {dict.error && <span className="danger-text">{dict.error}</span>}
+          </div>
         </div>
       )}
     </>

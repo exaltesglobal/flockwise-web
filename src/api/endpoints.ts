@@ -15,6 +15,7 @@ import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } fr
 import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
 import type { JourneyHub, JourneyStep, MyJourney } from '@/core/types';
 import type { AltarHub, AltarWeek, MyAltar } from '@/core/types';
+import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
@@ -1330,6 +1331,8 @@ export const AdminApi = {
     write: (input: { purpose: AiPurpose; brief: string; channel?: string; language?: string; draft?: string }) => a.post<AiDraft>('/admin/ai/write', input),
     translate: (text: string, to: string) => a.post<{ text: string }>('/admin/ai/translate', { text, to }),
     ask: (question: string, history: { role: 'user' | 'assistant'; text: string }[]) => a.post<AiAnswer>('/admin/ai/ask', { question, history }),
+    voice: (text: string, language: string, history: { role: 'user' | 'assistant'; text: string }[], spoken: boolean) => a.post<AiVoiceReply>('/admin/ai/voice', { text, language, history, spoken }),
+    voiceDo: (action: VoiceAction) => a.post<VoiceDone>('/admin/ai/voice/do', { action }),
     briefing: () => a.post<AiAnswer>('/admin/ai/briefing', {}),
     sermon: (input: { kind: AiSermonKind; title?: string; passage?: string; notes?: string; language?: string }) => a.post<{ text: string }>('/admin/ai/sermon', input),
     visitNotes: (input: { transcript: string; familyName?: string; date?: string; language?: string }) => a.post<AiVisitNotes>('/admin/ai/visit-notes', input),

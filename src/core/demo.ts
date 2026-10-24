@@ -125,6 +125,16 @@ async function demoAi(req: AiRequest): Promise<AiResponse> {
   const ask = typeof last.content === 'string' ? last.content : '';
   if (req.tools?.length) {
     if (typeof last.content === 'string') {
+      if (req.tools.some((t) => t.name === 'propose_add_family')) {
+        // The voice assistant: a family to add, or giving totals to look up.
+        if (/family|wife|husband|son|daughter|children|kutumb|parivar|కుటుంబ/i.test(ask)) {
+          const names = ask.match(/\b[A-Z][a-z]+\b/g)?.filter((w) => !['Add', 'His', 'Her', 'And', 'The', 'Please'].includes(w)) ?? [];
+          if (!names.length) return text('What are their names?');
+          const members = names.slice(0, 6).map((n, i) => ({ firstName: n, relation: i === 0 ? 'head' : i === 1 && /wife|husband/i.test(ask) ? 'spouse' : 'child' }));
+          return { content: [{ type: 'tool_use', id: 'tu_v1', name: 'propose_add_family', input: { members } }], stopReason: 'tool_use' };
+        }
+        if (/fund|came|collection|giving|offering|vachindi|aaya/i.test(ask)) return { content: [{ type: 'tool_use', id: 'tu_v1', name: 'giving_totals', input: {} }], stopReason: 'tool_use' };
+      }
       const briefing = /briefing/i.test(ask);
       const calls: AiBlock[] = briefing
         ? [{ type: 'tool_use', id: 'tu_1', name: 'church_overview', input: {} }, { type: 'tool_use', id: 'tu_2', name: 'upcoming_celebrations', input: { days: 7 } }]
@@ -134,6 +144,9 @@ async function demoAi(req: AiRequest): Promise<AiResponse> {
       return { content: [{ type: 'text', text: 'Let me check.' }, ...calls], stopReason: 'tool_use' };
     }
     const results = last.content.filter((b): b is Extract<AiBlock, { type: 'tool_result' }> => b.type === 'tool_result');
+    if (results.some((r) => r.content.startsWith('Prepared.'))) return text('I have prepared the family below. Check the names and tap Confirm. (demo answer)');
+    const tot = results.map((r) => { try { return JSON.parse(r.content) as { total?: number; byFund?: { fundName: string; amount: number }[] }; } catch { return {}; } }).find((x) => typeof x.total === 'number');
+    if (tot) return text(`This month ₹${Math.round((tot.total ?? 0) / 100).toLocaleString('en-IN')} came in${tot.byFund?.[0] ? `, most of it for ${tot.byFund[0].fundName} (₹${Math.round(tot.byFund[0].amount / 100).toLocaleString('en-IN')})` : ''}. (demo answer)`);
     const names = results.map((r) => { try { return [...r.content.matchAll(/"(?:name|title|firstName)":"([^"]+)"/g)].slice(0, 4).map((m) => m[1]); } catch { return []; } }).flat();
     return text(`Here is what I found in your church data (demo answer):\n\n${names.length ? names.map((n) => `- ${n}`).join('\n') : '- Nothing matched.'}\n\nConnect an AI key on the server for full answers.`);
   }

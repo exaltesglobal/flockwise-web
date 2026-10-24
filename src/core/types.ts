@@ -3600,3 +3600,13 @@ export type TalentArea = { key: 'medical' | 'legal' | 'teaching' | 'jobs' | 'tra
 export type TalentBank = { outreaches: OutreachView[]; areas: TalentArea[]; givers: number; helped: number; kinds: { kind: OutreachKind; label: string; title: string; skills: string[] }[] };
 export type PublicOutreach = { title: string; kind: OutreachKind; date: string; startTime: string; endTime: string; place: string; about: string; church: string; open: boolean; full: boolean };
 export type MyOutreachInvite = { id: string; title: string; kind: OutreachKind; date: string; startTime: string; endTime: string; place: string; about: string; answer: OutreachAnswer };
+
+/** Voice office assistant: things it prepared from what was said, done only after the user confirms. */
+export type VoiceMember = { firstName: string; lastName: string; relation: 'head' | 'spouse' | 'child' | 'parent' | 'other'; gender: 'male' | 'female' | null; birthDate: string | null; phone: string | null };
+export type VoiceAction =
+  | { kind: 'add_family'; householdName: string; area: string; status: 'visitor' | 'regular' | 'member'; members: VoiceMember[] }
+  | { kind: 'record_gift'; donorName: string; donorId: string | null; fundId: string; fundName: string; amount: number; method: PaymentMethod; date: string }
+  | { kind: 'care'; title: string; personId: string | null; personName: string; note: string };
+export type AiVoiceReply = { answer: string; actions: VoiceAction[]; toolsUsed: string[] };
+export type VoiceDone = { text: string; link: string | null };
+export type GivingTotals = { from: string; to: string; total: number; count: number; currency: string; byFund: { fundId: string; fundName: string; amount: number; count: number }[]; byMethod: { method: string; amount: number }[] };

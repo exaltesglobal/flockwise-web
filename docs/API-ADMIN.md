@@ -1537,3 +1537,15 @@ Members tick `community: true` on PUT /me/skills to give their skills free to th
 | POST | /me/outreach/:id | member | `{ answer: yes\|no }` | MyOutreachInvite[] |
 | GET | /public/outreach/:token | public | | PublicOutreach `{ title, kind, date, startTime, endTime, place, about, church, open, full }` |
 | POST | /public/outreach/:token | public | `{ name, phone, need?, area?, remind?, website (honeypot) }` | `{ ok, again? }` |
+
+## Voice office assistant (needs AI on the server)
+
+The browser turns speech into text (Web Speech API, `te-IN`, `hi-IN`…); no audio reaches the server. The assistant answers in the spoken language from live data (read tools, including `list_funds` and `giving_totals`) and prepares changes as cards that run only after the user confirms.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| POST | /admin/ai/voice | any staff | `{ text, language, history?[{ role, text }], spoken? (default true; false = typed, may use short lists) }` | AiVoiceReply `{ answer, actions: VoiceAction[], toolsUsed }` |
+| POST | /admin/ai/voice/do | any staff (the action's own endpoint checks permission) | `{ action: VoiceAction }` | VoiceDone `{ text, link }` |
+| GET | /admin/giving/totals | giving.view | `?from&to&fundId` (default this month) | GivingTotals `{ from, to, total, count, currency, byFund, byMethod }` |
+
+VoiceAction kinds (gift amount in rupees; stored in paise): `add_family { householdName, area, status, members[{ firstName, lastName, relation, gender, birthDate, phone }] }` (POST /admin/people for each), `record_gift { donorName, donorId, fundId, fundName, amount, method, date }` (POST /admin/giving/donations), `care { title, personId, personName, note }` (POST /admin/care).

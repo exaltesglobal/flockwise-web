@@ -11,13 +11,14 @@ import { TOOLS, trim } from '../mcp.js';
 import type { AiAnswer, AiDraft, AiPurpose, AiRecap, AiScannedSong, AiSermonKind, AiSetlist, AiSongScan, AiStatus, AiVisitNotes, RecapFacts, VisitPurpose } from '../types.js';
 import { settings } from '../util.js';
 
-const LANGS: Record<string, string> = { ...Object.fromEntries(LANGUAGES.map((l) => [l.code, l.english])), en: 'English', hi: 'Hindi', te: 'Telugu', ta: 'Tamil', ml: 'Malayalam', kn: 'Kannada', mr: 'Marathi', bn: 'Bengali', gu: 'Gujarati', pa: 'Punjabi', or: 'Odia', as: 'Assamese', ur: 'Urdu', kok: 'Konkani', mni: 'Manipuri', lus: 'Mizo', kha: 'Khasi', ne: 'Nepali' };
+export const LANGS: Record<string, string> = { ...Object.fromEntries(LANGUAGES.map((l) => [l.code, l.english])), en: 'English', hi: 'Hindi', te: 'Telugu', ta: 'Tamil', ml: 'Malayalam', kn: 'Kannada', mr: 'Marathi', bn: 'Bengali', gu: 'Gujarati', pa: 'Punjabi', or: 'Odia', as: 'Assamese', ur: 'Urdu', kok: 'Konkani', mni: 'Manipuri', lus: 'Mizo', kha: 'Khasi', ne: 'Nepali' };
 
 // The assistant calls the same endpoints as the office, as the signed-in staff member. The engine
 // hands over its request handler once it is built.
 // One server hosts many churches, so each church's handler is kept with its database.
 const handles = new WeakMap<Db, (req: Request) => Promise<unknown>>();
 export const bindAiHandle = (db: Db, h: (req: Request) => Promise<unknown>) => void handles.set(db, h);
+export const aiHandle = (db: Db) => handles.get(db);
 
 const month = (ctx: Ctx) => ctx.now.toISOString().slice(0, 7);
 
@@ -27,14 +28,14 @@ function status(ctx: Ctx): AiStatus {
   return { enabled: !!ctx.env.ai, used, limit: (settings(ctx).aiMonthlyLimit ?? limitsFor(ctx.db, ctx.now).aiCredits) + aiExtra(ctx.db, m), month: m };
 }
 
-function churchContext(ctx: Ctx) {
+export function churchContext(ctx: Ctx) {
   const s = settings(ctx);
   const langs = (s.languages ?? ['en']).map((l) => LANGS[l] ?? l).join(', ');
   return `You help the staff of ${s.name}, a church in ${s.city || 'India'}${s.country && s.country !== 'IN' ? ` (${s.country})` : ''}. Its languages are ${langs}. Today is ${ctx.now.toISOString().slice(0, 10)}. Write warmly and plainly, the way a caring Indian church office writes: respectful, never salesy, no emoji unless asked. Use Indian English spellings and Indian number formats (lakh, crore, ₹).`;
 }
 
 /** One model call, counted against the church's monthly allowance. */
-async function run(ctx: Ctx, req: AiRequest) {
+export async function run(ctx: Ctx, req: AiRequest) {
   if (!ctx.env.ai) throw new ApiError(503, 'ai_off', 'AI features are not switched on for this server yet.');
   const st = status(ctx);
   if (st.used >= st.limit) throw new ApiError(429, 'ai_limit', `You have used all ${st.limit} AI requests for this month. They reset on the 1st.`);
@@ -88,7 +89,7 @@ export async function translateLyrics(ctx: Ctx, lines: string[], to: string): Pr
   return textOf(res.content).split('\n').map((l) => l.trim()).filter(Boolean).slice(0, lines.length + 2);
 }
 
-const textOf = (blocks: AiBlock[]) => blocks.filter((b): b is Extract<AiBlock, { type: 'text' }> => b.type === 'text').map((b) => b.text).join('\n').trim();
+export const textOf = (blocks: AiBlock[]) => blocks.filter((b): b is Extract<AiBlock, { type: 'text' }> => b.type === 'text').map((b) => b.text).join('\n').trim();
 
 function json<T>(blocks: AiBlock[]): T {
   const t = textOf(blocks);
