@@ -86,6 +86,8 @@ export const ml: Strings = {
   tabServing: 'ശുശ്രൂഷ',
   tabPrayer: 'പ്രാർത്ഥന',
   tabDirectory: 'ഡയറക്ടറി',
+  homeMore: 'കൂടുതൽ',
+  homeLess: 'കുറച്ച് കാണിക്കുക',
   quickLinks: 'ദ്രുത ലിങ്കുകൾ',
   cancel: 'റദ്ദാക്കുക',
   saved: 'സേവ് ചെയ്തു',
@@ -655,3 +657,5 @@ export const ml: Strings = {
   nameEdit: "പേര് തിരുത്തുക",
   nameRequired: "പേരും കുടുംബപ്പേരും രണ്ടും വേണം.",
 };
+
+export default ml;

@@ -86,6 +86,8 @@ export const hi: Strings = {
   tabServing: 'सेवा',
   tabPrayer: 'प्रार्थना',
   tabDirectory: 'निर्देशिका',
+  homeMore: 'और',
+  homeLess: 'कम दिखाएँ',
   quickLinks: 'त्वरित लिंक',
   cancel: 'रद्द करें',
   saved: 'सहेजा गया',
@@ -655,3 +657,5 @@ export const hi: Strings = {
   nameEdit: "नाम बदलें",
   nameRequired: "पहला और अंतिम नाम दोनों ज़रूरी हैं।",
 };
+
+export default hi;

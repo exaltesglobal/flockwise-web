@@ -167,15 +167,17 @@ export function BarChart({ data, format }: { data: { label: string; value: numbe
 
 // ---------- toasts ----------
 
-type Toast = { id: number; text: string; tone: 'ok' | 'error' };
-const ToastCtx = createContext<(text: string, tone?: Toast['tone']) => void>(() => {});
+type ToastAction = { label: string; onClick: () => void };
+type Toast = { id: number; text: string; tone: 'ok' | 'error'; action?: ToastAction };
+type Push = (text: string, tone?: Toast['tone'], action?: ToastAction, ms?: number) => void;
+const ToastCtx = createContext<Push>(() => {});
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const push = useCallback((text: string, tone: Toast['tone'] = 'ok') => {
+  const push = useCallback<Push>((text, tone = 'ok', action, ms) => {
     const id = Date.now() + Math.random();
-    setToasts((t) => [...t, { id, text, tone }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
+    setToasts((t) => [...t, { id, text, tone, action }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ms ?? (action ? 8000 : 3200));
   }, []);
   return (
     <ToastCtx.Provider value={push}>
@@ -185,6 +187,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div key={t.id} className="toast">
             {t.tone === 'ok' ? <CheckCircle2 size={16} color="#8FD6C2" /> : <AlertCircle size={16} color="#F97066" />}
             {t.text}
+            {t.action && (
+              <button
+                className="toast-action"
+                onClick={() => {
+                  t.action!.onClick();
+                  setToasts((all) => all.filter((x) => x.id !== t.id));
+                }}
+              >
+                {t.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -193,3 +206,36 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 export const useToast = () => useContext(ToastCtx);
+
+/**
+ * Delete with Undo instead of "Are you sure?": the row disappears at once, a toast offers Undo for
+ * 8 seconds, and only then is the delete sent. `hide`/`show` hide and bring back the row on the page.
+ */
+export function useUndoableDelete() {
+  const toast = useToast();
+  return useCallback(
+    (o: { text: string; run: () => Promise<unknown>; hide: () => void; show: () => void; done?: () => void; undoLabel?: string; failText?: string }) => {
+      o.hide();
+      let undone = false;
+      toast(o.text, 'ok', { label: o.undoLabel ?? 'Undo', onClick: () => { undone = true; o.show(); } });
+      setTimeout(() => {
+        if (undone) return;
+        o.run().then(
+          () => o.done?.(),
+          () => { o.show(); toast(o.failText ?? 'Could not delete that. It is back.', 'error'); },
+        );
+      }, 8000);
+    },
+    [toast],
+  );
+}
+
+/** Rows hidden while their delete waits for Undo. */
+export function useHiddenRows() {
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  return {
+    hidden,
+    hide: (id: string) => setHidden((h) => new Set(h).add(id)),
+    show: (id: string) => setHidden((h) => { const n = new Set(h); n.delete(id); return n; }),
+  };
+}

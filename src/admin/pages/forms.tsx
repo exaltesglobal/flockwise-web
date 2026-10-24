@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react';
 
 import type { DiscountCode, FormField, FormFieldType, FormInput, FormResponse, FormView, TicketType } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
-import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast, useHiddenRows, useUndoableDelete } from '@/components/ui';
 import { downloadCsv, formatDate, formatMoney, formatRelative, toLocalInput } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -31,6 +31,8 @@ export function FormsPage() {
   const [editing, setEditing] = useState<FormView | 'new' | null>(null);
   const [viewing, setViewing] = useState<FormView | null>(null);
   const toast = useToast();
+  const rows = useHiddenRows();
+  const undoable = useUndoableDelete();
 
   const copyLink = async (f: FormView) => {
     try {
@@ -52,7 +54,7 @@ export function FormsPage() {
         <div className="card"><Empty icon={<ClipboardList size={32} />} title="No forms yet" body="Create a registration for your next camp, class or event." action={<button className="btn primary" onClick={() => setEditing('new')}>Create a form</button>} /></div>
       ) : (
         <div className="grid cols-2">
-          {data.map((f) => (
+          {data.filter((f) => !rows.hidden.has(f.id)).map((f) => (
             <div key={f.id} className="card card-pad stack" style={{ gap: 10 }}>
               <div className="row" style={{ alignItems: 'flex-start' }}>
                 <div className="grow stack" style={{ gap: 4 }}>
@@ -80,10 +82,7 @@ export function FormsPage() {
                 {f.isPublic && f.status !== 'draft' && <a className="btn sm ghost" href={publicFormUrl(f.id)} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open</a>}
                 <span className="grow" />
                 <button className="btn sm ghost" title="Duplicate" onClick={async () => { await AdminApi.forms.duplicate(f.id); toast('Duplicated as a draft'); reload(); }}><Copy size={14} /></button>
-                <button className="btn sm ghost danger" title="Delete" onClick={async () => {
-                  if (!confirm(`Delete “${f.title}” and its responses?`)) return;
-                  try { await AdminApi.forms.remove(f.id); toast('Deleted'); reload(); } catch (e) { toast((e as Error).message, 'error'); }
-                }}><Trash2 size={14} /></button>
+                <button className="btn sm ghost danger" title="Delete" onClick={() => undoable({ text: `“${f.title}” deleted`, run: () => AdminApi.forms.remove(f.id), hide: () => rows.hide(f.id), show: () => rows.show(f.id), done: reload })}><Trash2 size={14} /></button>
               </div>
             </div>
           ))}

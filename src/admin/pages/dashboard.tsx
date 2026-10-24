@@ -1,4 +1,6 @@
 import { AlertTriangle, Cake, CheckCircle2, ChevronRight, Circle, Rocket, CalendarDays, Gift, HandHeart, HeartHandshake, IndianRupee, Sparkles, UserPlus, Users, UsersRound } from 'lucide-react';
+import { useOfficeT } from '../i18n';
+import { SeasonNudge } from '../seasons';
 import { Link } from 'react-router';
 
 import { adminSession } from '@/api/client';
@@ -18,8 +20,9 @@ export function DashboardPage() {
   const session = useSession(adminSession);
   const { data, error, reload } = useApi(AdminApi.dashboard);
   const can = useCan();
+  const { tr } = useOfficeT();
 
-  const header = <PageHeader title={`${GREETING[greetingKey()]}, ${session?.member.firstName ?? ''}`} subtitle="Here is how your church is doing this week." />;
+  const header = <PageHeader title={`${tr(GREETING[greetingKey()])}, ${session?.member.firstName ?? ''}`} subtitle={tr('Here is how your church is doing this week.')} />;
   if (error) return (<>{header}<ErrorState error={error} onRetry={reload} /></>);
   if (!data) return (<>{header}<Loading /></>);
 
@@ -33,6 +36,7 @@ export function DashboardPage() {
   return (
     <>
       {header}
+      <SeasonNudge />
       <TodayPanel data={data} />
       <GettingStartedCard />
 
@@ -181,19 +185,28 @@ export function DashboardPage() {
 /** What needs doing now, worked out from the dashboard numbers; each line opens the place to act. */
 function TodayPanel({ data }: { data: Dashboard }) {
   const can = useCan();
+  const { tr } = useOfficeT();
+  const n = (count: number, one: string, many: string, vars: Record<string, string | number> = {}) => tr(count === 1 ? one : many, { n: count, ...vars });
   const items: { text: string; to: string; icon: typeof Users; tone?: 'warn' }[] = [];
-  if (can('care') && data.care.overdue) items.push({ text: `${data.care.overdue} care ${data.care.overdue === 1 ? 'case is' : 'cases are'} overdue`, to: '/admin/care', icon: AlertTriangle, tone: 'warn' });
-  if (can('care') && data.care.atRisk) items.push({ text: `Call ${data.care.atRisk} ${data.care.atRisk === 1 ? 'person' : 'people'} not seen for 3+ weeks`, to: '/admin/care?tab=at-risk', icon: HeartHandshake });
-  if (can('groups') && data.pendingJoinRequests) items.push({ text: `${data.pendingJoinRequests} ${data.pendingJoinRequests === 1 ? 'person wants' : 'people want'} to join a group`, to: '/admin/groups', icon: UsersRound });
-  if (can('volunteers') && data.serving.openSlots) items.push({ text: `${data.serving.openSlots} serving ${data.serving.openSlots === 1 ? 'slot needs' : 'slots need'} someone${data.serving.nextEventTitle ? ` for ${data.serving.nextEventTitle}` : ''}`, to: '/admin/volunteers', icon: HandHeart });
-  if (can('volunteers') && data.serving.pending) items.push({ text: `${data.serving.pending} volunteer ${data.serving.pending === 1 ? 'reply' : 'replies'} still awaited`, to: '/admin/volunteers', icon: HandHeart });
-  if (can('care') && data.care.prayer) items.push({ text: `${data.care.prayer} prayer ${data.care.prayer === 1 ? 'request' : 'requests'} to pray over`, to: '/admin/care?tab=prayer', icon: Sparkles });
-  if (data.birthdaysThisWeek.length) items.push({ text: `${data.birthdaysThisWeek.length} ${data.birthdaysThisWeek.length === 1 ? 'birthday' : 'birthdays'} this week: send a greeting`, to: '/admin/celebrations', icon: Cake });
+  if (can('care') && data.care.overdue) items.push({ text: n(data.care.overdue, '{n} care case is overdue', '{n} care cases are overdue'), to: '/admin/care', icon: AlertTriangle, tone: 'warn' });
+  if (can('care') && data.care.atRisk) items.push({ text: n(data.care.atRisk, 'Call {n} person not seen for 3+ weeks', 'Call {n} people not seen for 3+ weeks'), to: '/admin/care?tab=at-risk', icon: HeartHandshake });
+  if (can('groups') && data.pendingJoinRequests) items.push({ text: n(data.pendingJoinRequests, '{n} person wants to join a group', '{n} people want to join a group'), to: '/admin/groups', icon: UsersRound });
+  if (can('volunteers') && data.serving.openSlots)
+    items.push({
+      text: data.serving.nextEventTitle
+        ? n(data.serving.openSlots, '{n} serving slot needs someone for {event}', '{n} serving slots need someone for {event}', { event: data.serving.nextEventTitle })
+        : n(data.serving.openSlots, '{n} serving slot needs someone', '{n} serving slots need someone'),
+      to: '/admin/volunteers',
+      icon: HandHeart,
+    });
+  if (can('volunteers') && data.serving.pending) items.push({ text: n(data.serving.pending, '{n} volunteer reply still awaited', '{n} volunteer replies still awaited'), to: '/admin/volunteers', icon: HandHeart });
+  if (can('care') && data.care.prayer) items.push({ text: n(data.care.prayer, '{n} prayer request to pray over', '{n} prayer requests to pray over'), to: '/admin/care?tab=prayer', icon: Sparkles });
+  if (data.birthdaysThisWeek.length) items.push({ text: n(data.birthdaysThisWeek.length, '{n} birthday this week: send a greeting', '{n} birthdays this week: send a greeting'), to: '/admin/celebrations', icon: Cake });
   return (
     <div className="card today-panel">
-      <div className="today-head"><b>Today</b><span className="small muted">{items.length ? `${items.length} ${items.length === 1 ? 'thing' : 'things'} to do` : 'Nothing waiting'}</span></div>
+      <div className="today-head"><b>{tr('Today')}</b><span className="small muted">{items.length ? n(items.length, '{n} thing to do', '{n} things to do') : tr('Nothing waiting')}</span></div>
       {items.length === 0 ? (
-        <p className="today-done"><CheckCircle2 size={18} /> All caught up. Nobody is waiting on you right now.</p>
+        <p className="today-done"><CheckCircle2 size={18} /> {tr('All caught up. Nobody is waiting on you right now.')}</p>
       ) : (
         <div className="today-list">
           {items.map((i) => (

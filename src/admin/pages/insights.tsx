@@ -18,7 +18,7 @@ export function InsightsPage() {
   const { data, error, reload } = useApi(AdminApi.insights);
   const can = useCan();
   const header = (
-    <PageHeader title="Insights" subtitle="How people are moving from first visit to belonging, serving and giving."
+    <PageHeader title="Reports" subtitle="How people are moving from first visit to belonging, serving and giving."
       actions={data && <button className="btn" onClick={() => exportCsv(data)}><Download size={16} /> Export CSV</button>} />
   );
   if (error) return <>{header}<ErrorState error={error} onRetry={reload} /></>;

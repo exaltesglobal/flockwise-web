@@ -1,5 +1,5 @@
 import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
 import { adminSession } from '@/api/client';
@@ -17,7 +17,11 @@ import { LegalFooter } from '@/legal/legal';
 
 import { useAi } from './ai';
 import { useFeatures } from './features';
+import { useOfficeT } from './i18n';
+import { LanguageButton } from './language-button';
 import { NewMenu } from './new-menu';
+import { useTableCards } from './table-cards';
+import { SearchButton, SearchPalette, useSearchShortcut } from './search';
 import { missingPlan, PlanBanner, PlanGate, PlanLock, usePlan } from './plan';
 import { ChurchLine } from '@/platform/church';
 import './admin.css';
@@ -44,8 +48,8 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
     hubs: [
       { label: 'People', icon: Users, pages: [
         { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'], feature: 'people' },
-        { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'], feature: 'lists' },
-        { to: '/admin/zones', label: 'Zones & visits', icon: MapPin, perm: ['people.view'], feature: 'zones' },
+        { to: '/admin/lists', label: 'Saved lists', icon: Filter, perm: ['people.view'], feature: 'lists' },
+        { to: '/admin/zones', label: 'Area visits', icon: MapPin, perm: ['people.view'], feature: 'zones' },
         { to: '/admin/registrations', label: 'Registrations', icon: UserPlus, perm: ['people.view'], feature: 'registration' },
         { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'], feature: 'import' },
       ] },
@@ -127,14 +131,14 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, perm: ['comms'], feature: 'announcements' },
         { to: '/admin/bulletin', label: 'Bulletin', icon: Newspaper, perm: ['comms'], feature: 'bulletin' },
       ] },
-      one({ to: '/admin/team-hub', label: 'Team hub', icon: MessagesSquare, feature: 'team-hub' }),
+      one({ to: '/admin/team-hub', label: 'Staff chat', icon: MessagesSquare, feature: 'team-hub' }),
       one({ to: '/admin/media', label: 'Media library', icon: Images, perm: ['comms'], feature: 'media' }),
     ],
   },
   {
     title: 'Office',
     hubs: [
-      one({ to: '/admin/insights', label: 'Insights', icon: BarChart3, perm: ['insights'], feature: 'insights' }),
+      one({ to: '/admin/insights', label: 'Reports', icon: BarChart3, perm: ['insights'], feature: 'insights' }),
       one({ to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] }),
     ],
   },
@@ -165,12 +169,13 @@ function useVisibleNav() {
 /** Tabs for the other pages that share this page's menu entry. */
 function HubTabs({ path }: { path: string }) {
   const nav = useVisibleNav();
+  const { tr } = useOfficeT();
   const hub = nav.flatMap((g) => g.hubs).find((h) => h.pages.length > 1 && h.pages.some((p) => isActive(p, path)));
   if (!hub) return null;
   return (
-    <nav className="hub-tabs" aria-label={hub.label}>
+    <nav className="hub-tabs" aria-label={tr(hub.label)}>
       {hub.pages.map(({ to, label, icon: Icon, end }) => (
-        <NavLink key={to} to={to} end={end}><Icon size={15} /> {label}</NavLink>
+        <NavLink key={to} to={to} end={end}><Icon size={15} /> {tr(label)}</NavLink>
       ))}
     </nav>
   );
@@ -179,6 +184,7 @@ function HubTabs({ path }: { path: string }) {
 /** On a phone: the five places people go most, always at the bottom of the screen. */
 function PhoneTabs({ path, onMenu }: { path: string; onMenu: () => void }) {
   const nav = useVisibleNav();
+  const { tr } = useOfficeT();
   const pages = nav.flatMap((g) => g.hubs.flatMap((h) => h.pages));
   const pick = (...tos: string[]) => pages.find((p) => tos.includes(p.to));
   const tabs = [
@@ -190,28 +196,27 @@ function PhoneTabs({ path, onMenu }: { path: string; onMenu: () => void }) {
     .filter((t) => t.page)
     .map((t) => ({ ...t, label: t.page!.to === '/admin/events' || t.page!.to === '/admin/checkin' || t.page!.to === '/admin/care' ? t.page!.label : t.label }));
   return (
-    <nav className="admin-tabbar" aria-label="Main places">
+    <nav className="admin-tabbar" aria-label={tr('Main places')}>
       {tabs.map(({ label, page }) => {
         const Icon = page!.icon;
         const hub = nav.flatMap((g) => g.hubs).find((h) => h.pages.includes(page!));
         const active = hub?.pages.some((p) => isActive(p, path)) ?? isActive(page!, path);
         return (
           <NavLink key={label} to={page!.to} end={page!.end} className={() => (active ? 'active' : '')}>
-            <Icon size={20} /><span>{label}</span>
+            <Icon size={20} /><span>{tr(label)}</span>
           </NavLink>
         );
       })}
-      <button onClick={onMenu}><Menu size={20} /><span>More</span></button>
+      <button onClick={onMenu}><Menu size={20} /><span>{tr('More')}</span></button>
     </nav>
   );
 }
 
-function AdminNav({ path }: { path: string }) {
+function AdminNav({ path, onSearch }: { path: string; onSearch: () => void }) {
   const plan = usePlan();
   const nav = useVisibleNav();
+  const { tr } = useOfficeT();
   const [folded, setFolded] = useState<string[]>(readFolded);
-  const [query, setQuery] = useState('');
-  const q = query.trim().toLowerCase();
 
   function toggle(title: string) {
     const next = folded.includes(title) ? folded.filter((t) => t !== title) : [...folded, title];
@@ -223,33 +228,18 @@ function AdminNav({ path }: { path: string }) {
     }
   }
 
-  // Searching lists every matching page on its own, whichever entry it lives under.
-  const found = q ? nav.flatMap((g) => g.hubs.flatMap((h) => h.pages.filter((p) => [p.label, h.label, g.title ?? ''].some((t) => t.toLowerCase().includes(q))))) : [];
-
   return (
-    <nav className="admin-nav" aria-label="Office menu">
+    <nav className="admin-nav" aria-label={tr('Office menu')}>
       <NewMenu />
-      <label className="nav-find">
-        <Search size={15} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a page" aria-label="Find a page" />
-      </label>
-      {q ? (
-        <div className="nav-group">
-          {found.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} onClick={() => setQuery('')}>
-              <Icon size={18} /> <span className="grow ellipsis">{label}</span>
-            </NavLink>
-          ))}
-          {!found.length && <p className="nav-none">No page called “{query}”. Some pages may be switched off in Settings › Features.</p>}
-        </div>
-      ) : nav.map((g) => {
+      <SearchButton onOpen={onSearch} />
+      {nav.map((g) => {
         const here = g.hubs.some((h) => h.pages.some((n) => isActive(n, path)));
         const open = !g.title || here || !folded.includes(g.title);
         return (
           <div key={g.title ?? 'top'} className="nav-group">
             {g.title && (
               <button className="nav-group-head" onClick={() => toggle(g.title!)} aria-expanded={open}>
-                <span>{g.title}</span>
+                <span>{tr(g.title)}</span>
                 <ChevronDown size={14} className={open ? '' : 'folded'} />
               </button>
             )}
@@ -261,7 +251,7 @@ function AdminNav({ path }: { path: string }) {
                 const label = h.pages.length > 1 ? h.label : first.label;
                 return (
                   <NavLink key={h.label} to={first.to} end={first.end} className={() => (active ? 'active' : '')}>
-                    <Icon size={18} /> <span className="grow ellipsis">{label}</span>
+                    <Icon size={18} /> <span className="grow ellipsis">{tr(label)}</span>
                     {h.pages.length > 1 && <span className="nav-count">{h.pages.length}</span>}
                     {h.pages.length === 1 && missingPlan(plan, first.to) && <PlanLock />}
                   </NavLink>
@@ -278,6 +268,12 @@ export function AdminLayout() {
   const session = useSession(adminSession);
   const plan = usePlan();
   const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const openSearch = useCallback(() => setSearching(true), []);
+  useSearchShortcut(openSearch);
+  useTableCards();
+  const nav = useVisibleNav();
+  const { tr, lang } = useOfficeT();
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
   useEffect(() => { void loadFaces(); }, []);
@@ -292,7 +288,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="admin">
+    <div className="admin" lang={lang}>
       <DemoBanner text="Demo mode: sample data kept in this browser. Connect a real API in Settings → Server." href="/admin/settings#server" />
       <div className="admin-shell">
         <aside className={`admin-side ${open ? 'open' : ''}`}>
@@ -312,15 +308,16 @@ export function AdminLayout() {
               <small>{session.church.city}</small>
             </div>
           </div>
-          <AdminNav path={location.pathname} />
+          <AdminNav path={location.pathname} onSearch={openSearch} />
           <div className="admin-user">
             <Avatar name={name} person={session.member} />
             <div className="grow">
               <div className="ellipsis">{name}</div>
               <small>{ROLE_LABELS[session.staff.role]}</small>
             </div>
+            <LanguageButton />
             <ThemeButton />
-            <button className="btn ghost icon sm" onClick={signOut} title="Sign out" aria-label="Sign out">
+            <button className="btn ghost icon sm" onClick={signOut} title={tr('Sign out')} aria-label={tr('Sign out')}>
               <LogOut size={17} />
             </button>
           </div>
@@ -332,6 +329,10 @@ export function AdminLayout() {
               <Menu size={20} />
             </button>
             <Logo height={22} />
+            <div className="grow" />
+            <button className="btn ghost icon" onClick={openSearch} aria-label={tr('Search')}>
+              <Search size={20} />
+            </button>
           </div>
           <PlanBanner />
           <HubTabs path={location.pathname} />
@@ -342,6 +343,12 @@ export function AdminLayout() {
         </main>
       </div>
       <PhoneTabs path={location.pathname} onMenu={() => setOpen(true)} />
+      {searching && (
+        <SearchPalette
+          pages={nav.flatMap((g) => g.hubs.flatMap((h) => h.pages.map((p) => ({ to: p.to, label: p.label, icon: p.icon, hub: h.pages.length > 1 ? h.label : undefined }))))}
+          onClose={() => setSearching(false)}
+        />
+      )}
     </div>
   );
 }
@@ -349,6 +356,7 @@ export function AdminLayout() {
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
   // Long explanations stay to one line until asked for, so every page starts with its work.
   const [more, setMore] = useState(false);
+  const { tr } = useOfficeT();
   const long = !!subtitle && subtitle.length > 110;
   return (
     <div className="page-head">
@@ -357,7 +365,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
         {subtitle && (
           <p className={`muted page-sub ${long && !more ? 'clamped' : ''}`}>
             <span className="page-sub-text">{subtitle}</span>
-            {long && <button className="page-sub-more" onClick={() => setMore(!more)}>{more ? 'Less' : 'How this works'}</button>}
+            {long && <button className="page-sub-more" onClick={() => setMore(!more)}>{more ? tr('Less') : tr('How this works')}</button>}
           </p>
         )}
       </div>

@@ -18,7 +18,7 @@ import './member.css';
 export function MemberLayout() {
   const session = useSession(memberSession);
   const location = useLocation();
-  const { t } = useT();
+  const { t, lang, dir } = useT();
   const brandStyle = useBrandStyle(session?.church);
   if (!session) return <Navigate to="/app/sign-in" replace state={{ from: location.pathname + location.search }} />;
 
@@ -42,7 +42,7 @@ export function MemberLayout() {
   ];
 
   return (
-    <div className="member" style={brandStyle}>
+    <div className="member" style={brandStyle} lang={lang} dir={dir}>
       <DemoBanner text={t('demoBanner')} />
       <header className="member-top">
         <div className="member-top-inner">

@@ -86,6 +86,8 @@ export const ta: Strings = {
   tabServing: 'ஊழியம்',
   tabPrayer: 'ஜெபம்',
   tabDirectory: 'அடைவு',
+  homeMore: 'மேலும்',
+  homeLess: 'குறைவாகக் காட்டு',
   quickLinks: 'விரைவு இணைப்புகள்',
   cancel: 'ரத்து',
   saved: 'சேமிக்கப்பட்டது',
@@ -655,3 +657,5 @@ export const ta: Strings = {
   nameEdit: "பெயரைத் திருத்து",
   nameRequired: "முதல் பெயரும் குடும்பப் பெயரும் இரண்டும் தேவை.",
 };
+
+export default ta;

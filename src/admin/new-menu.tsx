@@ -8,6 +8,7 @@ import type { Permission } from '@/api/admin-types';
 import { useCan } from '@/lib/perms';
 
 import { useFeatures } from './features';
+import { useOfficeT } from './i18n';
 
 const ITEMS: { to: string; label: string; icon: typeof Plus; perm: Permission[]; feature: string }[] = [
   { to: '/admin/people?new=1', label: 'Person', icon: UserPlus, perm: ['people.edit'], feature: 'people' },
@@ -20,6 +21,7 @@ const ITEMS: { to: string; label: string; icon: typeof Plus; perm: Permission[];
 
 export function NewMenu() {
   const can = useCan();
+  const { tr } = useOfficeT();
   const features = useFeatures();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -39,12 +41,12 @@ export function NewMenu() {
   return (
     <div className="new-menu" ref={box}>
       <button className="new-menu-btn" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="menu">
-        <Plus size={17} /> New
+        <Plus size={17} /> {tr('New')}
       </button>
       {open && (
         <div className="new-menu-pop" role="menu">
           {items.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to} role="menuitem"><Icon size={16} /> {label}</Link>
+            <Link key={to} to={to} role="menuitem"><Icon size={16} /> {tr(label)}</Link>
           ))}
         </div>
       )}

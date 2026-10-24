@@ -41,15 +41,15 @@ export function TeamHubPage() {
     return () => clearInterval(t);
   }, [setData]);
 
-  if (error) return <><PageHeader title="Team hub" /><div className="card card-pad"><ErrorState error={error} onRetry={reload} /></div></>;
-  if (!data) return <><PageHeader title="Team hub" /><Loading /></>;
+  if (error) return <><PageHeader title="Staff chat" /><div className="card card-pad"><ErrorState error={error} onRetry={reload} /></div></>;
+  if (!data) return <><PageHeader title="Staff chat" /><Loading /></>;
 
   const openTasks = data.tasks.filter((t) => !t.task?.done).length;
   const current = data.channels.find((c) => c.id === selected);
 
   return (
     <>
-      <PageHeader title="Team hub" subtitle="Notices, chat and tasks for the office and every serving team. Volunteers see their team's channel in the Team app."
+      <PageHeader title="Staff chat" subtitle="Notices, chat and tasks for the office and every serving team. Volunteers see their team's channel in the Team app."
         actions={<button className="btn primary" onClick={() => setNewThread(true)}><Plus size={16} /> New thread</button>} />
       <div className="split">
         <div className="card side-list">

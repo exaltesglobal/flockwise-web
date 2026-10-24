@@ -1,4 +1,5 @@
 import { CalendarCheck, Camera, Copy, Download, FileText, Gift, HandHeart, HeartHandshake, Pencil, Plus, Search, Trash2, Upload, Users } from 'lucide-react';
+import { FilterButton } from '@/components/filters';
 import { Fragment, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 
@@ -111,29 +112,14 @@ export function PeoplePage() {
             <Search size={16} />
             <input className="input" placeholder="Search name, mobile, email or household" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
-          <select className="select" style={{ width: 160 }} value={status} onChange={(e) => setStatus(e.target.value as PersonStatus | '')}>
-            <option value="">All statuses</option>
-            {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
-          {(tags.data?.length ?? 0) > 0 && (
-            <select className="select" style={{ width: 160 }} value={tag} onChange={(e) => setTag(e.target.value)}>
-              <option value="">All tags</option>
-              {tags.data!.map((t) => <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>)}
-            </select>
-          )}
-          {(campuses.data?.length ?? 0) > 1 && (
-            <select className="select" style={{ width: 170 }} value={campusId} onChange={(e) => setCampusId(e.target.value)}>
-              <option value="">All campuses</option>
-              {campuses.data!.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          )}
-          {(zones.data?.length ?? 0) > 0 && (
-            <select className="select" style={{ width: 170 }} value={zoneId} onChange={(e) => setZoneId(e.target.value)} aria-label="Zone">
-              <option value="">All zones</option>
-              <option value="none">No zone</option>
-              {zones.data!.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
-            </select>
-          )}
+          <FilterButton
+            filters={[
+              { key: 'status', label: 'Status', value: status, onChange: (v) => setStatus(v as PersonStatus | ''), options: [{ value: '', label: 'All statuses' }, ...Object.entries(STATUS).map(([k, v]) => ({ value: k, label: v.label }))] },
+              { key: 'tag', label: 'Tag', value: tag, onChange: setTag, hidden: !tags.data?.length, options: [{ value: '', label: 'All tags' }, ...(tags.data ?? []).map((t) => ({ value: t.tag, label: `${t.tag} (${t.count})` }))] },
+              { key: 'campus', label: 'Campus', value: campusId, onChange: setCampusId, hidden: (campuses.data?.length ?? 0) < 2, options: [{ value: '', label: 'All campuses' }, ...(campuses.data ?? []).map((c) => ({ value: c.id, label: c.name }))] },
+              { key: 'zone', label: 'Zone', value: zoneId, onChange: setZoneId, hidden: !zones.data?.length, options: [{ value: '', label: 'All zones' }, { value: 'none', label: 'No zone' }, ...(zones.data ?? []).map((z) => ({ value: z.id, label: z.name }))] },
+            ]}
+          />
         </div>
         {list.error ? (
           <ErrorState error={list.error} onRetry={list.reload} />

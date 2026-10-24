@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 
 import type { CustomField, ListRule, ListRuleField, ListRuleOp, SmartListView, Workflow, WorkflowCardView, WorkflowView } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
-import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast, useHiddenRows, useUndoableDelete } from '@/components/ui';
 import { downloadCsv, formatRelative } from '@/lib/format';
 import { useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
@@ -39,15 +39,17 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 export function ListsPage() {
   const { data, error, reload } = useApi(AdminApi.lists.list);
+  const rows = useHiddenRows();
+  const undoable = useUndoableDelete();
   const [editing, setEditing] = useState<SmartListView | 'new' | null>(null);
   const [open, setOpen] = useState<SmartListView | null>(null);
   const toast = useToast();
   if (open) return <ListPeople list={open} onBack={() => { setOpen(null); reload(); }} onEdit={() => setEditing(open)} />;
   return (
     <>
-      <PageHeader title="Smart lists" subtitle="Lists that keep themselves up to date from rules. Use them to send messages or start follow-ups." actions={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} />
+      <PageHeader title="Saved lists" subtitle="Lists that keep themselves up to date from rules. Use them to send messages or start follow-ups." actions={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} />
       <div className="card">
-        {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? <Empty icon={<Filter size={32} />} title="No lists yet" body="For example: visitors in the last 60 days, or members not in a group." action={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} /> : data.map((l) => (
+        {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : data.length === 0 ? <Empty icon={<Filter size={32} />} title="No lists yet" body="For example: visitors in the last 60 days, or members not in a group." action={<button className="btn primary" onClick={() => setEditing('new')}><Plus size={16} /> New list</button>} /> : data.filter((l) => !rows.hidden.has(l.id)).map((l) => (
           <div key={l.id} className="list-row">
             <button className="grow link-btn" style={{ textAlign: 'left' }} onClick={() => setOpen(l)}>
               <div style={{ fontWeight: 600, color: 'var(--text)' }}>{l.name}</div>
@@ -55,7 +57,7 @@ export function ListsPage() {
             </button>
             <b>{l.count}</b><span className="small muted">people</span>
             <button className="btn ghost icon sm" onClick={() => setEditing(l)}><Pencil size={15} /></button>
-            <button className="btn ghost icon sm danger" onClick={async () => { if (!confirm(`Delete “${l.name}”?`)) return; await AdminApi.lists.remove(l.id); reload(); toast('Deleted'); }}><Trash2 size={15} /></button>
+            <button className="btn ghost icon sm danger" onClick={() => undoable({ text: `“${l.name}” deleted`, run: () => AdminApi.lists.remove(l.id), hide: () => rows.hide(l.id), show: () => rows.show(l.id), done: reload })}><Trash2 size={15} /></button>
             <ChevronRight size={16} className="muted" />
           </div>
         ))}

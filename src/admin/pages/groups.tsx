@@ -1,10 +1,11 @@
 import { Check, ClipboardCheck, Clock, MapPin, Pencil, Plus, Trash2, UserMinus, UserRound, UsersRound, X } from 'lucide-react';
+import { useOpenParam } from '@/lib/use-new-param';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 
 import type { AdminGroup, GroupDetail, GroupInput, GroupType } from '@/api/admin-types';
 import { AdminApi } from '@/api/endpoints';
-import { Avatar, Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { Avatar, Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast, useHiddenRows, useUndoableDelete } from '@/components/ui';
 import { formatDate, formatRelative } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
@@ -24,6 +25,9 @@ export function GroupsPage() {
   const requests = useApi(AdminApi.groups.joinRequests);
   const [editing, setEditing] = useState<AdminGroup | 'new' | null>(null);
   const [opened, setOpened] = useState<string | null>(null);
+  const rows = useHiddenRows();
+  const undoable = useUndoableDelete();
+  useOpenParam('open', (id) => (setOpened(id), true));
   const [type, setType] = useState<GroupType | 'all'>('all');
   const [zone, setZone] = useState('');
   const toast = useToast();
@@ -84,7 +88,7 @@ export function GroupsPage() {
         <div className="card"><Empty icon={<UsersRound size={32} />} title="No groups here yet" action={<button className="btn primary" onClick={() => setEditing('new')}>Create a group</button>} /></div>
       ) : (
         <div className="grid cols-3">
-          {list.map((g) => (
+          {list.filter((g) => !rows.hidden.has(g.id)).map((g) => (
             <div key={g.id} className="card card-pad stack">
               <div className="row between" style={{ alignItems: 'flex-start' }}>
                 <div>
@@ -104,12 +108,7 @@ export function GroupsPage() {
                 <div className="row" style={{ gap: 2 }}>
                   <button className="btn sm" onClick={() => setOpened(g.id)}>Open</button>
                   <button className="btn ghost icon sm" title="Edit" onClick={() => setEditing(g)}><Pencil size={15} /></button>
-                  <button className="btn ghost icon sm danger" title="Delete" onClick={async () => {
-                    if (!confirm(`Delete ${g.name}? Members and meeting history will be removed.`)) return;
-                    await AdminApi.groups.remove(g.id);
-                    toast('Group deleted');
-                    groups.reload();
-                  }}><Trash2 size={15} /></button>
+                  <button className="btn ghost icon sm danger" title="Delete" onClick={() => undoable({ text: `${g.name} deleted`, run: () => AdminApi.groups.remove(g.id), hide: () => rows.hide(g.id), show: () => rows.show(g.id), done: groups.reload })}><Trash2 size={15} /></button>
                 </div>
               </div>
             </div>

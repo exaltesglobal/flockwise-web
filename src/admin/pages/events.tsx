@@ -10,19 +10,24 @@ import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToas
 import { downloadCsv, formatDay, formatMoney, formatTime, toLocalInput } from '@/lib/format';
 import { churchUrl } from '@/lib/church';
 import { useSession } from '@/lib/session';
-import { useNewParam } from '@/lib/use-new-param';
+import { useNewParam, useOpenParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
 
 export function EventsPage() {
-  const [when, setWhen] = useState<'upcoming' | 'past'>('upcoming');
+  const [when, setWhen] = useState<'upcoming' | 'past'>(() => (new URLSearchParams(location.search).get('when') === 'past' ? 'past' : 'upcoming'));
   const { data, error, reload } = useApi(() => AdminApi.events.list(when), [when]);
   const [editing, setEditing] = useState<AdminEvent | 'new' | null>(null);
   useNewParam(() => setEditing('new'));
   const [counting, setCounting] = useState<AdminEvent | null>(null);
   const [viewing, setViewing] = useState<AdminEvent | null>(null);
   const [inviting, setInviting] = useState<AdminEvent | null>(null);
+  useOpenParam('open', (id) => {
+    const ev = data?.data.find((e) => e.id === id);
+    if (ev) setViewing(ev);
+    return !!data;
+  }, [data]);
   const session = useSession(adminSession);
   const toast = useToast();
   // Which outside services are connected (Zoom for meetings, Canva for the invitation). Errors are ignored: the page works without them.
