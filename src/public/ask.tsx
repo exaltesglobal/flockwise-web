@@ -45,8 +45,9 @@ export function AskCodePage() {
     <div className="ask">
       <form className="ask-card stack" onSubmit={(e) => { e.preventDefault(); if (code.trim()) nav(`/ask/${code.trim().toUpperCase()}`); }}>
         <h1>{t('askTitle')}</h1>
+        <p className="muted">{t('askCodeHelp')}</p>
         <input className="input ask-code-in" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={5} placeholder="ABC12" autoFocus aria-label="Code" />
-        <button className="btn primary">{t('askSend')}</button>
+        <button className="btn primary" disabled={!code.trim()}>{t('askJoin')}</button>
       </form>
     </div>
   );
