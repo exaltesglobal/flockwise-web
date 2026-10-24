@@ -103,6 +103,8 @@ import { CompliancePage } from '@/admin/pages/compliance';
 import { BuildingPage } from '@/admin/pages/building';
 import { SafetyPage } from '@/admin/pages/safety';
 import { MemberSafetyPage } from '@/member/safety';
+import { PrayerWalkPage } from '@/admin/pages/prayer-walk';
+import { MemberPrayerWalkPage } from '@/member/prayer-walk';
 import { PublicAlertPage } from '@/public/alert';
 import { MemberBuildingPage } from '@/member/building';
 import { MyDayPage } from '@/admin/pages/my-day';
@@ -199,6 +201,7 @@ const routes = [
       { path: 'compliance', element: <CompliancePage /> },
       { path: 'building', element: <BuildingPage /> },
       { path: 'safety', element: <SafetyPage /> },
+      { path: 'prayer-walk', element: <PrayerWalkPage /> },
       { path: 'reading', element: <ReadingPlansPage /> },
       { path: 'feasts', element: <FeastsPage /> },
       { path: 'rentals', element: <RentalsPage /> },
@@ -307,6 +310,7 @@ const routes = [
       { path: 'building', element: <MemberBuildingPage /> },
       { path: 'building/:id', element: <MemberBuildingPage /> },
       { path: 'safety', element: <MemberSafetyPage /> },
+      { path: 'prayer-walk', element: <MemberPrayerWalkPage /> },
       { path: 'safety/respond/:id', element: <MemberSafetyPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },

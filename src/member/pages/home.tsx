@@ -1,4 +1,4 @@
-import { Building2, ShieldAlert, ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Flame, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { Route, Building2, ShieldAlert, ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Flame, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -111,6 +111,7 @@ const MORE_LINKS = [
   { to: '/app/skills', key: 'skillTitle', icon: Handshake, feature: 'skills' },
   { to: '/app/talent', key: 'talTitle', icon: HandHeart, feature: 'outreach' },
   { to: '/app/building', key: 'bldTitle', icon: Building2, feature: 'building-project' },
+  { to: '/app/prayer-walk', key: 'waTitle', icon: Route, feature: 'prayer-walk' },
   { to: '/app/safety', key: 'safTitle', icon: ShieldAlert, feature: 'safety-alert' },
   { to: '/app/camps', key: 'campTitle', icon: Tent, feature: 'camps' },
   { to: '/app/practice', key: 'practiceTitle', icon: MicVocal, feature: 'practice' },

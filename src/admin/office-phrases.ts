@@ -166,4 +166,6 @@ export const OFFICE_PHRASES = [
   "Contractor bills",
   "Emergency alert",
   "Legal-aid contacts",
+  "Prayer walk map",
+  "Still to walk",
 ];

@@ -3,6 +3,8 @@
 import { bootstrapChurch } from './bootstrap.js';
 import type { Db } from './db.js';
 import type { Env } from './engine.js';
+import { demoOverpass } from './demo.js';
+import { streetsFromOverpass } from './modules/prayer-walk.js';
 import type { Checkin, Collections, PlanItem } from './types.js';
 
 const DAY = 86_400_000;
@@ -821,6 +823,18 @@ export function seedDemo(db: Db, env: Env) {
   db.put('complianceState', { id: 'main', registrationValidTo: `${fyStart + 1}-03-31`, adminHeadIds: ['ah_salary', 'ah_rent', 'ah_power', 'ah_print', 'ah_travel', 'ah_bank'], openingBalances: { [fyLabel]: 1_25_000_00 }, filed: {}, dismissed: [] });
   // Emergency alert: the senior pastor and an elder respond; a Christian legal-aid lawyer is on call.
   db.put('safetySettings', { id: 'main', leaderIds: ['p_samuel', ...db.all('people').filter((p) => p.status === 'member' && p.id !== DEMO_MEMBER && p.id !== 'p_samuel').slice(0, 1).map((p) => p.id)].filter((id) => db.get('people', id)), legal: [{ id: 'lg_1', name: 'Adv. Thomas Mathew', org: 'Religious liberty legal aid, Hyderabad', phone: '+919849000111' }], prayerChain: true, chainNames: false, shareMinutes: 120, updatedAt: iso(now - 30 * DAY) });
+  // Prayer walk: the streets around the Kondapur church, about a third walked this month.
+  const walkCenter = { lat: 17.4628, lng: 78.3571 };
+  db.put('walkArea', { id: 'main', name: 'Kondapur and Kothaguda', center: walkCenter, radius: 700, cycleDays: 30, prompts: ['Bless the families in these homes with health, peace and work.', 'Pray for the children and the schools on this street.', 'Pray for the shopkeepers and their trade.', 'Pray for anyone sick, lonely or grieving behind these doors.', 'Ask God to open hearts to the good news of Jesus.'], source: 'osm', loadedAt: iso(now - 40 * DAY), updatedAt: iso(now - 40 * DAY) });
+  const walkStreets = streetsFromOverpass(demoOverpass(walkCenter.lat, walkCenter.lng, 700));
+  for (const st of walkStreets) db.put('walkStreets', st);
+  const walkers = db.all('people').filter((p) => p.status === 'member' && p.id !== DEMO_MEMBER).slice(0, 8);
+  walkStreets.forEach((st, i) => {
+    if (i % 3 === 2) return;
+    const w = walkers[i % walkers.length];
+    const daysAgo = i % 3 === 0 ? 2 + (i % 25) : 34 + (i % 20);
+    db.put('walkMarks', { id: `wm_${i}`, streetId: st.id, personId: w.id, name: `${w.firstName} ${w.lastName}`, at: iso(now - daysAgo * DAY), note: '' });
+  });
   // The new sanctuary: open to the members, with progress, stages and each contractor's bill.
   const d0 = (days: number) => iso(now + days * DAY).slice(0, 10);
   db.put('buildingProjects', {

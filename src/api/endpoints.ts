@@ -19,6 +19,7 @@ import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { AnnualReport, AnnualReportDraft } from '@/core/types';
 import type { ComplianceGuard, Fc4Figures, ForeignDonorKind, Form10bd } from '@/core/types';
+import type { PrayerWalkView } from '@/core/types';
 import type { MySafety, PublicSafetyAlert, SafetyAlertKind, SafetyHub, SafetyLegalContact } from '@/core/types';
 import type { BuildingBill, BuildingHub, BuildingPhoto, BuildingProject, BuildingProjectView, BuildingStage, MemberBuildingProject } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
@@ -442,6 +443,11 @@ export const MemberApi = {
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   journey: () => m.get<MyJourney>('/me/journey'),
   building: () => m.get<MemberBuildingProject[]>('/me/building'),
+  prayerWalk: {
+    get: () => m.get<PrayerWalkView>('/me/prayer-walk'),
+    walked: (streetIds: string[], note?: string) => m.post<PrayerWalkView>('/me/prayer-walk/walked', { streetIds, note }),
+    undo: (streetId: string) => m.del<PrayerWalkView>(`/me/prayer-walk/walked/${streetId}`),
+  },
   safety: {
     get: () => m.get<MySafety>('/me/safety'),
     alert: (body: { kind?: SafetyAlertKind; note?: string; lat?: number; lng?: number; accuracy?: number }) => m.post<MySafety>('/me/safety/alert', body),
@@ -682,6 +688,14 @@ export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  prayerWalk: {
+    get: () => a.get<PrayerWalkView>('/admin/prayer-walk'),
+    area: (body: { name?: string; center?: { lat: number; lng: number }; radius?: number; cycleDays?: number; prompts?: string[] }) => a.put<PrayerWalkView>('/admin/prayer-walk/area', body),
+    load: () => a.post<PrayerWalkView>('/admin/prayer-walk/load', {}),
+    addStreet: (body: { name: string; path: [number, number][] }) => a.post<PrayerWalkView>('/admin/prayer-walk/streets', body),
+    rename: (id: string, name: string) => a.patch<PrayerWalkView>(`/admin/prayer-walk/streets/${id}`, { name }),
+    remove: (id: string) => a.del<PrayerWalkView>(`/admin/prayer-walk/streets/${id}`),
+  },
   safety: {
     get: () => a.get<SafetyHub>('/admin/safety'),
     settings: (body: { leaderIds?: string[]; legal?: Partial<SafetyLegalContact>[]; prayerChain?: boolean; chainNames?: boolean; shareMinutes?: number }) => a.put<SafetyHub>('/admin/safety/settings', body),

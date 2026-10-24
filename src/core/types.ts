@@ -1956,6 +1956,9 @@ export type Collections = {
   buildingBills: BuildingBill;
   safetyAlerts: SafetyAlert;
   safetySettings: SafetySettings;
+  walkArea: WalkArea;
+  walkStreets: WalkStreet;
+  walkMarks: WalkMark;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2060,7 +2063,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'buildingProjects', 'buildingUpdates', 'buildingBills', 'safetyAlerts', 'safetySettings', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'foreignDonors', 'complianceState', 'buildingProjects', 'buildingUpdates', 'buildingBills', 'safetyAlerts', 'safetySettings', 'walkArea', 'walkStreets', 'walkMarks', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3829,3 +3832,34 @@ export type SafetyAlertView = Omit<SafetyAlert, 'token' | 'locations'> & {
 export type MySafety = { ready: boolean; leaders: number; legal: number; prayerChain: boolean; shareMinutes: number; alert: SafetyAlertView | null; responding: SafetyAlertView[] };
 export type SafetyHub = { settings: SafetySettings; leaders: { id: string; name: string; phone: string | null }[]; alerts: SafetyAlertView[] };
 export type PublicSafetyAlert = { church: string; name: string; phone: string | null; kind: SafetyAlertKind; note: string; status: SafetyAlert['status']; startedAt: string; shareUntil: string; sharing: boolean; location: SafetyLocation | null; responders: number };
+
+// ----- neighbourhood prayer walk map: streets around the church, covered street by street -----
+/** One per church, id 'main'. */
+export type WalkArea = {
+  id: 'main';
+  name: string;
+  center: { lat: number; lng: number } | null;
+  /** Metres around the centre that count as the church's area. */
+  radius: number;
+  /** A street counts as prayed for when someone walked it within this many days. */
+  cycleDays: number;
+  /** Prayer points shown to walkers. */
+  prompts: string[];
+  source: 'osm' | 'drawn' | null;
+  loadedAt: string | null;
+  updatedAt: string;
+};
+/** A street or lane, from OpenStreetMap or drawn by the office. path = [lat, lng] pairs. */
+export type WalkStreet = { id: string; name: string; kind: string; path: [number, number][]; length: number; osmId: number | null };
+export type WalkMark = { id: string; streetId: string; personId: string; name: string; at: string; note: string };
+export type WalkStreetView = WalkStreet & { lastWalkedAt: string | null; walks: number; covered: boolean; mine: boolean };
+export type WalkStats = { streets: number; covered: number; length: number; coveredLength: number; percent: number; walkers: number; walksThisCycle: number };
+export type PrayerWalkView = {
+  area: WalkArea;
+  streets: WalkStreetView[];
+  stats: WalkStats;
+  /** Most walks this cycle (first names only for members). */
+  walkers: { name: string; streets: number }[];
+  recent: { streetName: string; name: string; at: string; note: string }[];
+  myStreets: number;
+};

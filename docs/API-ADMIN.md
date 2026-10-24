@@ -1612,3 +1612,19 @@ One discreet button for a pastor or member facing threats, violence, a mob or a 
 | GET | /admin/safety | care | | SafetyHub `{ settings, leaders, alerts }` |
 | PUT | /admin/safety/settings | care or settings | `{ leaderIds?, legal?[{ name, org, phone }], prayerChain?, chainNames?, shareMinutes? (30–240) }` | SafetyHub |
 | PATCH | /admin/safety/alerts/:id | care | `{ followUp?, status?: 'closed' }` | SafetyHub |
+
+## Prayer walk map (feature `prayer-walk`)
+
+Members prayer-walk their street and mark it in the app. The office sets the church's area (a centre and a radius), loads its streets and lanes from OpenStreetMap's Overpass service (or draws them by tapping points), and the map shows which are covered: a street counts as prayed for when someone walked it within `cycleDays` (default 30). Members see first names only and no notes. Loading again replaces the OpenStreetMap streets and keeps drawn ones. Map tiles and street data are © OpenStreetMap contributors.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/prayer-walk | care | | PrayerWalkView `{ area, streets, stats, walkers, recent, myStreets }` |
+| PUT | /admin/prayer-walk/area | care | `{ name?, center?{ lat, lng }, radius? (200–3000 m), cycleDays? (7–90), prompts?[] }` | PrayerWalkView |
+| POST | /admin/prayer-walk/load | care | | PrayerWalkView (422 `no_streets` when the area has none mapped) |
+| POST | /admin/prayer-walk/streets | care | `{ name, path: [[lat, lng], …] }` (two points or more) | PrayerWalkView |
+| PATCH | /admin/prayer-walk/streets/:id | care | `{ name }` | PrayerWalkView |
+| DELETE | /admin/prayer-walk/streets/:id | care | | PrayerWalkView (its walks are removed too) |
+| GET | /me/prayer-walk | member | | PrayerWalkView |
+| POST | /me/prayer-walk/walked | member | `{ streetIds[], note? }` (the same street within the hour counts once) | PrayerWalkView |
+| DELETE | /me/prayer-walk/walked/:streetId | member | | PrayerWalkView (removes your latest walk there) |

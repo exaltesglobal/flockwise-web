@@ -70,8 +70,46 @@ export function createDemoEnv(opts: { now?: () => Date; webUrl?: string; apiUrl?
 const reply = (status: number, data: unknown): HttpResponse => ({ status, headers: {}, text: JSON.stringify(data) });
 
 /** Stand-ins for Zoom, Google Cloud Storage and Canva: anything containing "bad" fails, the rest succeeds. */
+/**
+ * Stand-in for OpenStreetMap's Overpass answer: a slightly crooked grid of roads and lanes around
+ * a point, some named and most not, as Indian neighbourhoods are mapped.
+ */
+export function demoOverpass(lat: number, lng: number, radius: number) {
+  const mLat = 1 / 111_320;
+  const mLng = 1 / (111_320 * Math.cos((lat * Math.PI) / 180));
+  const names = ['Kothaguda Main Road', 'Botanical Garden Road', 'Road No. 2', 'Road No. 5', 'Masjid Banda Road', 'Raghavendra Colony Road', 'Church Lane'];
+  const out: { type: 'way'; id: number; tags: Record<string, string>; geometry: { lat: number; lon: number }[] }[] = [];
+  let id = 9_100_000;
+  const inside = (x: number, y: number) => x * x + y * y <= radius * radius;
+  const line = (pts: [number, number][], tags: Record<string, string>) => {
+    const kept = pts.filter(([x, y]) => inside(x, y));
+    if (kept.length >= 2) out.push({ type: 'way', id: id++, tags, geometry: kept.map(([x, y]) => ({ lat: Math.round((lat + y * mLat) * 1e6) / 1e6, lon: Math.round((lng + x * mLng) * 1e6) / 1e6 })) });
+  };
+  const step = 40;
+  let n = 0;
+  for (let y = -radius + 60; y < radius; y += 115) {
+    const pts: [number, number][] = [];
+    for (let x = -radius; x <= radius; x += step) pts.push([x, y + Math.sin((x + y) / 160) * 14]);
+    const named = n % 4 === 1 ? names[(n >> 2) % names.length] : '';
+    line(pts, { highway: n % 4 === 1 ? 'tertiary' : 'residential', ...(named ? { name: named } : {}) });
+    n++;
+  }
+  for (let x = -radius + 80; x < radius; x += 160) {
+    const pts: [number, number][] = [];
+    for (let y = -radius; y <= radius; y += step) pts.push([x + Math.cos((x - y) / 190) * 12, y]);
+    line(pts, { highway: n % 5 === 0 ? 'secondary' : 'living_street', ...(n % 5 === 0 ? { name: names[(n + 3) % names.length] } : {}) });
+    n++;
+  }
+  return out;
+}
+
 function demoHttp(req: HttpRequest): HttpResponse {
   const u = req.url;
+  if (u.startsWith('https://overpass-api.de/')) {
+    const q = decodeURIComponent(String(req.body ?? '').replace(/^data=/, ''));
+    const m = /around:(\d+),(-?[\d.]+),(-?[\d.]+)/.exec(q);
+    return reply(200, { elements: m ? demoOverpass(Number(m[2]), Number(m[3]), Number(m[1])) : [] });
+  }
   const auth = req.headers?.Authorization ?? '';
   if (u.startsWith('https://zoom.us/oauth/token')) return /bad/.test(u + auth) ? reply(400, { reason: 'Invalid client_id or client_secret' }) : reply(200, { access_token: 'demo-zoom-token', expires_in: 3600 });
   if (u.startsWith('https://api.zoom.us/v2/users/me/meetings')) {

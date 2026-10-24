@@ -38,6 +38,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'registration', label: 'Online registration', body: 'A link and QR code where families register themselves; the office approves them into People.', group: 'people', on: true },
   { key: 'import', label: 'Import', body: 'Bring people in from Excel, Google Sheets or another system.', group: 'people', on: true, core: true },
   // Care and growth
+  { key: 'prayer-walk', label: 'Prayer walk map', body: 'Members prayer-walk their streets and mark them on a map of the church\'s area, so over a month the whole locality is prayed for, street by street.', group: 'care', on: true },
   { key: 'safety-alert', label: 'Emergency alert', body: 'One discreet button for a pastor or member facing threats or violence: it alerts chosen leaders, a legal-aid contact and the prayer chain, and shares their location for 2 hours.', group: 'care', on: true },
   { key: 'care', label: 'Care & prayer', body: 'Care cases, prayer requests and who has not been seen.', group: 'care', on: true, core: true },
   { key: 'workflows', label: 'Follow-ups', body: 'Step-by-step follow-up for visitors and new believers.', group: 'care', on: true },
