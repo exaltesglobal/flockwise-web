@@ -83,6 +83,8 @@ export const en = {
   tabServing: 'Serving',
   tabPrayer: 'Prayer',
   tabDirectory: 'Directory',
+  homeMore: 'More',
+  homeLess: 'Show fewer',
   quickLinks: 'Quick links',
   cancel: 'Cancel',
   saved: 'Saved',

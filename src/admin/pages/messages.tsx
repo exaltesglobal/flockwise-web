@@ -34,7 +34,7 @@ const AUDIENCE_TYPES: { value: AudienceType; label: string }[] = [
   { value: 'tag', label: 'A tag' },
   { value: 'campus', label: 'A campus' },
   { value: 'event', label: 'Event RSVPs' },
-  { value: 'list', label: 'A smart list' },
+  { value: 'list', label: 'A saved list' },
   { value: 'people', label: 'Chosen people' },
 ];
 const STATUSES = [

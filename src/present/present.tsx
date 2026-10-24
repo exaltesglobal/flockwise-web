@@ -1,6 +1,7 @@
 // Presentation: the operator console (also the phone remote), the projector output and the
 // stage display and the OBS overlay. Every screen polls the same presentation state, so they all
 // follow the operator. Screens opened with ?key= (the church's screen key) need no sign-in.
+import { LANGUAGES } from '@/core/languages';
 import { ArrowLeft, BookOpen, Captions, ChevronLeft, ChevronRight, Circle, Clock, Copy, Eraser, Eye, EyeOff, Image, Link2, Maximize, MessageSquare, Mic, Monitor, Music2, Palette, Plus, Radio, Send, Square, Timer, Trash2, Tv, Type, Video, Wallpaper, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
@@ -390,9 +391,9 @@ function BackgroundModal({ item, onClose, onSave }: { item: { id: string; title:
 const screenUrl = (eventId: string, path: string, key?: string) =>
   `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}/present/${eventId}/${path}${key ? `?key=${key}` : ''}`;
 
-const SPEECH_LANG: Record<LanguageCode, string> = { en: 'en-IN', hi: 'hi-IN', te: 'te-IN', ta: 'ta-IN', ml: 'ml-IN', kn: 'kn-IN' };
-const LANG_NAME: Record<LanguageCode, string> = { en: 'English', hi: 'हिन्दी Hindi', te: 'తెలుగు Telugu', ta: 'தமிழ் Tamil', ml: 'മലയാളം Malayalam', kn: 'ಕನ್ನಡ Kannada' };
-const CAPTION_LANGS = Object.keys(LANG_NAME) as LanguageCode[];
+const SPEECH_LANG = Object.fromEntries(LANGUAGES.map((l) => [l.code, l.locale])) as Record<LanguageCode, string>;
+const LANG_NAME = Object.fromEntries(LANGUAGES.map((l) => [l.code, l.code === 'en' ? l.english : `${l.label} ${l.english}`])) as Record<LanguageCode, string>;
+const CAPTION_LANGS = LANGUAGES.map((l) => l.code) as LanguageCode[];
 
 /**
  * Live sermon captions. The media desk's browser listens to the preacher (the same browser speech

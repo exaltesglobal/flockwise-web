@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router';
 
 import type { AtRiskPerson, CareCase, CareStatus, CareType } from '@/api/admin-types';
 import { AdminApi, type AdminPrayer } from '@/api/endpoints';
-import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast, useHiddenRows, useUndoableDelete } from '@/components/ui';
 import { formatDate, formatRelative } from '@/lib/format';
 import { useNewParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
@@ -160,6 +160,8 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
   const [answering, setAnswering] = useState<AdminPrayer | null>(null);
   const [kiosk, setKiosk] = useState(false);
   const toast = useToast();
+  const rows = useHiddenRows();
+  const undoable = useUndoableDelete();
   const chain = useApi(AdminApi.care.chain);
   const [sending, setSending] = useState<string | null>(null);
   async function sendChain(p: AdminPrayer) {
@@ -193,7 +195,7 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
       <div className="card">
         {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : items.length === 0 ? (
           <Empty icon={<HandHeart size={32} />} title={filter === 'open' ? 'No open prayer requests' : 'No answered prayers yet'} />
-        ) : items.map((p) => (
+        ) : items.filter((p) => !rows.hidden.has(p.id)).map((p) => (
           <div key={p.id} className="list-row" style={{ alignItems: 'flex-start' }}>
             <HandHeart size={18} className="muted" style={{ marginTop: 3 }} />
             <div className="grow stack" style={{ gap: 4 }}>
@@ -216,12 +218,7 @@ function PrayerModeration({ data, error, reload, onCase }: { data: AdminPrayer[]
                   : <button className="btn sm" onClick={() => patch(p, { visibility: 'church' }, 'Shared on the prayer wall')}>Share on wall</button>}
                 <button className="btn sm" onClick={() => onCase(p)}>Open care case</button>
                 {p.status === 'open' && <button className="btn sm" disabled={sending === p.id || !chain.data?.members} title={chain.data?.members ? undefined : 'Nobody has joined the prayer chain yet'} onClick={() => void sendChain(p)}><Link2 size={14} /> {p.chainSentAt ? 'Send to chain again' : 'Send to prayer chain'}</button>}
-                <button className="btn ghost icon sm danger" title="Delete" onClick={async () => {
-                  if (!confirm('Delete this prayer request?')) return;
-                  await AdminApi.care.removePrayer(p.id);
-                  toast('Deleted');
-                  reload();
-                }}><Trash2 size={15} /></button>
+                <button className="btn ghost icon sm danger" title="Delete" onClick={() => undoable({ text: 'Prayer request deleted', run: () => AdminApi.care.removePrayer(p.id), hide: () => rows.hide(p.id), show: () => rows.show(p.id), done: reload })}><Trash2 size={15} /></button>
               </div>
             </div>
           </div>

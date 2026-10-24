@@ -11,7 +11,7 @@ import { ServerSettings } from '@/components/server-settings';
 import { canOverrideServer } from '@/lib/config';
 import { AppearancePanel } from '@/components/theme-picker';
 import { FormError, Loading, useToast } from '@/components/ui';
-import { languages, useT, type StringKey } from '@/i18n';
+import { hasStrings, languages, useT, type StringKey } from '@/i18n';
 import { downloadJson, formatDate } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { useAction, useApi } from '@/lib/use-api';
@@ -86,13 +86,15 @@ export function MemberMePage() {
 
       <div className="card card-pad stack">
         <h3>{t('language')}</h3>
-        <div className="row wrap">
-          {(Object.keys(languages) as LanguageCode[]).map((lc) => (
-            <button key={lc} className={`btn ${m.language === lc ? 'primary' : ''}`} onClick={() => setLanguage(lc)}>
-              {languages[lc].label}
-            </button>
+        <select className="select" value={m.language ?? 'en'} onChange={(e) => setLanguage(e.target.value as LanguageCode)} aria-label={t('language')}>
+          {(['world', 'india', 'asia'] as const).map((region) => [region, (Object.keys(languages) as LanguageCode[]).filter((lc) => languages[lc].region === region && hasStrings(lc))] as const).filter(([, codes]) => codes.length > 0).map(([region, codes]) => (
+            <optgroup key={region} label={{ world: 'English', india: 'India', asia: 'Asia' }[region]}>
+              {codes.map((lc) => (
+                <option key={lc} value={lc}>{lc === 'en' ? 'English' : `${languages[lc].label} · ${languages[lc].english}`}</option>
+              ))}
+            </optgroup>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className="card card-pad stack appearance-card">

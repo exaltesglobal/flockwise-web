@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ClipboardList, Copy, Download, ExternalLink, FileDown, FileText, FileUp, Languages, MonitorPlay, Music, Pencil, Plus, Printer, Radio, Search, Sparkles, Text, Trash2, Wand2, X } from 'lucide-react';
+import { useOpenParam } from '@/lib/use-new-param';
 import { Link } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 
@@ -7,7 +8,7 @@ import { AdminApi } from '@/api/endpoints';
 import { hasIndic, scriptOf, transliterate, type IndicScript } from '@/core/transliterate';
 import type { SongColours } from '@/core/types';
 import { ChordEditor } from '@/components/chord-editor';
-import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast } from '@/components/ui';
+import { Empty, ErrorState, Field, FormError, Loading, Modal, Segmented, useToast, useHiddenRows, useUndoableDelete } from '@/components/ui';
 import { downloadCsv, formatDay, formatRelative, formatTime } from '@/lib/format';
 import { type ChartMode, ChordChart, transposeKey } from '@/lib/chords';
 import { fileSafe, readSongFile, saveBlob, songsToPdf } from '@/lib/pdf-songs';
@@ -50,7 +51,7 @@ let seq = 0;
 const draftKey = () => `d${++seq}`;
 
 export function ServicesPage() {
-  const [tab, setTab] = useState<'plans' | 'songs' | 'database' | 'stats' | 'ccli'>('plans');
+  const [tab, setTab] = useState<'plans' | 'songs' | 'database' | 'stats' | 'ccli'>(() => (new URLSearchParams(location.search).get('song') ? 'songs' : 'plans'));
   return (
     <>
       <PageHeader title="Service planning" subtitle="Order of service, songs and keys, timings and who is serving. Volunteers see the plan in the app once they accept." />
@@ -70,6 +71,7 @@ function Plans() {
   const [when, setWhen] = useState<'upcoming' | 'past'>('upcoming');
   const list = useApi(() => AdminApi.services.list(when), [when]);
   const [selected, setSelected] = useState<string | null>(null);
+  useOpenParam('plan', (id) => (setSelected(id), true));
   const current = selected ?? list.data?.[0]?.event.id ?? null;
   return (
     <div className="split">
@@ -276,9 +278,16 @@ function Songs() {
   const list = useApi(() => AdminApi.services.songs(debounced), [debounced]);
   const [editing, setEditing] = useState<SongView | 'new' | null>(null);
   const [viewing, setViewing] = useState<SongView | null>(null);
+  useOpenParam('song', (id) => {
+    const song = list.data?.find((x) => x.id === id);
+    if (song) setViewing(song);
+    return !!list.data;
+  }, [list.data]);
   const [importing, setImporting] = useState(false);
   const toast = useToast();
   const can = useCan();
+  const rows = useHiddenRows();
+  const undoable = useUndoableDelete();
   return (
     <div className="card">
       <div className="toolbar">
@@ -293,7 +302,7 @@ function Songs() {
           <table className="table">
             <thead><tr><th>Title</th><th>Key</th><th>BPM</th><th>Tags</th><th className="num">Used</th><th>Last used</th><th /></tr></thead>
             <tbody>
-              {list.data.map((s) => (
+              {list.data.filter((s) => !rows.hidden.has(s.id)).map((s) => (
                 <tr key={s.id} className="clickable" onClick={() => setViewing(s)}>
                   <td><b>{s.title}</b><div className="small muted">{s.author}{s.ccli ? ` · CCLI ${s.ccli}` : ''}</div></td>
                   <td className="mono">{s.defaultKey}</td>
@@ -304,7 +313,7 @@ function Songs() {
                   <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                     {can('services') && <>
                       <button className="btn ghost icon sm" onClick={() => setEditing(s)}><Pencil size={15} /></button>
-                      <button className="btn ghost icon sm danger" onClick={async () => { if (!confirm(`Delete ${s.title}?`)) return; await AdminApi.services.removeSong(s.id); toast('Deleted'); list.reload(); }}><Trash2 size={15} /></button>
+                      <button className="btn ghost icon sm danger" onClick={(e) => { e.stopPropagation(); undoable({ text: `${s.title} deleted`, run: () => AdminApi.services.removeSong(s.id), hide: () => rows.hide(s.id), show: () => rows.show(s.id), done: list.reload }); }}><Trash2 size={15} /></button>
                     </>}
                   </td>
                 </tr>

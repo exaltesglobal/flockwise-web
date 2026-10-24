@@ -38,7 +38,7 @@ const PROVIDERS = [
 ];
 
 // The poster lines, in the church's languages.
-const POSTER: Record<LanguageCode, { attendance: string; prayer: string }> = {
+const POSTER: Partial<Record<LanguageCode, { attendance: string; prayer: string }>> & { en: { attendance: string; prayer: string } } = {
   en: { attendance: 'Give a missed call from your phone to mark your attendance', prayer: 'Give a missed call and a pastor will call you back to pray' },
   hi: { attendance: 'उपस्थिति दर्ज करने के लिए अपने फ़ोन से मिस्ड कॉल दें', prayer: 'मिस्ड कॉल दें, पास्टर प्रार्थना के लिए वापस कॉल करेंगे' },
   ta: { attendance: 'வருகை பதிவுக்கு உங்கள் போனிலிருந்து மிஸ்டு கால் கொடுங்கள்', prayer: 'மிஸ்டு கால் கொடுங்கள்; போதகர் ஜெபிக்க திரும்ப அழைப்பார்' },

@@ -86,6 +86,8 @@ export const kn: Strings = {
   tabServing: 'ಸೇವೆ',
   tabPrayer: 'ಪ್ರಾರ್ಥನೆ',
   tabDirectory: 'ಡೈರೆಕ್ಟರಿ',
+  homeMore: 'ಇನ್ನಷ್ಟು',
+  homeLess: 'ಕಡಿಮೆ ತೋರಿಸಿ',
   quickLinks: 'ತ್ವರಿತ ಲಿಂಕ್‌ಗಳು',
   cancel: 'ರದ್ದುಮಾಡಿ',
   saved: 'ಉಳಿಸಲಾಗಿದೆ',
@@ -655,3 +657,5 @@ export const kn: Strings = {
   nameEdit: "ಹೆಸರು ತಿದ್ದಿ",
   nameRequired: "ಮೊದಲ ಹೆಸರು ಮತ್ತು ಕುಟುಂಬದ ಹೆಸರು ಎರಡೂ ಬೇಕು.",
 };
+
+export default kn;

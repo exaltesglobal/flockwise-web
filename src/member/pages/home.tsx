@@ -1,11 +1,12 @@
-import { BookOpen, BookOpenCheck, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi, PublicApi } from '@/api/endpoints';
 import { ErrorState, Loading } from '@/components/ui';
-import { useT } from '@/i18n';
+import { featureOn } from '@/core/features';
+import { useT, type StringKey } from '@/i18n';
 import { formatDay, formatRelative, formatTime, greetingKey } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { useApi } from '@/lib/use-api';
@@ -26,29 +27,7 @@ export function MemberHomePage() {
         <p className="muted">{t(greetingKey())},</p>
         <h1>{session?.member.firstName}</h1>
       </div>
-      <nav className="quick-links" aria-label={t('quickLinks')}>
-        <Link to="/app/serving" className="card"><HandHeart size={22} />{t('tabServing')}</Link>
-        <Link to="/app/prayer" className="card"><Sparkles size={22} />{t('tabPrayer')}</Link>
-        <Link to="/app/carols" className="card"><Music2 size={22} />{t('carolsTitle')}</Link>
-        <Link to="/app/rides" className="card"><Car size={22} />{t('ridesTitle')}</Link>
-        <Link to="/app/aid" className="card"><HandCoins size={22} />{t('aidTitle')}</Link>
-        <Link to="/app/reading" className="card"><BookOpenCheck size={22} />{t('readTitle')}</Link>
-        <Link to="/app/courses" className="card"><GraduationCap size={22} />{t('courseTitle')}</Link>
-        <Link to="/app/vigils" className="card"><Hourglass size={22} />{t('vigilTitle')}</Link>
-        <Link to="/app/mentoring" className="card"><Footprints size={22} />{t('mentorTitle')}</Link>
-        <Link to="/app/library" className="card"><Library size={22} />{t('libraryTitle')}</Link>
-        <Link to="/app/occasions" className="card"><Church size={22} />{t('occTitle')}</Link>
-        <Link to="/app/skills" className="card"><Handshake size={22} />{t('skillTitle')}</Link>
-        <Link to="/app/camps" className="card"><Tent size={22} />{t('campTitle')}</Link>
-        <Link to="/app/practice" className="card"><MicVocal size={22} />{t('practiceTitle')}</Link>
-        <Link to="/app/verses" className="card"><Star size={22} />{t('verseTitle')}</Link>
-        <Link to="/app/vote" className="card"><Vote size={22} />{t('voteTitle')}</Link>
-        <Link to="/app/recap" className="card"><Clapperboard size={22} />{t('recapTitle')}</Link>
-        <Link to="/app/forms" className="card"><ClipboardList size={22} />{t('tabForms')}</Link>
-        <Link to="/app/sermons" className="card"><BookOpen size={22} />{t('tabSermons')}</Link>
-        <Link to="/app/directory" className="card"><BookUser size={22} />{t('tabDirectory')}</Link>
-        <Link to="/app/me#qr" className="card"><QrCode size={22} />{t('myQr').split(' ').slice(0, 2).join(' ')}</Link>
-      </nav>
+      <QuickLinks />
       {error ? <ErrorState error={error} onRetry={reload} /> : !data ? <Loading /> : (
         <div className="home-grid">
           <div>
@@ -101,6 +80,72 @@ export function MemberHomePage() {
         </div>
       )}
     </>
+  );
+}
+
+// The four things members do most, then everything else the church uses behind "More".
+const MAIN_LINKS = [
+  { to: '/app/give', key: 'tabGive', icon: Gift },
+  { to: '/app/prayer', key: 'tabPrayer', icon: Sparkles, feature: 'care' },
+  { to: '/app/serving', key: 'tabServing', icon: HandHeart, feature: 'volunteers' },
+  { to: '/app/me#qr', key: 'myQr', icon: QrCode },
+] as const;
+const MORE_LINKS = [
+  { to: '/app/sermons', key: 'tabSermons', icon: BookOpen, feature: 'sermons' },
+  { to: '/app/forms', key: 'tabForms', icon: ClipboardList, feature: 'forms' },
+  { to: '/app/directory', key: 'tabDirectory', icon: BookUser },
+  { to: '/app/reading', key: 'readTitle', icon: BookOpenCheck, feature: 'reading' },
+  { to: '/app/courses', key: 'courseTitle', icon: GraduationCap, feature: 'courses' },
+  { to: '/app/vigils', key: 'vigilTitle', icon: Hourglass, feature: 'vigils' },
+  { to: '/app/mentoring', key: 'mentorTitle', icon: Footprints, feature: 'discipleship' },
+  { to: '/app/library', key: 'libraryTitle', icon: Library, feature: 'library' },
+  { to: '/app/occasions', key: 'occTitle', icon: Church, feature: 'occasions' },
+  { to: '/app/skills', key: 'skillTitle', icon: Handshake, feature: 'skills' },
+  { to: '/app/camps', key: 'campTitle', icon: Tent, feature: 'camps' },
+  { to: '/app/practice', key: 'practiceTitle', icon: MicVocal, feature: 'practice' },
+  { to: '/app/verses', key: 'verseTitle', icon: Star, feature: 'sunday-school' },
+  { to: '/app/vote', key: 'voteTitle', icon: Vote, feature: 'elections' },
+  { to: '/app/recap', key: 'recapTitle', icon: Clapperboard, feature: 'recap' },
+  { to: '/app/carols', key: 'carolsTitle', icon: Music2, feature: 'carols' },
+  { to: '/app/rides', key: 'ridesTitle', icon: Car, feature: 'rides' },
+  { to: '/app/aid', key: 'aidTitle', icon: HandCoins, feature: 'benevolence' },
+] as const;
+
+function QuickLinks() {
+  const { t } = useT();
+  const session = useSession(memberSession);
+  const [more, setMore] = useState(() => {
+    try {
+      return localStorage.getItem('fw.home.more') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const on = (f?: string) => !f || featureOn(session?.church.features, f);
+  const label = (key: StringKey) => (key === 'myQr' ? t('myQr').split(' ').slice(0, 2).join(' ') : t(key));
+  const extra = MORE_LINKS.filter((l) => on('feature' in l ? l.feature : undefined));
+  function toggle() {
+    setMore(!more);
+    try {
+      localStorage.setItem('fw.home.more', more ? '0' : '1');
+    } catch {
+      /* ignore */
+    }
+  }
+  return (
+    <nav className="quick-links" aria-label={t('quickLinks')}>
+      {MAIN_LINKS.filter((l) => on('feature' in l ? l.feature : undefined)).map(({ to, key, icon: Icon }) => (
+        <Link key={to} to={to} className="card main"><Icon size={22} />{label(key)}</Link>
+      ))}
+      {more && extra.map(({ to, key, icon: Icon }) => (
+        <Link key={to} to={to} className="card"><Icon size={22} />{label(key)}</Link>
+      ))}
+      {extra.length > 0 && (
+        <button className="card quick-more" onClick={toggle} aria-expanded={more}>
+          {more ? <ChevronUp size={22} /> : <LayoutGrid size={22} />}{more ? t('homeLess') : t('homeMore')}
+        </button>
+      )}
+    </nav>
   );
 }
 

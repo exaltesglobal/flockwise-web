@@ -86,6 +86,8 @@ export const te: Strings = {
   tabServing: 'సేవ',
   tabPrayer: 'ప్రార్థన',
   tabDirectory: 'డైరెక్టరీ',
+  homeMore: 'మరిన్ని',
+  homeLess: 'తక్కువ చూపించు',
   quickLinks: 'త్వరిత లింకులు',
   cancel: 'రద్దు',
   saved: 'సేవ్ అయింది',
@@ -655,3 +657,5 @@ export const te: Strings = {
   nameEdit: "పేరు మార్చండి",
   nameRequired: "మొదటి పేరు, ఇంటి పేరు రెండూ అవసరం.",
 };
+
+export default te;

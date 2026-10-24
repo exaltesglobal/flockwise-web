@@ -1,5 +1,7 @@
 import { FeaturesSettings } from './features';
-import { Baby, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, MapPinned, Palette, Pencil, Plug, Plus, ReceiptText, Search, Server, ShieldCheck, Trash2, UserPlus, UsersRound, Network, ToggleRight } from 'lucide-react';
+import { useOfficeT } from '../i18n';
+import { LanguagePicker } from '../language-button';
+import { Baby, CheckCircle2, Bell, Building2, CreditCard, Globe, History, Landmark, ListPlus, MapPinned, Palette, Pencil, Plug, Plus, ReceiptText, Search, Server, ShieldCheck, Trash2, UserPlus, UsersRound, Network, ToggleRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
@@ -46,22 +48,23 @@ type Tab = 'features' | 'church' | 'billing' | 'giving' | 'campuses' | 'kids' | 
 export function SettingsPage() {
   const can = useCan();
   // Grouped so fourteen sections read as a short menu, not a scrolling strip of tabs.
+  const { tr } = useOfficeT();
   const tabs: { value: Tab; label: string; show: boolean; icon: typeof Building2; group: string }[] = [
-    { value: 'church', label: 'Church', show: can('settings'), icon: Building2, group: 'Your church' },
-    { value: 'features', label: 'Features', show: can('settings'), icon: ToggleRight, group: 'Your church' },
-    { value: 'campuses', label: 'Campuses', show: can('settings'), icon: MapPinned, group: 'Your church' },
-    { value: 'page', label: 'Public page', show: can('settings'), icon: Globe, group: 'Your church' },
-    { value: 'fields', label: 'Custom fields', show: can('settings'), icon: ListPlus, group: 'Your church' },
-    { value: 'kids', label: 'Kids check-in', show: can('settings'), icon: Baby, group: 'Your church' },
+    { value: 'church', label: 'Church', show: can('settings'), icon: Building2, group: 'Church' },
+    { value: 'features', label: 'Features', show: can('settings'), icon: ToggleRight, group: 'Church' },
+    { value: 'campuses', label: 'Campuses', show: can('settings'), icon: MapPinned, group: 'Church' },
+    { value: 'page', label: 'Public page', show: can('settings'), icon: Globe, group: 'Church' },
+    { value: 'fields', label: 'Custom fields', show: can('settings'), icon: ListPlus, group: 'Church' },
+    { value: 'kids', label: 'Kids check-in', show: can('settings'), icon: Baby, group: 'Church' },
     { value: 'billing', label: 'Plan & billing', show: can('settings'), icon: CreditCard, group: 'Money' },
     { value: 'giving', label: 'Giving & compliance', show: can('settings'), icon: ReceiptText, group: 'Money' },
     { value: 'integrations', label: 'Integrations', show: can('settings'), icon: Plug, group: 'Connections' },
     { value: 'notifications', label: 'Notifications', show: can('settings'), icon: Bell, group: 'Connections' },
     { value: 'networks', label: 'Networks', show: can('settings'), icon: Network, group: 'Connections' },
-    { value: 'team', label: 'Team & roles', show: can('staff'), icon: UsersRound, group: 'Access' },
-    { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit'), icon: ShieldCheck, group: 'Access' },
-    { value: 'audit', label: 'Activity log', show: can('settings'), icon: History, group: 'Access' },
-    { value: 'appearance', label: 'Appearance', show: true, icon: Palette, group: 'This browser' },
+    { value: 'team', label: 'Team & roles', show: can('staff'), icon: UsersRound, group: 'People & access' },
+    { value: 'privacy', label: 'Privacy (DPDP)', show: can('settings') || can('people.edit'), icon: ShieldCheck, group: 'People & access' },
+    { value: 'audit', label: 'Activity log', show: can('settings'), icon: History, group: 'People & access' },
+    { value: 'appearance', label: 'Appearance & language', show: true, icon: Palette, group: 'This browser' },
     { value: 'server', label: 'Server', show: canOverrideServer(), icon: Server, group: 'This browser' },
   ];
   const visible = tabs.filter((t) => t.show);
@@ -78,18 +81,18 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" />
+      <PageHeader title={tr('Settings')} />
       <div className="settings-layout">
       <nav className="settings-nav" aria-label="Settings sections">
         <select className="select settings-select" value={tab} onChange={(e) => { setTab(e.target.value as Tab); history.replaceState(null, '', `#${e.target.value}`); }} aria-label="Settings section">
-          {visible.map((t) => <option key={t.value} value={t.value}>{t.group} · {t.label}</option>)}
+          {visible.map((t) => <option key={t.value} value={t.value}>{tr(t.group)} · {tr(t.label)}</option>)}
         </select>
         {[...new Set(visible.map((t) => t.group))].map((g) => (
           <div key={g} className="settings-group">
-            <div className="settings-group-title">{g}</div>
+            <div className="settings-group-title">{tr(g)}</div>
             {visible.filter((t) => t.group === g).map(({ value, label, icon: Icon }) => (
               <a key={value} href={`#${value}`} className={tab === value ? 'on' : ''} aria-current={tab === value ? 'page' : undefined} onClick={(e) => { e.preventDefault(); setTab(value); history.replaceState(null, '', `#${value}`); }}>
-                <Icon size={16} /> {label}
+                <Icon size={16} /> {tr(label)}
               </a>
             ))}
           </div>
@@ -116,6 +119,11 @@ export function SettingsPage() {
             <p className="muted small">Light or dark, and which brand colours the menu and buttons use. Saved in this browser only.</p>
           </div>
           <AppearancePanel />
+          <div className="stack" style={{ gap: 6 }}>
+            <h3>{tr('Office language')}</h3>
+            <p className="muted small">{tr('Menus and everyday words change now; more of each page follows in coming updates.')} {tr('Members choose their own language in the app.')}</p>
+            <div style={{ maxWidth: 360 }}><LanguagePicker /></div>
+          </div>
         </div>
       )}
       {tab === 'server' && <div className="card card-pad" id="server"><ServerSettings /></div>}
@@ -129,33 +137,41 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
   const settings = useApi(AdminApi.settings.get);
   const [form, setForm] = useState<ChurchSettings | null>(null);
   const save = useAction(AdminApi.settings.update);
-  const toast = useToast();
 
+  // Load once; after that the form is the person's own copy, saved as they go.
   useEffect(() => {
-    if (settings.data) setForm(settings.data);
+    if (settings.data) setForm((f) => f ?? settings.data);
   }, [settings.data]);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const dirty = !!form && !!settings.data && JSON.stringify(form) !== JSON.stringify(settings.data);
+
+  // Autosave: a moment after the last change, with a small "Saved" tick instead of a Save button.
+  useEffect(() => {
+    if (!dirty || !form) return;
+    const t = setTimeout(() => {
+      void save.run(form).then((saved) => {
+        if (!saved) return;
+        settings.setData(saved);
+        setSavedAt(Date.now());
+        const s = adminSession.get();
+        if (s) adminSession.set({ ...s, church: { ...s.church, name: saved.name, city: saved.city, logoUrl: saved.logoUrl ?? null, brand: saved.brand ?? null } });
+      });
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, dirty]);
 
   if (settings.error) return <ErrorState error={settings.error} onRetry={settings.reload} />;
   if (!form) return <Loading />;
   const set = <K extends keyof ChurchSettings>(k: K, v: ChurchSettings[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
   const india = form.country === 'IN';
-  const dirty = JSON.stringify(form) !== JSON.stringify(settings.data);
-
-  async function onSave() {
-    if (!form) return;
-    const saved = await save.run(form);
-    if (saved) {
-      settings.setData(saved);
-      const s = adminSession.get();
-      if (s) adminSession.set({ ...s, church: { ...s.church, name: saved.name, city: saved.city, logoUrl: saved.logoUrl ?? null, brand: saved.brand ?? null } });
-      toast('Settings saved');
-    }
-  }
 
   const saveBar = (
-    <div className="row" style={{ justifyContent: 'flex-end' }}>
+    <div className="row autosave" style={{ justifyContent: 'flex-end' }}>
       <FormError error={save.error} />
-      <button className="btn primary" disabled={!dirty || save.busy} onClick={onSave}>{save.busy ? 'Saving…' : 'Save changes'}</button>
+      <span className="small muted" aria-live="polite">
+        {save.busy || dirty ? 'Saving…' : savedAt ? <><CheckCircle2 size={14} color="var(--ok)" /> Saved</> : 'Changes save by themselves'}
+      </span>
     </div>
   );
 
@@ -193,7 +209,7 @@ function ChurchSettingsForm({ section }: { section: 'church' | 'giving' | 'kids'
                   {(Object.keys(languages) as LanguageCode[]).map((l) => (
                     <label key={l} className="check">
                       <input type="checkbox" checked={form.languages.includes(l)} disabled={l === 'en'} onChange={(e) => set('languages', e.target.checked ? [...form.languages, l] : form.languages.filter((x) => x !== l))} />
-                      <span>{languages[l].label}</span>
+                      <span>{l === 'en' ? 'English' : `${languages[l].label} (${languages[l].english})`}</span>
                     </label>
                   ))}
                 </div>

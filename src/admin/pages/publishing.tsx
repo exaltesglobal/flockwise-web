@@ -159,7 +159,7 @@ export function CustomFieldsSettings() {
       <div className="card-head">
         <div>
           <h2>Custom fields</h2>
-          <p className="small muted">Extra details you keep on each person, like profession, blood group or baptism date. They appear on profiles, in smart lists and in exports.</p>
+          <p className="small muted">Extra details you keep on each person, like profession, blood group or baptism date. They appear on profiles, in saved lists and in exports.</p>
         </div>
         <button className="btn sm" onClick={() => setEditing('new')}><Plus size={15} /> Add field</button>
       </div>
