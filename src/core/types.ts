@@ -1239,6 +1239,24 @@ export type SermonPrep = {
   createdBy: string; createdAt: string; updatedAt: string;
 };
 export type SermonPrepSummary = Pick<SermonPrep, 'id' | 'title' | 'preacher' | 'date' | 'series' | 'passage' | 'status' | 'sermonId' | 'updatedAt'> & { points: number; minutes: number };
+/** One Sunday in a sermon series. `prepId` links the sermon once preparation starts. */
+export type SermonSeriesWeek = { id: string; date: string; title: string; passage: string; preacher: string; prepId: string | null };
+export type SermonSeries = { id: string; title: string; description: string; weeks: SermonSeriesWeek[]; createdBy: string; createdAt: string; updatedAt: string };
+/** A series as the office sees it: each week with how far its sermon has got. */
+export type SermonSeriesView = Omit<SermonSeries, 'weeks'> & { weeks: (SermonSeriesWeek & { status: SermonPrepStatus | null })[] };
+export type IllustrationKind = 'story' | 'quote' | 'example' | 'fact' | 'humour';
+export type IllustrationUse = { prepId: string; title: string; date: string };
+/** A story, quote or example saved for sermons, with every sermon that used it. */
+export type Illustration = { id: string; title: string; text: string; kind: IllustrationKind; themes: string[]; refs: string[]; source: string; uses: IllustrationUse[]; createdBy: string; createdAt: string; updatedAt: string };
+export type PreachedSermon = { id: string; from: 'library' | 'workspace'; date: string; title: string; preacher: string; passage: string; book: string | null; chapter: number | null; series: string };
+export type PreachingHistory = {
+  sermons: PreachedSermon[];
+  /** All 66 books, with how often each was preached and when last. */
+  books: { code: string; name: string; testament: 'ot' | 'nt'; count: number; last: string | null }[];
+  preachers: { name: string; count: number; last: string }[];
+};
+/** A verse in each language the congregation speaks, to check before Sunday. */
+export type TranslationCheck = { reference: string; rows: { language: string; english: string; native: string; people: number; translation: string | null; name: string; reference: string; text: string | null }[] };
 /** Everything the preaching view needs: the sermon and the words of each verse it uses. */
 export type SermonPreach = { prep: SermonPrep; verses: Record<string, { reference: string; text: string } | null> };
 export type BibleMark = { id: string; personId: string; book: string; chapter: number; verse: number; color: BibleMarkColor | null; bookmark: boolean; note: string; updatedAt: string };
@@ -1761,6 +1779,8 @@ export type Collections = {
   registrations: Registration;
   bibleMarks: BibleMark;
   sermonPreps: SermonPrep;
+  sermonSeries: SermonSeries;
+  illustrations: Illustration;
   captions: CaptionsLog;
   ballots: Ballot;
   ballotStubs: BallotStub;
@@ -1859,7 +1879,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

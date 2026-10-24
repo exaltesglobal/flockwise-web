@@ -770,3 +770,14 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 
 .sp-verses { max-height: 46vh; overflow: auto; line-height: 1.6; }
 .sp-verses p { margin: 0 0 6px; }
+.sp-series-list, .sp-ill-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.sp-series, .sp-ill { display: grid; gap: 6px; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.sp-series:hover, .sp-ill:hover { border-color: var(--primary); }
+.sp-progress { height: 6px; border-radius: 3px; background: var(--tint); overflow: hidden; }
+.sp-progress i { display: block; height: 100%; background: var(--primary); }
+.sp-weeks input { width: 100%; min-width: 110px; }
+.sp-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.sp-books { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.sp-book { padding: 4px 9px; border-radius: 8px; font-size: 13px; border: 1px solid transparent; }
+.sp-book.none { border: 1px dashed var(--border); color: var(--muted); }
+.sp-before { display: flex; gap: 6px; align-items: baseline; margin: -6px 0 0; color: var(--muted); }

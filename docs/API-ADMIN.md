@@ -1331,3 +1331,15 @@ Classic commentaries beside each chapter, read from the Free Use Bible API (bibl
 
 - `GET /public/bible/commentaries` lists them: Matthew Henry, Jamieson-Fausset-Brown, Tyndale Open Study Notes (CC BY-SA), Adam Clarke, John Gill, Keil & Delitzsch (Old Testament only) and Calvin.
 - `GET /public/bible/commentary/:id/:book/:chapter` returns `{ commentary, book, chapter, intro, notes: [{ verse, text }], source }`. A note starts at its verse and covers the verses up to the next note. Chapter 1 also carries the book introduction. A chapter the commentary skips returns empty notes. Show `source` under the notes.
+
+## Sermon planning
+
+All need the services or comms permission.
+
+**Series.** `GET/POST /admin/sermon-series`, `GET/PUT/DELETE /admin/sermon-series/:id`. Create with `{ title, description?, weeks: 4, startDate?, book?, preacher? }`: with a `book` (USFM code) its chapters are spread across the weeks (Romans over 4 weeks: 1-4, 5-8, 9-12, 13-16), one week apart from `startDate`. PUT replaces `weeks` (`{ id?, date, title, passage, preacher, prepId }`, ids kept, sorted by date). Each week comes back with `status` (the linked sermon's status, or null). `POST /admin/sermon-series/:id/weeks/:week/start` creates the sermon in the workspace from the plan (title, series, date, passage, preacher) or returns the one already started. Deleting a series keeps its sermons.
+
+**Illustrations.** `GET /admin/illustrations?q&theme`, `POST`, `PUT/DELETE /:id`. Fields: `title` (defaults to the first line), `text`, `kind` (story, quote, example, fact, humour), `themes` (lower-case tags), `refs`, `source`. `POST /:id/use { prepId }` records that a sermon used it; `uses` lists the newest first, so the bank can say when it was last told.
+
+**Preaching history.** `GET /admin/preaching-history` returns `sermons` (library sermons plus workspace sermons marked preached, or ready with a past date, that were never published), `books` (all 66 with `count` and `last`) and `preachers`. `GET /admin/preaching-history/check?passage&except=prepId` returns earlier sermons on the same `chapter`, and others from the same `book`.
+
+**Translation check.** `GET /admin/translation-check?ref=John 3:16` returns the verse in the main Bible of each language the church's people speak (English always included, most spoken first): `{ reference, rows: [{ language, english, native, people, translation, name, reference, text }] }`. `text` is null when there is no Bible for that language or it could not be read.

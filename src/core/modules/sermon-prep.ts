@@ -53,6 +53,14 @@ function edit(ctx: Ctx, base: SermonPrep): SermonPrep {
   return next;
 }
 
+export function blankPrep(ctx: Ctx): SermonPrep {
+  const now = ctx.now.toISOString();
+  return {
+    id: ctx.id('sp'), title: '', preacher: ctx.staff?.name ?? '', date: '', series: '', passage: '', bigIdea: '', intro: '', points: [], close: '', study: '',
+    translation: 'eng-kjv2006', status: 'draft', sermonId: null, createdBy: ctx.staff?.name ?? '', createdAt: now, updatedAt: now,
+  };
+}
+
 const summary = (p: SermonPrep): SermonPrepSummary => ({
   id: p.id, title: p.title, preacher: p.preacher, date: p.date, series: p.series, passage: p.passage, status: p.status, sermonId: p.sermonId, updatedAt: p.updatedAt,
   points: p.points.length, minutes: p.points.reduce((n, x) => n + x.minutes, 0),
@@ -76,12 +84,7 @@ export function registerSermonPrep(r: Router) {
   r.get('/admin/sermon-prep', PERM, (ctx) => ctx.db.all('sermonPreps').sort((a, b) => (b.date || b.updatedAt).localeCompare(a.date || a.updatedAt)).map(summary));
 
   r.post('/admin/sermon-prep', PERM, (ctx) => {
-    const now = ctx.now.toISOString();
-    const blank: SermonPrep = {
-      id: ctx.id('sp'), title: '', preacher: ctx.staff?.name ?? '', date: '', series: '', passage: '', bigIdea: '', intro: '', points: [], close: '', study: '',
-      translation: 'eng-kjv2006', status: 'draft', sermonId: null, createdBy: ctx.staff?.name ?? '', createdAt: now, updatedAt: now,
-    };
-    const p = edit(ctx, blank);
+    const p = edit(ctx, blankPrep(ctx));
     if (!p.title) p.title = p.passage || 'Untitled sermon';
     ctx.db.put('sermonPreps', p);
     ctx.audit('created', 'sermonPrep', p.id, `Started preparing “${p.title}”`);
