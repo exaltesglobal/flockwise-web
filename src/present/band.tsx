@@ -12,7 +12,7 @@ import { parseSections } from '@/core/modules/present';
 import { flatKey, toNashville, transposeChord, transposeKey } from '@/lib/chords';
 import { stepsBetween } from '@/lib/songfile';
 
-import { RequireStaff, usePresentation, useNow, useScreenKey, useWakeLock } from './present';
+import { CueFlash, RequireStaff, usePresentation, useNow, useScreenKey, useWakeLock } from './present';
 
 type Prefs = { font: number; show: 'chords' | 'words' | 'numbers'; capo: number };
 const PREFS_KEY = 'fw.band.v1';
@@ -107,6 +107,7 @@ function Band({ screenKey }: { screenKey?: string }) {
         {follow ? <span className="live"><Radio size={12} /> Live</span> : <button className="btn sm primary" onClick={() => setFollow(true)}>Back to live</button>}
       </header>
       {item && <Controls item={item} prefs={prefs} setPrefs={setPrefs} extra={extra} setExtra={(n) => setSteps({ ...steps, [item.id]: n })} />}
+      {data.state.cue && <CueFlash cue={data.state.cue} />}
       {data.state.message && <div className="band-msg">{data.state.message}</div>}
       <div className={`band-body ${hasColours(item?.colours) ? 'coloured' : ''}`} style={colourVars(item?.colours)} ref={body}>
         {!item ? <p className="muted" style={{ padding: 20 }}>Nothing is planned for this service yet.</p> : <Chart item={item} prefs={prefs} extra={extra} liveSection={liveSection} />}

@@ -1424,6 +1424,8 @@ export type PresentationState = {
   backgrounds?: Record<string, string>;
   /** Whether scripture on the screen also shows on members' phones (on unless turned off). */
   phones?: boolean;
+  /** The last silent cue from the worship leader. Screens show it for 20 seconds (see modules/worship-cues.ts). */
+  cue?: WorshipCue | null;
 };
 /** Live captions: the preacher's words, heard by the media desk's browser, translated for the screen. */
 export type CaptionsSettings = {
@@ -3277,3 +3279,12 @@ export type LiveSong = {
   versions: LiveSongVersion[]; slide: number; slides: number; next: string | null;
 };
 
+/** Silent worship-team cues: the worship leader taps one on a phone and the band and stage screens flash it. */
+export type WorshipCueKind = 'chorus' | 'again' | 'bridge' | 'verse' | 'keyup' | 'softer' | 'build' | 'instrumental' | 'end' | 'stop' | 'next' | 'custom';
+export type WorshipCue = { id: string; kind: WorshipCueKind; text: string; by: string | null; at: string };
+export type CuePad = {
+  event: { id: string; title: string; startsAt: string };
+  /** The song or item on the screen now, and its sections, so the leader can send "Go to Bridge". */
+  item: { title: string; key: string | null; sections: string[] } | null;
+  cue: WorshipCue | null;
+};

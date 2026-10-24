@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
+import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -427,6 +427,10 @@ export const MemberApi = {
   saveSermonNotes: (id: string, body: { answers: string[]; note: string }) => m.put<SermonFill>(`/me/sermons/${id}/notes`, body),
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
+  cues: {
+    get: (eventId: string) => m.get<CuePad>(`/me/services/${eventId}/cues`),
+    send: (eventId: string, body: { kind: WorshipCueKind; text?: string } | { clear: true }) => m.post<CuePad>(`/me/services/${eventId}/cues`, body),
+  },
   sundaySchool: () => m.get<MemberSundaySchool>('/me/sunday-school'),
   missions: {
     list: () => m.get<MemberMission[]>('/missions'),
@@ -1335,6 +1339,7 @@ export const AdminApi = {
   },
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
+    cue: (eventId: string, body: { kind: WorshipCueKind; text?: string } | { clear: true }) => a.post<CuePad>(`/admin/services/${eventId}/cues`, body),
     act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background' | 'phones',
       extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings>;
         added?: Partial<AddedItem>; live?: boolean; id?: string; minutes?: number; label?: string; stopwatch?: boolean; clear?: boolean; itemId?: string; url?: string } = {}) =>

@@ -1,0 +1,13 @@
+/* Cue pad: thumb-sized buttons for the worship leader, readable on a dark stage. */
+.cues { gap: 14px; }
+.cues-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.cues-btn { min-height: 74px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); color: inherit; font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; padding: 10px; }
+.cues-btn:active { transform: scale(.97); }
+.cues-btn.on, .cues-live { background: #facc15; border-color: #eab308; color: #111; }
+.cues-btn.k-end, .cues-btn.k-stop { border-color: color-mix(in srgb, #ef4444 55%, var(--border)); }
+.cues-btn.k-end.on, .cues-btn.k-stop.on, .cues-live.k-end, .cues-live.k-stop { background: #ef4444; border-color: #dc2626; color: #fff; }
+.cues-btn.k-keyup.on, .cues-btn.k-build.on, .cues-live.k-keyup, .cues-live.k-build { background: #22c55e; border-color: #16a34a; color: #052e16; }
+.cues-btn.k-softer.on, .cues-btn.k-instrumental.on, .cues-live.k-softer, .cues-live.k-instrumental { background: #60a5fa; border-color: #3b82f6; color: #0b1b33; }
+.cues-live { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; }
+.cues-live b { display: block; font-size: 20px; }
+.cues-sections { display: flex; flex-wrap: wrap; gap: 8px; }

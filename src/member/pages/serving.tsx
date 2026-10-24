@@ -1,4 +1,5 @@
-import { CalendarOff, Check, ChevronDown, ChevronUp, HandHeart, Plus, Trash2, X } from 'lucide-react';
+import { CalendarOff, Check, ChevronDown, ChevronUp, HandHeart, Megaphone, Plus, Trash2, X } from 'lucide-react';
+import { Link } from 'react-router';
 import { useState } from 'react';
 
 import { MemberApi } from '@/api/endpoints';
@@ -9,6 +10,8 @@ import { formatDay, formatTime } from '@/lib/format';
 import { useAction, useApi } from '@/lib/use-api';
 
 type Item = MyServing['assignments'][number];
+/** The cue pad is for the day of the service. */
+const sameDay = (iso: string) => new Date(iso).toDateString() === new Date().toDateString();
 
 export function MemberServingPage() {
   const { t } = useT();
@@ -68,6 +71,7 @@ function AssignmentCard({ a, onChanged }: { a: Item; onChanged: () => void }) {
       <div className="row wrap">
         {a.status !== 'accepted' && <button className="btn primary" disabled={respond.busy} onClick={() => answer('accepted')}><Check size={16} /> {t('accept')}</button>}
         {a.status !== 'declined' && <button className="btn" disabled={respond.busy} onClick={() => answer('declined')}><X size={16} /> {t('decline')}</button>}
+        {a.status === 'accepted' && sameDay(a.event.startsAt) && <Link className="btn" to={`/app/cues/${a.eventId}`}><Megaphone size={16} /> {t('cuesOpen')}</Link>}
         {a.plan.length > 0 && (
           <button className="btn ghost" onClick={() => setOpen(!open)}>{t('orderOfService')} {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</button>
         )}

@@ -1421,3 +1421,11 @@ While the screen shows a song, phones follow it slide by slide. Feature `sing-al
 
 - Members: `GET /me/live-song?lang=<code|roman>`; visitors: `GET /public/live-song?lang=` (also returns `churchName`). Both return `{ live: LiveSong | null }`; `null` when nothing or no song is on the screen (or it is blank).
 - `LiveSong`: `{ eventTitle, at, songTitle, copyright, label, lines, kind: 'original'|'second'|'roman'|'meaning', language, sung, versions: [{ key, label, kind }], slide, slides, next }`. `versions` lists what can be sung: the song's own language (detected from its script), its second language (`lyricsAlt`), and English letters for Indian scripts. Any other language gets an AI translation of the meaning (`kind: 'meaning'`, cached per slide; twenty slides count as one AI request), with the sung words in `sung`.
+
+## Silent worship cues
+
+Feature `worship-cues`. The worship leader taps a cue on a phone; the band view, stage display and presenter flash it for 20 seconds (`PresentationView.state.cue`, also on `/screens/:eventId`).
+
+- `GET /me/services/:eventId/cues` (people serving at the service, or staff): `CuePad` with the event, the item on the screen and its sections, and the live cue.
+- `POST /me/services/:eventId/cues` `{kind}` where kind is chorus, again, bridge, verse, keyup, softer, build, instrumental, end, stop, next; or `{kind:'custom', text}` (40 characters); or `{clear:true}`.
+- `POST /admin/services/:eventId/cues` the same for office staff with services or checkin.

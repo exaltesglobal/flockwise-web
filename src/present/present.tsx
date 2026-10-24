@@ -6,6 +6,7 @@ import { ArrowLeft, BookOpen, Smartphone, Captions, ChevronLeft, ChevronRight, C
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
+import type { WorshipCue, WorshipCueKind } from '@/core/types';
 import type { BiblePassage, CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide, SongView } from '@/api/admin-types';
 import { canDictate, useDictation } from '@/admin/components/dictate';
 import { adminSession } from '@/api/client';
@@ -229,6 +230,7 @@ function Presenter() {
         </section>
 
         <aside className="pres-side">
+          {state.cue && <CueFlash cue={state.cue} inline jump={control ? cueTarget(slides, state.index, state.cue) : null} onJump={(i) => void act('goto', { index: i })} />}
           <div className="small muted lbl-now">On screen</div>
           <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} captions={data.captions} />
           <div className="small muted lbl-next">Next</div>
@@ -242,7 +244,7 @@ function Presenter() {
           )}
           <p className="small muted">Keys: → or space next, ← back, C clear words, B blank, L logo.</p>
           {control && <AddLivePanel act={act} />}
-          {control && <StagePanel view={data} act={act} />}
+          {control && <StagePanel view={data} act={act} onCue={async (kind) => { try { await AdminApi.presentation.cue(eventId, { kind }); void reload(); } catch (e) { toast((e as Error).message, 'error'); } }} />}
           {control && <PhonesPanel view={data} act={act} />}
           {control && <CaptionsPanel view={data} act={act} eventId={eventId} onChanged={() => void reload()} />}
           {control && <MediaPanel view={data} act={act} />}
@@ -360,7 +362,7 @@ function PhonesPanel({ view, act }: { view: PresentationView; act: Act }) {
 }
 
 /** Notes and timers only the stage display shows: for the preacher and the band, never the congregation. */
-function StagePanel({ view, act }: { view: PresentationView; act: Act }) {
+function StagePanel({ view, act, onCue }: { view: PresentationView; act: Act; onCue: (kind: WorshipCueKind) => Promise<void> }) {
   const [msg, setMsg] = useState(view.state.stageMessage ?? '');
   const [mins, setMins] = useState('');
   useEffect(() => { setMsg(view.state.stageMessage ?? ''); }, [view.state.stageMessage]);
@@ -383,6 +385,35 @@ function StagePanel({ view, act }: { view: PresentationView; act: Act }) {
         <button className="btn sm" onClick={() => void act('timer', { stopwatch: true })}><Clock size={13} /> Stopwatch</button>
         {t && <button className="btn sm ghost" onClick={() => void act('timer', { clear: true })}><X size={13} /> {shown}</button>}
       </div>
+      <div className="row wrap" style={{ gap: 6 }} aria-label="Cue the band">
+        <span className="small muted">Cue the band:</span>
+        {QUICK_CUES.map(([k, label]) => <button key={k} className="btn sm" onClick={() => void onCue(k)}>{label}</button>)}
+      </div>
+    </div>
+  );
+}
+
+const QUICK_CUES: [WorshipCueKind, string][] = [['chorus', 'Chorus'], ['again', 'Again'], ['keyup', 'Key up'], ['softer', 'Softer'], ['end', 'Ending']];
+
+/** The slide a "Repeat chorus", "Go to bridge" or "Back to verse" cue points at, in the song on the screen. */
+function cueTarget(slides: Slide[], index: number, cue: WorshipCue): number | null {
+  const word = cue.kind === 'chorus' ? 'chorus' : cue.kind === 'bridge' ? 'bridge' : cue.kind === 'verse' ? 'verse' : cue.kind === 'custom' ? /go to (.+)/i.exec(cue.text)?.[1]?.toLowerCase() : undefined;
+  const cur = slides[index];
+  if (!word || !cur) return null;
+  const mine = slides.map((s, i) => ({ s, i })).filter((x) => x.s.itemIndex === cur.itemIndex && x.s.kind === 'lyrics' && x.s.label.toLowerCase().startsWith(word));
+  // The first slide of the next time that section comes round, else its first slide.
+  const starts = mine.filter((x) => !/\((?!1\/)\d+\/\d+\)$/.test(x.s.label));
+  const hit = starts.find((x) => x.i > index) ?? starts[0] ?? mine[0];
+  return hit && hit.i !== index ? hit.i : null;
+}
+
+/** The worship leader's cue, big enough to read from across the stage. It disappears after 20 seconds. */
+export function CueFlash({ cue, inline = false, jump = null, onJump }: { cue: WorshipCue; inline?: boolean; jump?: number | null; onJump?: (index: number) => void }) {
+  return (
+    <div key={cue.id} className={`cue-flash ${inline ? 'inline' : ''} k-${cue.kind}`} role="status" aria-live="assertive">
+      <span className="cue-text">{cue.text}</span>
+      {cue.by && <span className="cue-by">{cue.by}</span>}
+      {jump !== null && onJump && <button className="btn sm" onClick={() => onJump(jump)}>Go there</button>}
     </div>
   );
 }
@@ -716,6 +747,7 @@ function Stage({ screenKey }: { screenKey?: string }) {
         {state.mode !== 'live' && <span className="mode">{state.mode === 'blank' ? 'SCREEN BLANK' : state.mode === 'clear' ? 'WORDS CLEARED' : state.mode === 'countdown' ? 'COUNTDOWN' : 'LOGO'}</span>}
         <button className={`btn sm ${chords ? 'on' : ''}`} onClick={() => setChords(!chords)}><Music2 size={14} /> Chords</button>
       </div>
+      {state.cue && <CueFlash cue={state.cue} />}
       {state.stageMessage && <div className="stage-msg stage-note">{state.stageMessage}</div>}
       {state.message && <div className="stage-msg">{state.message}</div>}
       <div className="stage-now">

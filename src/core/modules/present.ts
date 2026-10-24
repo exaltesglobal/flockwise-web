@@ -4,7 +4,7 @@ import { LANGUAGE_CODES } from '../languages.js';
 import { ApiError } from '../errors.js';
 import { hasIndic, transliterateLines } from '../transliterate.js';
 import type { Ctx, Router } from '../engine.js';
-import type { AddedItem, BandItem, CaptionsSettings, CaptionsView, Collections, LanguageCode, LiveVerse, LowerThird, ObsSettings, PlanItem, PresentationState, PresentationTheme, PresentationView, Slide, Song, SongStats } from '../types.js';
+import type { AddedItem, BandItem, CaptionsSettings, CaptionsView, Collections, LanguageCode, LiveVerse, LowerThird, ObsSettings, PlanItem, PresentationState, PresentationTheme, PresentationView, Slide, Song, SongStats, WorshipCue } from '../types.js';
 import { OBS_MOMENTS } from '../types.js';
 import { church, DAY, find, pick, settings } from '../util.js';
 import { BOOK_CODES, parseReference } from '../bible-texts.js';
@@ -159,7 +159,7 @@ function bandItems(ctx: Ctx, items: PlanItem[]): BandItem[] {
   });
 }
 
-const stateFor = (ctx: Ctx, eventId: string): PresentationState =>
+export const stateFor = (ctx: Ctx, eventId: string): PresentationState =>
   ctx.db.get('presentations', eventId) ?? { id: eventId, eventId, index: 0, mode: 'live', message: '', updatedAt: ctx.now.toISOString() };
 
 const KEY_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
@@ -227,6 +227,10 @@ function verseOnScreen(state: PresentationState, items: PlanItem[], slides: Slid
 }
 
 /** The service's slides and the one on the screen now, with English letters worked out, for phones that sing along. */
+/** The worship leader's last cue while it is fresh (20 seconds). */
+export const liveCue = (ctx: Ctx, cue: WorshipCue | null | undefined) => (cue && ctx.now.getTime() - Date.parse(cue.at) < CUE_MS ? cue : null);
+export const CUE_MS = 20_000;
+
 export function deckNow(ctx: Ctx, ev: Collections['events']) {
   const state = stateFor(ctx, ev.id);
   const items = [...liveView(ctx, ev).plan.items, ...addedItems(state.added)];
@@ -277,7 +281,8 @@ function view(ctx: Ctx, ev: Collections['events'], staff = true): PresentationVi
     // The projector is a dark surface: prefer the brand kit's dark logo.
     logoUrl: c.brand?.logoDarkUrl || c.logoUrl || null,
     slides,
-    state: { ...state, index: Math.min(state.index, Math.max(0, slides.length - 1)) },
+    // A worship cue flashes for 20 seconds; the server decides, so a phone with a wrong clock still agrees.
+    state: { ...state, index: Math.min(state.index, Math.max(0, slides.length - 1)), cue: liveCue(ctx, state.cue) },
     theme,
     timer: { itemTitle: runningItem?.title ?? null, itemEndsAt: live.itemEndsAt, serviceEndsAt: live.serviceEndsAt },
     announcements: ctx.db.all('announcements').filter((a) => a.status === 'published').sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 6).map((a) => ({ title: a.title, body: a.body.slice(0, 240) })),
