@@ -47,6 +47,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'meetings', label: 'Meetings & minutes', body: 'Elders, deacons and committee meetings: agenda, minutes, decisions and action items with owners.', group: 'care', on: true },
   { key: 'leader-pipeline', label: 'Leadership pipeline', body: 'Who is growing into a leader, their steps, mentor and readiness.', group: 'care', on: false },
   { key: 'counselling', label: 'Counselling notes', body: 'Private notes only the pastor who writes them can read, locked with their own passphrase, with follow-up reminders.', group: 'care', on: false },
+  { key: 'devotions', label: "Leaders' devotionals", body: 'A short morning devotional for the leadership team, with check-ins and prayer needs.', group: 'care', on: false },
   { key: 'courses', label: 'Classes & courses', body: 'Bible school, membership class and baptism class with attendance.', group: 'care', on: false },
   { key: 'library', label: 'Library', body: 'Lend books and keep track of who has them.', group: 'care', on: false },
   { key: 'skills', label: 'Skills & board', body: 'Who can help with what, and a board for needs and offers.', group: 'care', on: false },

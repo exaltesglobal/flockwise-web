@@ -2,7 +2,7 @@
 // Their calls, today's services and where they serve, visits with a map route, meetings and action
 // items, care cases on their name, counselling follow-ups, the sermon they are preparing, and the
 // queues that wait on the office.
-import { BookOpen, CalendarDays, ChevronRight, ClipboardList, HeartHandshake, Inbox, MapPinned, NotebookPen, Phone, Sunrise } from 'lucide-react';
+import { BookHeart, BookOpen, CalendarDays, ChevronRight, ClipboardList, HeartHandshake, Inbox, MapPinned, NotebookPen, Phone, Sunrise } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 
@@ -40,13 +40,19 @@ export function MyDayPage() {
   if (!q.data) return <><PageHeader title="My day" /><Loading /></>;
   const d = q.data;
   const first = d.name.replace(/^(pastor|rev\.?|fr\.?|bro\.?|sis\.?)\s+/i, '').split(' ')[0];
-  const quiet = !d.calls?.length && !d.events.length && !d.visits.length && !d.meetings.length && !d.actions.length && !d.careCases.length && !d.counselFollowUps && !d.sermon && !d.waiting.length;
+  const quiet = !d.calls?.length && !d.events.length && !d.visits.length && !d.meetings.length && !d.actions.length && !d.careCases.length && !d.counselFollowUps && !d.sermon && !d.devotion && !d.waiting.length;
 
   return (
     <>
       <PageHeader title="My day" subtitle={`${formatDate(`${d.date}T12:00:00`)}. What is on for you today, ${first}.`} />
       {quiet && <div className="card card-pad muted">A quiet day: nothing on your name. A good day to visit someone or prepare Sunday.</div>}
       <div className="md-grid">
+        {d.devotion && (
+          <Section icon={<BookHeart size={16} />} title="Today's devotional" link={{ to: '/admin/devotions', label: d.devotion.checkedIn ? 'Open' : 'Read it' }}>
+            <div><b>{d.devotion.title || d.devotion.passage}</b><div className="small muted">{d.devotion.passage} · {d.devotion.team} on the team {d.devotion.team === 1 ? 'has' : 'have'} read it{d.devotion.checkedIn ? ', you too' : ''}</div></div>
+          </Section>
+        )}
+
         {d.calls && d.calls.length > 0 && (
           <Section icon={<Sunrise size={16} />} title="Calls worth making" link={{ to: '/admin/morning-list', label: 'All calls' }}>
             {d.calls.map((c) => (

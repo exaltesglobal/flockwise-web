@@ -861,3 +861,17 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
   .mr-sheet section { page-break-inside: avoid; }
   @page { size: A4; margin: 14mm; }
 }
+
+/* Leaders' devotionals */
+.dv-today { max-width: 760px; }
+.dv-passage { margin: 0; padding: 12px 16px; border-left: 3px solid var(--primary); background: var(--tint); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-family: Georgia, 'Noto Serif', serif; line-height: 1.6; }
+.dv-passage sup { font-size: 10px; color: var(--muted); margin-right: 2px; }
+.dv-passage footer { margin-top: 6px; font-family: inherit; }
+.dv-thought p { margin: 0 0 10px; line-height: 1.65; }
+.dv-question, .dv-prayer { margin: 0; }
+.dv-checkin { border-top: 1px solid var(--border); padding-top: 12px; }
+.dv-note { padding: 8px 10px; background: var(--tint); border-radius: var(--radius-sm); font-size: 14px; }
+.dv-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--border); cursor: default; }
+.dv-past summary { list-style: none; cursor: pointer; }
+.dv-past summary::-webkit-details-marker { display: none; }
+.dv-date { width: 96px; flex: none; color: var(--muted); font-size: 13px; }

@@ -1377,3 +1377,10 @@ Counselling notes (feature `counselling`): encrypted in the browser (PBKDF2-SHA2
 - `GET /admin/my-day` (any staff) → `MyDay`: the signed-in staff member's calls (top 5 from the morning list, care only), today's services and their rota, visits planned for them today, today's meetings and their open action items (by their person record), care cases assigned to them, counselling follow-ups due (count), the next sermon they are preparing (with unresolved comments from others), and `waiting` queues (registrations, join requests, help requests, wedding/funeral requests, open prayer, unassigned care) with links.
 - `GET /admin/visits/route?date=YYYY-MM-DD&mine=1` → `{ date, start, stops }`: planned visits that day with the family's address and phone, grouped by area; `start` is the church address. The web builds a Google Maps directions link from it.
 - `GET /admin/monthly-report?month=YYYY-MM` (permission `insights`; default last month) → `MonthlyReport`: attendance per service with average and last month's average, people joined, rites from the registers, giving by fund and expenses (only with `giving.view`), care and visits, cell-group meetings, mentoring and the leadership pipeline, sermons, meeting decisions (only with `care`).
+
+## Leaders' devotionals (feature `devotions`)
+
+- `GET /admin/devotions` (any staff) → `{ today, upcoming, past, streak }`; each devotional has `checkins` (name, note, time), `mine` and `team` (active staff count).
+- `POST /admin/devotions` `{ date, passage, title, thought, question, prayer }` (permission `care`; one per day), `PUT|DELETE /admin/devotions/:id`.
+- `POST /admin/devotions/draft` `{ passage, text? }` → `{ title, thought, question, prayer }` written by AI.
+- `POST /admin/devotions/:id/checkin` `{ note? }` and `DELETE` (any staff; not before its day). Each morning today's devotional is pushed to the office staff once (`devotion.today`). `MyDay.devotion` shows it when the feature is on.

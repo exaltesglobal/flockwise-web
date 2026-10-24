@@ -198,6 +198,27 @@ export async function writeGroupKit(ctx: Ctx, sermon: { title: string; passage: 
   return { summary: str(out.summary, 800), icebreaker: str(out.icebreaker, 300), questions, prayer: str(out.prayer, 400) };
 }
 
+/** A short devotional for the leadership team from a passage: a title, a reflection, one question and a prayer. */
+export async function writeDevotion(ctx: Ctx, passage: string, text: string): Promise<{ title: string; thought: string; question: string; prayer: string }> {
+  const schema = {
+    type: 'object',
+    properties: { title: { type: 'string' }, thought: { type: 'string' }, question: { type: 'string' }, prayer: { type: 'string' } },
+    required: ['title', 'thought', 'question', 'prayer'],
+    additionalProperties: false,
+  };
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou write a short morning devotional for a church's leaders (pastors, elders, cell leaders) in India. Stay with what the passage says; do not add doctrine it does not teach. Warm and plain, about 150 words for the reflection, with one honest question for leaders and a one-sentence prayer. Reply with JSON only.`,
+    messages: [{ role: 'user', content: `Passage: ${passage}\n${text ? `Text:\n${text.slice(0, 6000)}\n` : ''}\nWrite: title (a few words), thought (the reflection), question (for leaders to ask themselves today), prayer.` }],
+    schema,
+    maxTokens: 1500,
+    effort: 'low',
+  });
+  const out = json<{ title: string; thought: string; question: string; prayer: string }>(res.content);
+  const thought = str(out.thought, 3000);
+  if (!thought) throw new ApiError(502, 'ai_error', 'The devotional came back empty. Try again.');
+  return { title: str(out.title, 120), thought, question: str(out.question, 400), prayer: str(out.prayer, 500) };
+}
+
 export function registerAi(r: Router) {
   r.get('/admin/ai/status', { staff: true }, (ctx) => status(ctx));
 

@@ -6,6 +6,7 @@ import type { Ctx, Router } from '../engine.js';
 import { featureOn } from '../features.js';
 import type { MyDay } from '../types.js';
 import { localDate, settings } from '../util.js';
+import { todaysDevotion } from './devotions.js';
 import { morningList } from './morning-list.js';
 
 export function myDay(ctx: Ctx): MyDay {
@@ -47,6 +48,9 @@ export function myDay(ctx: Ctx): MyDay {
   const next = preps[0];
   const sermon = next ? { id: next.id, title: next.title, date: next.date, status: next.status, points: next.points.length, comments: (next.comments ?? []).filter((c) => !c.resolved && c.staffId !== staff.id).length } : null;
 
+  const dv = on('devotions') ? todaysDevotion(ctx) : null;
+  const devotion = dv ? { id: dv.id, title: dv.title, passage: dv.passage, checkedIn: !!ctx.db.get('devotionCheckins', `${dv.id}:${staff.id}`), team: ctx.db.all('devotionCheckins').filter((c) => c.devotionId === dv.id).length } : null;
+
   const waiting: MyDay['waiting'] = [];
   const add = (key: string, label: string, count: number, link: string) => { if (count) waiting.push({ key, label, count, link }); };
   if (ctx.can('people.view') && on('registration')) add('registrations', 'Registrations to approve', ctx.db.all('registrations').filter((r) => r.status === 'pending').length, '/admin/registrations');
@@ -59,7 +63,7 @@ export function myDay(ctx: Ctx): MyDay {
   return {
     date: today, name: staff.name, calls,
     events: todays.filter((e) => e.published !== false).map((e) => ({ id: e.id, title: e.title, startsAt: e.startsAt, location: e.location ?? null })),
-    serving, visits, meetings, actions, careCases, counselFollowUps, sermon, waiting,
+    serving, visits, meetings, actions, careCases, counselFollowUps, sermon, devotion, waiting,
   };
 }
 
