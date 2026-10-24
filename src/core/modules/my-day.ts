@@ -8,6 +8,7 @@ import type { MyDay } from '../types.js';
 import { localDate, settings } from '../util.js';
 import { todaysDevotion } from './devotions.js';
 import { morningList } from './morning-list.js';
+import { nextDay } from './grief.js';
 
 export function myDay(ctx: Ctx): MyDay {
   const staff = ctx.staff!;
@@ -57,6 +58,7 @@ export function myDay(ctx: Ctx): MyDay {
   if (ctx.can('groups')) add('join', 'Requests to join a group', ctx.db.count('joinRequests'), '/admin/groups');
   if (ctx.can('care') && on('benevolence')) add('aid', 'Requests for help', ctx.db.all('aidRequests').filter((a) => a.status === 'requested' || a.status === 'reviewing').length, '/admin/benevolence');
   if (ctx.can('care') && on('occasions')) add('occasions', 'Wedding and funeral requests', ctx.db.all('occasions').filter((o) => o.status === 'requested').length, '/admin/occasions');
+  if (ctx.can('care') && on('grief-calendar')) add('grief', 'Grief anniversaries this week', ctx.db.all('griefDates').filter((g) => nextDay(ctx, g).daysAway <= 7).length, '/admin/grief');
   if (ctx.can('care')) add('prayer', 'Prayer requests open', ctx.db.all('prayer').filter((p) => p.status === 'open').length, '/admin/care');
   if (ctx.can('care')) add('unassigned', 'Care cases with nobody assigned', ctx.db.all('care').filter((c) => c.status !== 'closed' && !c.assignedTo).length, '/admin/care');
 

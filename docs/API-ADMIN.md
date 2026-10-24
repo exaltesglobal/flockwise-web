@@ -1462,3 +1462,16 @@ Feature `migrant-link`, notification `move.new`. Churches on the same server app
 - `POST /admin/moves/:id/introduce` `{partnerRef, consent: true}`: refused until the person agreed. A Flockwise church gets the person as a visitor with a welcome care case; a partner with email gets an email; a phone-only partner gives back `introText` for the office to send on WhatsApp. Sets a check-back date 30 days on.
 - `PUT /admin/partner-churches` `{partners: [{id?, name, city, contactName?, phone?, email?, note?}], welcomeIntroductions?}`.
 - `GET /me/move?city=` and `POST /me/move` `{toCity, movingOn?, note?, partnerRef?, consent?}` for members.
+
+## Grief calendar (feature `grief-calendar`, perm `care`)
+
+Remembers the day someone lost a loved one. A few days before each anniversary (and 40 days after the death) the care team gets a `grief.nudge` notice; on the day the family gets a short message in each person's language, sent automatically when `autoSend` is on, otherwise when the pastor sends it. A burial recorded in the register adds the date for the household. Names are never written to the audit log.
+
+| Method | Path | Body | Returns |
+| --- | --- | --- | --- |
+| GET | /admin/grief | | GriefHub `{ dates: GriefDateView[], settings }` |
+| POST | /admin/grief | `{ lovedOne, date, relation?, personId?, familyIds?, note?, sendMessage?, message? }` | GriefHub |
+| PATCH | /admin/grief/:id | any of the above | GriefHub |
+| DELETE | /admin/grief/:id | | GriefHub |
+| POST | /admin/grief/:id/send | `{ text? }` (the pastor's own words; `{name}`, `{lovedOne}`, `{church}`) | GriefHub; 409 if already sent for this day |
+| PUT | /admin/grief/settings | `{ nudgeDaysBefore 0–14, autoSend, channel, day40 }` | GriefHub |

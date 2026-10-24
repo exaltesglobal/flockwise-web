@@ -12,6 +12,7 @@ import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
 import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
 import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } from '@/core/types';
+import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
@@ -640,8 +641,17 @@ export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
 export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
+export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  grief: {
+    get: () => a.get<GriefHub>('/admin/grief'),
+    add: (body: GriefInput) => a.post<GriefHub>('/admin/grief', body),
+    update: (id: string, body: Partial<GriefInput>) => a.patch<GriefHub>(`/admin/grief/${id}`, body),
+    remove: (id: string) => a.del<GriefHub>(`/admin/grief/${id}`),
+    send: (id: string, text?: string) => a.post<GriefHub>(`/admin/grief/${id}/send`, { text }),
+    settings: (body: Partial<GriefSettings>) => a.put<GriefHub>('/admin/grief/settings', body),
+  },
   moves: {
     get: () => a.get<MovesHub>('/admin/moves'),
     suggest: (city: string) => a.get<PartnerChurch[]>(`/admin/moves/suggest?city=${encodeURIComponent(city)}`),

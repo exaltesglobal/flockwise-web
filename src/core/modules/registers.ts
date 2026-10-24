@@ -5,6 +5,7 @@ import { ApiError } from '../errors.js';
 import type { Ctx, Router } from '../engine.js';
 import type { Certificate, CertificateCheck, Collections, RegisterEntry, RegisterField, RegisterKind, RegisterSummary } from '../types.js';
 import { find, fullName, localDate, page, settings } from '../util.js';
+import { griefFromBurial } from './grief.js';
 
 export const REGISTER_KINDS: RegisterKind[] = ['baptism', 'confirmation', 'marriage', 'burial', 'transfer'];
 
@@ -232,6 +233,7 @@ export function registerRegisters(r: Router) {
       updatedAt: now,
     });
     updatePeople(ctx, e);
+    griefFromBurial(ctx, e);
     if (kind === 'transfer' && person && ctx.body.markInactive) ctx.db.put('people', { ...ctx.db.get('people', person.id)!, status: 'inactive', tags: [...new Set([...person.tags, 'Transferred'])] });
     ctx.audit('created', 'register', e.id, `Recorded ${e.number}: ${e.name} (${REGISTER_LABELS[kind].name.toLowerCase()})`);
     return e;

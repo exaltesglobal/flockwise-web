@@ -154,4 +154,5 @@ export const OFFICE_PHRASES = [
   "Festival care",
   "Hospital",
   "Moving away",
+  "Grief calendar",
 ];

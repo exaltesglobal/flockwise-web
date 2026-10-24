@@ -817,6 +817,8 @@ export type ChurchSettings = Church & {
   screenKey?: string;
   /** Festival-season care: which festivals to prepare for (see modules/festival-care.ts). */
   festivalCare?: Partial<FestivalCareSettings>;
+  /** Grief calendar: when the pastor is reminded and whether the family message goes by itself (see modules/grief.ts). */
+  griefCare?: Partial<GriefSettings>;
   /** Churches in other cities the church trusts, for members who move (see modules/migrant-link.ts). */
   partnerChurches?: OwnPartnerChurch[];
   /** Whether other churches on Flockwise may find this church and introduce people moving here. Default on while the public page is on. */
@@ -1652,7 +1654,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1933,6 +1935,7 @@ export type Collections = {
   festivalCare: FestivalCareRecord;
   hospitalStays: HospitalStay;
   moves: Move;
+  griefDates: GriefDate;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2037,7 +2040,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3404,3 +3407,46 @@ export type MoveIntroduction = { firstName: string; lastName: string; phone: str
 /** The host's directory of churches on the same Flockwise server that welcome introductions. */
 export type ChurchPartnerHost = { near(city: string): PartnerChurch[]; introduce(slug: string, intro: MoveIntroduction): Promise<void> };
 export type MyMove = { move: Move | null; suggestions: PartnerChurch[] };
+
+/** Grief calendar: the day someone's loved one died, remembered every year. Care staff only. */
+export type GriefSettings = {
+  /** Days before the anniversary that the pastor is reminded (0 = on the day). */
+  nudgeDaysBefore: number;
+  /** Send the family message by itself on the day. Off: the pastor reads the draft and sends it. */
+  autoSend: boolean;
+  channel: Channel;
+  /** Also remind the pastor 40 days after the death, when many Indian families hold a memorial prayer. */
+  day40: boolean;
+};
+export type GriefDate = {
+  id: string;
+  /** The one who died, as the family calls them ("Appa", "Mary Thomas"). */
+  lovedOne: string;
+  relation: string | null;
+  /** Date of death, YYYY-MM-DD. */
+  date: string;
+  /** The person who died, when they were in the church's records. */
+  personId: string | null;
+  /** The people to remember with: usually the household. */
+  familyIds: string[];
+  note: string | null;
+  /** Whether the family gets the yearly message (some families would rather have only a visit). */
+  sendMessage: boolean;
+  /** The pastor's own words for this family, with {name}, {lovedOne} and {church}; null = the default for each person's language. */
+  message: string | null;
+  registerId: string | null;
+  /** When the pastor was reminded and the family message went, keyed by year or 'day40'. */
+  nudged: Record<string, string>;
+  sent: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+};
+export type GriefNext = { on: string; kind: 'day40' | 'year'; years: number; daysAway: number; key: string };
+export type GriefDateView = GriefDate & {
+  family: { id: string; name: string; phone: string | null; language: LanguageCode }[];
+  next: GriefNext;
+  /** The message the family would get, in English for the office; each person gets it in their own language. */
+  draft: string;
+  sentThisTime: string | null;
+};
+export type GriefHub = { dates: GriefDateView[]; settings: GriefSettings };

@@ -39,7 +39,8 @@ export function seedDemo(db: Db, env: Env) {
     return new Date(d.getTime() - 330 * 60_000).toISOString();
   };
   const todayIst = new Date(now + 330 * 60_000);
-  const toSunday = (7 - todayIst.getUTCDay()) % 7 || 7;
+  // On a Sunday morning before the service ends, today's service is the next one, so last week's stays in the past.
+  const toSunday = todayIst.getUTCDay() === 0 && Date.parse(at(0, 11)) > now ? 0 : (7 - todayIst.getUTCDay()) % 7 || 7;
   const code = () => Array.from({ length: 8 }, () => CODE[Math.floor(r() * CODE.length)]).join('');
   let seq = 0;
   const id = (p: string) => `${p}_${++seq}`;

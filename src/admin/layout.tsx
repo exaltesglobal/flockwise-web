@@ -1,4 +1,4 @@
-import { Armchair, BedDouble, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BedDouble, Flower2, MapPinned, MessageCircleQuestion, BarChart3, BookHeart, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sun, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -60,6 +60,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/morning-list', label: "Today's calls", icon: Sunrise, perm: ['care'], feature: 'morninglist' },
         { to: '/admin/hospital', label: 'Hospital', icon: BedDouble, perm: ['care'], feature: 'hospital-mode' },
         { to: '/admin/moves', label: 'Moving away', icon: MapPinned, perm: ['care'], feature: 'migrant-link' },
+        { to: '/admin/grief', label: 'Grief calendar', icon: Flower2, perm: ['care'], feature: 'grief-calendar' },
         { to: '/admin/festival-care', label: 'Festival care', icon: Gift, perm: ['care'], feature: 'festival-care' },
         { to: '/admin/workflows', label: 'Follow-ups', icon: GitBranch, perm: ['people.view', 'care'], feature: 'workflows' },
         { to: '/admin/vigils', label: 'Prayer vigils', icon: Hourglass, perm: ['care'], feature: 'vigils' },
