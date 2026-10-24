@@ -109,6 +109,7 @@ const MORE_LINKS = [
   { to: '/app/library', key: 'libraryTitle', icon: Library, feature: 'library' },
   { to: '/app/occasions', key: 'occTitle', icon: Church, feature: 'occasions' },
   { to: '/app/skills', key: 'skillTitle', icon: Handshake, feature: 'skills' },
+  { to: '/app/talent', key: 'talTitle', icon: HandHeart, feature: 'outreach' },
   { to: '/app/camps', key: 'campTitle', icon: Tent, feature: 'camps' },
   { to: '/app/practice', key: 'practiceTitle', icon: MicVocal, feature: 'practice' },
   { to: '/app/verses', key: 'verseTitle', icon: Star, feature: 'sunday-school' },

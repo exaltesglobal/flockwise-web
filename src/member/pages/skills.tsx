@@ -106,8 +106,9 @@ function Mine({ data, onData }: { data: MySkills; onData: (d: MySkills) => void 
   const [note, setNote] = useState(data.mine?.note ?? '');
   const [serve, setServe] = useState(data.mine?.serve ?? true);
   const [share, setShare] = useState(data.mine?.share ?? false);
+  const [community, setCommunity] = useState(data.mine?.community ?? false);
   const toggle = (x: string) => setSkills((s) => (s.includes(x) ? s.filter((y) => y !== x) : [...s, x].slice(0, 20)));
-  const save = useAction(async () => { onData(await MemberApi.skills.save({ skills, note, serve, share })); toast(t('skillSaved')); });
+  const save = useAction(async () => { onData(await MemberApi.skills.save({ skills, note, serve, share, community })); toast(t('skillSaved')); });
   const extra = skills.filter((x) => !data.suggestions.includes(x));
   return (
     <div className="card card-pad stack" style={{ gap: 12 }}>
@@ -122,6 +123,7 @@ function Mine({ data, onData }: { data: MySkills; onData: (d: MySkills) => void 
       <input className="input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder={t('skillNote')} />
       <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={serve} onChange={(e) => setServe(e.target.checked)} /> {t('skillServe')}</label>
       <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} /> {t('skillShare')}</label>
+      <label className="row small" style={{ gap: 8 }}><input type="checkbox" checked={community} onChange={(e) => setCommunity(e.target.checked)} /> {t('talGive')}</label>
       <FormError error={save.error} />
       <div><button className="btn primary" disabled={save.busy} onClick={() => void save.run()}>{t('mentorSave')}</button></div>
     </div>

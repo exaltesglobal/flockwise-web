@@ -77,6 +77,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/courses', label: 'Classes & courses', icon: GraduationCap, perm: ['people.view'], feature: 'courses' },
         { to: '/admin/library', label: 'Library', icon: Library, perm: ['people.view'], feature: 'library' },
         { to: '/admin/skills', label: 'Skills & board', icon: Handshake, perm: ['people.view', 'volunteers'], feature: 'skills' },
+        { to: '/admin/outreach', label: 'Talent bank', icon: HandHeart, perm: ['people.view', 'volunteers'], feature: 'outreach' },
       ] },
       { label: 'Celebrations', icon: Cake, pages: [
         { to: '/admin/celebrations', label: 'Celebrations', icon: Cake, perm: ['people.view'], feature: 'celebrations' },

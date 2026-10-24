@@ -15,6 +15,7 @@ import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } fr
 import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
 import type { JourneyHub, JourneyStep, MyJourney } from '@/core/types';
 import type { AltarHub, AltarWeek, MyAltar } from '@/core/types';
+import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -349,7 +350,7 @@ export const MemberApi = {
   },
   skills: {
     get: () => m.get<MySkills>('/me/skills'),
-    save: (input: { skills: string[]; note: string; serve: boolean; share: boolean }) => m.put<MySkills>('/me/skills', input),
+    save: (input: { skills?: string[]; note?: string; serve?: boolean; share?: boolean; community?: boolean }) => m.put<MySkills>('/me/skills', input),
     post: (input: { kind: 'job' | 'need' | 'offer'; title: string; body: string; place: string }) => m.post<MySkills>('/me/board', input),
     close: (id: string) => m.post<MySkills>(`/me/board/${id}/close`, {}),
   },
@@ -435,6 +436,10 @@ export const MemberApi = {
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   journey: () => m.get<MyJourney>('/me/journey'),
+  outreach: {
+    get: () => m.get<MyOutreachInvite[]>('/me/outreach'),
+    answer: (id: string, answer: 'yes' | 'no') => m.post<MyOutreachInvite[]>(`/me/outreach/${id}`, { answer }),
+  },
   altar: {
     get: () => m.get<MyAltar>('/me/altar'),
     done: () => m.post<MyAltar>('/me/altar/done', {}),
@@ -493,6 +498,8 @@ export type FamilyMemberInput = { firstName: string; lastName?: string; birthDat
 export const PublicApi = {
   story: (token: string) => m.get<StoryListen>(`/public/story/${encodeURIComponent(token)}`),
   storyListened: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/listened`, {}),
+  outreach: (token: string) => m.get<PublicOutreach>(`/public/outreach/${encodeURIComponent(token)}`),
+  outreachSignup: (token: string, body: { name: string; phone: string; need?: string; area?: string; remind?: boolean; website?: string }) => m.post<{ ok: true; again?: boolean }>(`/public/outreach/${encodeURIComponent(token)}`, body),
   storyPrayer: (token: string) => m.post<{ ok: true }>(`/public/story/${encodeURIComponent(token)}/prayer`, {}),
   bibleTranslations: () => m.get<{ featured: string[]; translations: BibleTranslationInfo[] }>('/public/bible/translations'),
   bibleBooks: (tr: string) => m.get<BibleBookInfo[]>(`/public/bible/${encodeURIComponent(tr)}/books`),
@@ -653,11 +660,23 @@ export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
 export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
+export type OutreachInput = { kind: OutreachKind; title: string; date: string; startTime: string; endTime: string; place: string; about: string; skills: string[]; capacity: number | null };
 export type AltarInput = Pick<AltarWeek, 'title' | 'passage' | 'story' | 'songTitle' | 'songUrl' | 'question' | 'prayer' | 'status'>;
 export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  outreach: {
+    get: () => a.get<TalentBank>('/admin/outreach'),
+    one: (id: string) => a.get<OutreachDetail>(`/admin/outreach/${id}`),
+    create: (body: OutreachInput) => a.post<OutreachDetail>('/admin/outreach', body),
+    update: (id: string, body: Partial<OutreachInput> & { status?: 'planned' | 'cancelled' }) => a.patch<OutreachDetail>(`/admin/outreach/${id}`, body),
+    remove: (id: string) => a.del<TalentBank>(`/admin/outreach/${id}`),
+    invite: (id: string, personIds: string[]) => a.post<OutreachDetail>(`/admin/outreach/${id}/invite`, { personIds }),
+    came: (id: string, sid: string, came: boolean) => a.patch<OutreachDetail>(`/admin/outreach/${id}/signups/${sid}`, { came }),
+    removeSignup: (id: string, sid: string) => a.del<OutreachDetail>(`/admin/outreach/${id}/signups/${sid}`),
+    done: (id: string, body: { served?: number | ''; report?: string }) => a.post<OutreachDetail>(`/admin/outreach/${id}/done`, body),
+  },
   altar: {
     get: () => a.get<AltarHub>('/admin/altar'),
     save: (monday: string, body: AltarInput) => a.put<AltarHub>(`/admin/altar/${monday}`, body),

@@ -1518,3 +1518,22 @@ A ten-minute family devotion each week (id = the Monday, YYYY-MM-DD): story for 
 | POST | /admin/altar/draft | comms | `{ passage, language? }` | `{ title, passage, story, question, prayer, songTitle, songUrl }` (AI) |
 | GET | /me/altar | member | | MyAltar `{ week, done, streak, best, kids[{ name, className, lesson }] }` |
 | POST/DELETE | /me/altar/done | member | | MyAltar |
+
+## Talent bank and outreach (feature `outreach`)
+
+Members tick `community: true` on PUT /me/skills to give their skills free to the neighbourhood. The office plans a free clinic, tuition evening, job fair or legal help day (`kind`: clinic | tuition | jobs | legal | other; the kind presets the title and needed skills), sees matching members, asks them (notification `outreach.invite`), and shares the public link `/outreach/:token`. The day before, helpers who said yes get `outreach.reminder` and registrants who asked get a WhatsApp/SMS reminder.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/outreach | people.view or volunteers | | TalentBank `{ outreaches, areas, givers, helped, kinds }` |
+| POST | /admin/outreach | people.edit or volunteers | `{ kind, title?, date, startTime?, endTime?, place?, about?, skills?, capacity? }` | OutreachDetail |
+| GET | /admin/outreach/:id | people.view or volunteers | | OutreachDetail `{ …, helpers, list, shareText }` |
+| PATCH | /admin/outreach/:id | people.edit or volunteers | same fields, `status: planned\|cancelled` | OutreachDetail |
+| DELETE | /admin/outreach/:id | people.edit or volunteers | | TalentBank |
+| POST | /admin/outreach/:id/invite | people.edit or volunteers | `{ personIds }` | OutreachDetail |
+| PATCH/DELETE | /admin/outreach/:id/signups/:sid | people.edit or volunteers | `{ came }` | OutreachDetail |
+| POST | /admin/outreach/:id/done | people.edit or volunteers | `{ served?, report? }` (served defaults to people marked as came) | OutreachDetail |
+| GET | /me/outreach | member | | MyOutreachInvite[] |
+| POST | /me/outreach/:id | member | `{ answer: yes\|no }` | MyOutreachInvite[] |
+| GET | /public/outreach/:token | public | | PublicOutreach `{ title, kind, date, startTime, endTime, place, about, church, open, full }` |
+| POST | /public/outreach/:token | public | `{ name, phone, need?, area?, remind?, website (honeypot) }` | `{ ok, again? }` |

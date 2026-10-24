@@ -15,6 +15,7 @@ export const SKILL_SUGGESTIONS = [
   'Lawyer', 'Accountant', 'Chartered accountant', 'Teacher', 'Maths tutor', 'English tutor', 'Computer and IT', 'Photography', 'Video editing',
   'Graphic design', 'Sound and mixing', 'Keyboard', 'Guitar', 'Drums', 'Tabla', 'Violin', 'Singing', 'Translation', 'Telugu typing', 'Hindi typing',
   'Event decoration', 'First aid', 'Social media', 'Website', 'Hospitality', 'Children\'s ministry',
+  'Dentist', 'Job referrals', 'CV writing', 'Interview practice',
 ];
 const clean = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 const addDays = (date: string, n: number) => new Date(Date.parse(`${date}T00:00:00Z`) + n * DAY).toISOString().slice(0, 10);
@@ -35,7 +36,7 @@ function readSkills(v: unknown): string[] {
 function personRow(ctx: Ctx, p: SkillProfile): SkillPerson | null {
   const person = ctx.db.get('people', p.id);
   if (!person || person.status === 'inactive') return null;
-  return { personId: p.id, name: fullName(person), phone: person.phone ?? null, skills: p.skills, note: p.note, serve: p.serve, share: p.share, updatedAt: p.updatedAt };
+  return { personId: p.id, name: fullName(person), phone: person.phone ?? null, skills: p.skills, note: p.note, serve: p.serve, share: p.share, community: !!p.community, updatedAt: p.updatedAt };
 }
 
 function postView(ctx: Ctx, b: BoardPost): BoardPostView {
@@ -60,7 +61,7 @@ function mine(ctx: Ctx): MySkills {
   const me = ctx.me();
   const p = ctx.db.get('skillProfiles', me);
   return {
-    mine: p ? { skills: p.skills, note: p.note, serve: p.serve, share: p.share } : null,
+    mine: p ? { skills: p.skills, note: p.note, serve: p.serve, share: p.share, community: !!p.community } : null,
     directory: ctx.db.all('skillProfiles').filter((x) => x.share && x.skills.length && x.id !== me).map((x) => personRow(ctx, x)).filter((x): x is SkillPerson => !!x)
       .sort((a, b) => a.name.localeCompare(b.name)).map(({ personId, name, phone, skills, note }) => ({ personId, name, phone, skills, note })),
     posts: ctx.db.all('boardPosts').map((b) => postView(ctx, b))
@@ -79,6 +80,7 @@ function saveProfile(ctx: Ctx, id: string, b: Record<string, unknown>): SkillPro
     note: b.note !== undefined ? clean(b.note, 300) : (prev?.note ?? ''),
     serve: b.serve !== undefined ? !!b.serve : (prev?.serve ?? true),
     share: b.share !== undefined ? !!b.share : (prev?.share ?? false),
+    community: b.community !== undefined ? !!b.community : (prev?.community ?? false),
     updatedAt: ctx.now.toISOString(),
   });
 }

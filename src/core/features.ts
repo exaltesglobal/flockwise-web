@@ -57,6 +57,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'courses', label: 'Classes & courses', body: 'Bible school, membership class and baptism class with attendance.', group: 'care', on: false },
   { key: 'library', label: 'Library', body: 'Lend books and keep track of who has them.', group: 'care', on: false },
   { key: 'skills', label: 'Skills & board', body: 'Who can help with what, and a board for needs and offers.', group: 'care', on: false },
+  { key: 'outreach', label: 'Talent bank and outreach', body: 'Members list skills they would give free to the neighbourhood, such as medical, legal, tuition or job referrals. Plan free clinics, tuition evenings and job fairs, ask the right people to help, and share a link for people in the area to register.', group: 'care', on: true },
   // Sundays and events
   { key: 'events', label: 'Services & events', body: 'Services, meetings and events with RSVPs and tickets.', group: 'sundays', on: true, core: true },
   { key: 'calendar', label: 'Calendar & rooms', body: 'The church calendar and room bookings.', group: 'sundays', on: true },

@@ -380,13 +380,15 @@ export type MyOccasion = { id: string; kind: OccasionKind; title: string; status
 
 // ----- skills & helping hands: who can do what, and a board for jobs, needs and offers -----
 /** One per person (id = person id). */
-export type SkillProfile = { id: string; skills: string[]; note: string; serve: boolean; share: boolean; updatedAt: string };
+export type SkillProfile = { id: string; skills: string[]; note: string; serve: boolean; share: boolean; updatedAt: string;
+  /** Happy to give these skills free to people in the neighbourhood (clinics, tuition, job help). */
+  community?: boolean };
 export type BoardKind = 'job' | 'need' | 'offer';
 export type BoardPost = { id: string; personId: string; kind: BoardKind; title: string; body: string; place: string; status: 'open' | 'closed' | 'hidden'; createdAt: string; expiresOn: string };
 export type BoardPostView = BoardPost & { name: string; phone: string | null; expired: boolean };
-export type SkillPerson = { personId: string; name: string; phone: string | null; skills: string[]; note: string; serve: boolean; share: boolean; updatedAt: string };
+export type SkillPerson = { personId: string; name: string; phone: string | null; skills: string[]; note: string; serve: boolean; share: boolean; community: boolean; updatedAt: string };
 export type SkillsHub = { people: SkillPerson[]; skills: { skill: string; count: number }[]; posts: BoardPostView[]; counts: { people: number; willingToServe: number; openPosts: number } };
-export type MySkills = { mine: { skills: string[]; note: string; serve: boolean; share: boolean } | null; directory: { personId: string; name: string; phone: string | null; skills: string[]; note: string }[]; posts: (BoardPostView & { mine: boolean })[]; suggestions: string[] };
+export type MySkills = { mine: { skills: string[]; note: string; serve: boolean; share: boolean; community: boolean } | null; directory: { personId: string; name: string; phone: string | null; skills: string[]; note: string }[]; posts: (BoardPostView & { mine: boolean })[]; suggestions: string[] };
 
 // ----- camps & retreats: sign-ups, rooms and bus seats -----
 export type CampRoom = { id: string; name: string; beds: number; for: 'any' | 'male' | 'female' | 'family' };
@@ -1656,7 +1658,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week' | 'outreach.invite' | 'outreach.reminder';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1944,6 +1946,8 @@ export type Collections = {
   journeyMarks: JourneyMark;
   altarWeeks: AltarWeek;
   altarDone: AltarDone;
+  outreaches: Outreach;
+  outreachSignups: OutreachSignup;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2048,7 +2052,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3559,3 +3563,40 @@ export type MyAltar = {
   best: number;
   kids: { name: string; className: string; lesson: { title: string; scripture: string; memoryVerse: string; date: string } | null }[];
 };
+
+/** Community outreach from the talent bank: a free clinic, tuition evening, job fair or legal help day for the neighbourhood. */
+export type OutreachKind = 'clinic' | 'tuition' | 'jobs' | 'legal' | 'other';
+export type OutreachAnswer = 'asked' | 'yes' | 'no';
+export type Outreach = {
+  id: string;
+  kind: OutreachKind;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  place: string;
+  about: string;
+  /** Skills the day needs; members with these skills are suggested as helpers. */
+  skills: string[];
+  /** Most people who can register; null for no limit. */
+  capacity: number | null;
+  /** The public registration link is /outreach/:token. */
+  token: string;
+  /** Members asked to help, and their answer. */
+  invited: Record<string, OutreachAnswer>;
+  status: 'planned' | 'done' | 'cancelled';
+  /** People helped on the day, filled in afterwards. */
+  served: number | null;
+  report: string;
+  by: string;
+  createdAt: string;
+};
+/** Someone from the neighbourhood registered through the public link. */
+export type OutreachSignup = { id: string; outreachId: string; name: string; phone: string; need: string; area: string; remind: boolean; came: boolean; at: string };
+export type OutreachHelper = { personId: string; name: string; phone: string | null; skills: string[]; community: boolean; answer: OutreachAnswer | null };
+export type OutreachView = Outreach & { signups: number; yes: number; asked: number; link: string };
+export type OutreachDetail = OutreachView & { helpers: OutreachHelper[]; list: OutreachSignup[]; shareText: string };
+export type TalentArea = { key: 'medical' | 'legal' | 'teaching' | 'jobs' | 'trades'; label: string; people: number; skills: string[] };
+export type TalentBank = { outreaches: OutreachView[]; areas: TalentArea[]; givers: number; helped: number; kinds: { kind: OutreachKind; label: string; title: string; skills: string[] }[] };
+export type PublicOutreach = { title: string; kind: OutreachKind; date: string; startTime: string; endTime: string; place: string; about: string; church: string; open: boolean; full: boolean };
+export type MyOutreachInvite = { id: string; title: string; kind: OutreachKind; date: string; startTime: string; endTime: string; place: string; about: string; answer: OutreachAnswer };

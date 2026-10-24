@@ -124,6 +124,9 @@ import { JourneyPage } from '@/admin/pages/journey';
 import { MemberJourneyPage } from '@/member/journey';
 import { AltarPage } from '@/admin/pages/altar';
 import { MemberAltarPage } from '@/member/altar';
+import { OutreachPage } from '@/admin/pages/outreach';
+import { MemberTalentPage } from '@/member/talent';
+import { PublicOutreachPage } from '@/public/outreach';
 import { PublicStoryPage } from '@/public/story';
 import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
@@ -214,6 +217,7 @@ const routes = [
       { path: 'stories', element: <StoryLinePage /> },
       { path: 'journey', element: <JourneyPage /> },
       { path: 'altar', element: <AltarPage /> },
+      { path: 'outreach', element: <OutreachPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -246,6 +250,7 @@ const routes = [
   { path: '/qr/:id', element: <PublicQrPage /> },
   { path: '/sing', element: <PublicSingPage /> },
   { path: '/story/:token', element: <PublicStoryPage /> },
+  { path: '/outreach/:token', element: <PublicOutreachPage /> },
   { path: '/ask', element: <AskCodePage /> },
   { path: '/ask/:code', element: <AskPhonePage /> },
   { path: '/ask/:id/screen', element: <AskScreenPage mode="screen" /> },
@@ -286,6 +291,7 @@ const routes = [
       { path: 'moving', element: <MemberMovingPage /> },
       { path: 'journey', element: <MemberJourneyPage /> },
       { path: 'altar', element: <MemberAltarPage /> },
+      { path: 'talent', element: <MemberTalentPage /> },
       { path: 'courses', element: <MemberCoursesPage /> },
       { path: 'vigils', element: <MemberVigilsPage /> },
       { path: 'mentoring', element: <MemberMentoringPage /> },
