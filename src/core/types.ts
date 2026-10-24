@@ -1220,6 +1220,8 @@ export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
 /** One main point of a sermon outline, with its verses and the minutes planned for it. */
 export type SermonPoint = { id: string; heading: string; body: string; refs: string[]; minutes: number };
 export type SermonPrepStatus = 'draft' | 'ready' | 'preached';
+/** A note on a sermon draft from someone helping prepare it; `pointId` ties it to one point. */
+export type SermonComment = { id: string; by: string; staffId: string | null; text: string; pointId: string | null; at: string; resolved: boolean };
 /** One Greek or Hebrew word behind a verse (STEPBible.org, CC BY). */
 export type BibleWord = { word: string; translit: string; gloss: string; strong: string; grammar: string; parsing: string };
 export type BibleWords = { book: string; chapter: number; verse: number; language: 'greek' | 'hebrew'; words: BibleWord[]; source: string };
@@ -1240,6 +1242,8 @@ export type SermonPrep = {
   intro: string; points: SermonPoint[]; close: string;
   /** Study notes for the preacher only; never published. */
   study: string;
+  /** Comments from other pastors and elders preparing with the preacher. */
+  comments?: SermonComment[];
   /** Cell-group kits made from this sermon, by language, and when leaders were last sent them. */
   kits?: Record<string, GroupKit>;
   kitSentAt?: string | null;
@@ -1524,7 +1528,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback';
 
 // ---------- Christmas carol rounds ----------
 

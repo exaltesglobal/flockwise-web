@@ -1,7 +1,7 @@
 // Sundays › Sermon workspace, the planning tabs: series laid out Sunday by Sunday, the illustration
 // bank, and the preaching history. Also the pieces the sermon editor borrows: "preached before",
 // the illustration picker and the translation check.
-import { CalendarRange, History, Languages, Lightbulb, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { CalendarRange, Check, History, Languages, Lightbulb, MessageCircle, Plus, Sparkles, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { AdminApi } from '@/api/endpoints';
@@ -411,4 +411,77 @@ export function StudyHelper({ passage, translation, onRef }: { passage: string; 
       </div>
     </details>
   );
+}
+
+// ---------- Preparing together ----------
+
+/** Comments from other pastors and elders beside the draft, and asking them for feedback. */
+export function CommentsPanel({ prep, onChange }: { prep: SermonPrep; onChange: (p: SermonPrep) => void }) {
+  const me = useMe();
+  const [text, setText] = useState('');
+  const [pointId, setPointId] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [showDone, setShowDone] = useState(false);
+  const add = useAction(async () => { onChange(await AdminApi.sermonPrep.comment(prep.id, text, pointId || null)); setText(''); });
+  const act = useAction(async (fn: () => Promise<SermonPrep>) => onChange(await fn()));
+  const all = prep.comments ?? [];
+  const shown = all.filter((c) => showDone || !c.resolved);
+  const pointName = (id: string | null) => { const i = prep.points.findIndex((x) => x.id === id); return i >= 0 ? `Point ${i + 1}` : 'Whole sermon'; };
+  return (
+    <div className="card card-pad stack" style={{ gap: 8 }}>
+      <div className="row between"><b><MessageCircle size={15} /> Comments</b><button className="btn sm ghost" onClick={() => setAsking(true)}><UserPlus size={14} /> Ask for feedback</button></div>
+      {!all.length && <p className="small muted" style={{ margin: 0 }}>Ask another pastor or an elder to read the draft. Their comments appear here, beside your notes.</p>}
+      {shown.map((c) => (
+        <div key={c.id} className={`sp-comment ${c.resolved ? 'done' : ''}`}>
+          <div className="row between small"><span><b>{c.by}</b> <span className="muted">· {pointName(c.pointId)} · {formatDate(c.at)}</span></span>
+            <span className="row" style={{ gap: 2 }}>
+              <button className="btn sm ghost icon" onClick={() => void act.run(() => AdminApi.sermonPrep.resolveComment(prep.id, c.id, !c.resolved))} aria-label={c.resolved ? 'Reopen' : 'Done'} title={c.resolved ? 'Reopen' : 'Mark done'}><Check size={14} /></button>
+              {(!c.staffId || c.staffId === me) && <button className="btn sm ghost icon" onClick={() => void act.run(() => AdminApi.sermonPrep.removeComment(prep.id, c.id))} aria-label="Delete comment"><Trash2 size={13} /></button>}
+            </span>
+          </div>
+          <div className="small" style={{ whiteSpace: 'pre-wrap' }}>{c.text}</div>
+        </div>
+      ))}
+      {all.some((c) => c.resolved) && <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={() => setShowDone((x) => !x)}>{showDone ? 'Hide done' : `Show done (${all.filter((c) => c.resolved).length})`}</button>}
+      <FormError error={add.error ?? act.error} />
+      <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Add a comment" maxLength={2000} />
+      <div className="row" style={{ gap: 6 }}>
+        <select className="grow" value={pointId} onChange={(e) => setPointId(e.target.value)} aria-label="About">
+          <option value="">About the whole sermon</option>
+          {prep.points.map((x, i) => <option key={x.id} value={x.id}>Point {i + 1}{x.heading ? `: ${x.heading.slice(0, 40)}` : ''}</option>)}
+        </select>
+        <button className="btn sm primary" onClick={() => void add.run()} disabled={add.busy || !text.trim()}>Comment</button>
+      </div>
+      {asking && <AskFeedback prep={prep} onClose={() => setAsking(false)} />}
+    </div>
+  );
+}
+
+function AskFeedback({ prep, onClose }: { prep: SermonPrep; onClose: () => void }) {
+  const toast = useToast();
+  const me = useMe();
+  const staff = useApi(AdminApi.staff.list);
+  const [ids, setIds] = useState<string[]>([]);
+  const [message, setMessage] = useState('');
+  const send = useAction(async () => { const r = await AdminApi.sermonPrep.share(prep.id, ids, message); toast(`Asked ${r.asked} ${r.asked === 1 ? 'person' : 'people'}.`); onClose(); });
+  const rows = (staff.data ?? []).filter((s) => s.status === 'active' && s.id !== me);
+  return (
+    <Modal title="Ask for feedback" onClose={onClose} footer={<><button className="btn ghost" onClick={onClose}>Cancel</button><button className="btn primary" onClick={() => void send.run()} disabled={send.busy || !ids.length}>Send</button></>}>
+      <div className="stack">
+        <p className="small muted" style={{ margin: 0 }}>They get a message with a link to the draft, and can comment beside it. They need the sermon or communications permission to open it.</p>
+        <FormError error={send.error} />
+        {staff.error ? <ErrorState error={staff.error} onRetry={staff.reload} /> : !staff.data ? <Loading /> : !rows.length ? <p className="small muted">No one else has office access yet.</p> : (
+          <div className="stack" style={{ gap: 4 }}>{rows.map((s) => (
+            <label key={s.id} className="row" style={{ gap: 8 }}><input type="checkbox" checked={ids.includes(s.id)} onChange={(e) => setIds(e.target.checked ? [...ids, s.id] : ids.filter((x) => x !== s.id))} /> {s.name} <span className="small muted">{s.roleName}</span></label>
+          ))}</div>
+        )}
+        <Field label="Message" hint="Optional."><textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={600} placeholder="Could you check whether point 2 is clear?" /></Field>
+      </div>
+    </Modal>
+  );
+}
+
+// Who is signed in, to show their own delete buttons and leave them out of the share list.
+function useMe(): string | undefined {
+  return useApi(() => AdminApi.me(), []).data?.staff.id;
 }

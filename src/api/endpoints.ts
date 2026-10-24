@@ -821,6 +821,10 @@ export const AdminApi = {
     slides: (id: string, eventId: string, second?: string) => a.post<{ plan: Plan; added: number }>(`/admin/sermon-prep/${id}/slides`, { eventId, second }),
     kit: (id: string, language: string) => a.post<{ prep: SermonPrep; kit: GroupKit }>(`/admin/sermon-prep/${id}/kit`, { language }),
     sendKit: (id: string) => a.post<{ prep: SermonPrep; leaders: number }>(`/admin/sermon-prep/${id}/kit/send`, {}),
+    share: (id: string, staffIds: string[], message: string) => a.post<{ asked: number }>(`/admin/sermon-prep/${id}/share`, { staffIds, message }),
+    comment: (id: string, text: string, pointId: string | null) => a.post<SermonPrep>(`/admin/sermon-prep/${id}/comments`, { text, pointId }),
+    resolveComment: (id: string, cid: string, resolved: boolean) => a.put<SermonPrep>(`/admin/sermon-prep/${id}/comments/${cid}`, { resolved }),
+    removeComment: (id: string, cid: string) => a.del<SermonPrep>(`/admin/sermon-prep/${id}/comments/${cid}`),
   },
   sermonSeries: {
     list: () => a.get<SermonSeriesView[]>('/admin/sermon-series'),

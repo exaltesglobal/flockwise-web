@@ -5,8 +5,9 @@
 import { parseReference } from '../bible-texts.js';
 import type { Ctx, Router } from '../engine.js';
 import { ApiError } from '../errors.js';
-import type { Sermon, SermonPoint, SermonPrep, SermonPrepStatus, SermonPrepSummary, SermonPreach } from '../types.js';
+import type { Sermon, SermonComment, SermonPoint, SermonPrep, SermonPrepStatus, SermonPrepSummary, SermonPreach } from '../types.js';
 import { find } from '../util.js';
+import { notify } from './notify.js';
 import { lookupPassage, tidyReference } from './bible.js';
 
 const PERM = { perm: ['services', 'comms'] } as { perm: ('services' | 'comms')[] };
@@ -107,7 +108,7 @@ export function registerSermonPrep(r: Router) {
   r.post('/admin/sermon-prep/:id/copy', PERM, (ctx) => {
     const p = find(ctx, 'sermonPreps', ctx.params[0], 'Sermon');
     const now = ctx.now.toISOString();
-    const copy: SermonPrep = { ...p, id: ctx.id('sp'), title: `${p.title} (copy)`, status: 'draft', sermonId: null, points: p.points.map((x) => ({ ...x, id: ctx.id('pt') })), createdBy: ctx.staff?.name ?? '', createdAt: now, updatedAt: now };
+    const copy: SermonPrep = { ...p, id: ctx.id('sp'), title: `${p.title} (copy)`, status: 'draft', sermonId: null, comments: [], kits: undefined, kitSentAt: null, points: p.points.map((x) => ({ ...x, id: ctx.id('pt') })), createdBy: ctx.staff?.name ?? '', createdAt: now, updatedAt: now };
     return ctx.db.put('sermonPreps', copy);
   });
 
@@ -126,6 +127,49 @@ export function registerSermonPrep(r: Router) {
     const next = ctx.db.put('sermonPreps', { ...p, sermonId: sermon.id, updatedAt: ctx.now.toISOString() });
     ctx.audit(old ? 'updated' : 'created', 'sermon', sermon.id, `${old ? 'Updated' : 'Published'} the sermon “${sermon.title}” from the workspace`);
     return { prep: next, sermon };
+  });
+
+  // Co-preparation: comments from other staff, and asking them for feedback.
+  const staffPeople = (ctx: Ctx, ids: string[]) => ids.map((id) => ctx.db.get('staff', id)).filter((s): s is NonNullable<typeof s> => !!s && s.status === 'active');
+  const tellStaff = async (ctx: Ctx, staff: ReturnType<typeof staffPeople>, title: string, body: string, prepId: string) => {
+    const link = `/admin/sermon-prep?open=${prepId}`;
+    await notify(ctx, 'sermon.feedback', { personIds: staff.map((s) => s.personId).filter((x): x is string => !!x), title, body });
+    const mails = staff.filter((s) => s.email).map((s) => ({ to: s.email, name: s.name, subject: title, text: `${body}\n\n${ctx.env.webUrl}${link}` }));
+    if (mails.length) await ctx.env.deliver('email', mails).catch(() => undefined);
+  };
+  r.post('/admin/sermon-prep/:id/share', PERM, async (ctx) => {
+    const p = find(ctx, 'sermonPreps', ctx.params[0], 'Sermon');
+    const ids = Array.isArray(ctx.body.staffIds) ? ctx.body.staffIds.map(String) : [];
+    const staff = staffPeople(ctx, ids).filter((s) => s.id !== ctx.staff?.id);
+    if (!staff.length) throw new ApiError(422, 'invalid', 'Pick who to ask.', { staffIds: 'Pick at least one' });
+    const note = text(ctx.body.message, 600);
+    await tellStaff(ctx, staff, `${ctx.staff?.name ?? 'The preacher'} asks for your thoughts on “${p.title}”`, `${note ? `${note}\n\n` : ''}Open the draft and add your comments beside it${p.date ? ` before ${p.date}` : ''}.`, p.id);
+    ctx.audit('sent', 'sermonPrep', p.id, `Asked ${staff.map((s) => s.name).join(', ')} for feedback on “${p.title}”`);
+    return { asked: staff.length };
+  });
+  r.post('/admin/sermon-prep/:id/comments', PERM, async (ctx) => {
+    const p = find(ctx, 'sermonPreps', ctx.params[0], 'Sermon');
+    const body = text(ctx.body.text, 2000);
+    if (!body) throw new ApiError(422, 'invalid', 'Write a comment.', { text: 'Needed' });
+    const pointId = typeof ctx.body.pointId === 'string' && p.points.some((x) => x.id === ctx.body.pointId) ? ctx.body.pointId : null;
+    const c: SermonComment = { id: ctx.id('cm'), by: ctx.staff?.name ?? 'Someone', staffId: ctx.staff?.id ?? null, text: body, pointId, at: ctx.now.toISOString(), resolved: false };
+    const next = ctx.db.put('sermonPreps', { ...p, comments: [...(p.comments ?? []), c].slice(-200) });
+    // Tell the preacher when someone else comments.
+    const preacher = ctx.db.all('staff').find((s) => s.name === p.createdBy && s.id !== ctx.staff?.id);
+    if (preacher) await tellStaff(ctx, [preacher], `${c.by} commented on “${p.title}”`, body.slice(0, 300), p.id);
+    return next;
+  });
+  r.put('/admin/sermon-prep/:id/comments/:cid', PERM, (ctx) => {
+    const p = find(ctx, 'sermonPreps', ctx.params[0], 'Sermon');
+    if (!(p.comments ?? []).some((c) => c.id === ctx.params[1])) throw new ApiError(404, 'not_found', 'Comment not found.');
+    return ctx.db.put('sermonPreps', { ...p, comments: (p.comments ?? []).map((c) => (c.id === ctx.params[1] ? { ...c, resolved: !!ctx.body.resolved } : c)) });
+  });
+  r.del('/admin/sermon-prep/:id/comments/:cid', PERM, (ctx) => {
+    const p = find(ctx, 'sermonPreps', ctx.params[0], 'Sermon');
+    const c = (p.comments ?? []).find((x) => x.id === ctx.params[1]);
+    if (!c) throw new ApiError(404, 'not_found', 'Comment not found.');
+    if (c.staffId && c.staffId !== ctx.staff?.id) throw new ApiError(403, 'forbidden', 'Only the person who wrote a comment can delete it.');
+    return ctx.db.put('sermonPreps', { ...p, comments: (p.comments ?? []).filter((x) => x.id !== c.id) });
   });
 
   /** The sermon with every verse's words, for the preaching view. A verse that cannot be read comes back null. */

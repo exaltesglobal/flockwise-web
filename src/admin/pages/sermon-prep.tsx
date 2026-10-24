@@ -15,7 +15,7 @@ import { useOpenParam } from '@/lib/use-new-param';
 import { useAction, useApi } from '@/lib/use-api';
 
 import { PageHeader } from '../layout';
-import { HistoryTab, IllustrationPicker, IllustrationsTab, KitModal, StudyHelper, PreachedBefore, SeriesTab, SlidesModal, TranslationCheckModal } from './sermon-planning';
+import { CommentsPanel, HistoryTab, IllustrationPicker, IllustrationsTab, KitModal, StudyHelper, PreachedBefore, SeriesTab, SlidesModal, TranslationCheckModal } from './sermon-planning';
 
 const STATUS: Record<SermonPrepStatus, string> = { draft: 'Draft', ready: 'Ready', preached: 'Preached' };
 const BADGE: Record<SermonPrepStatus, string> = { draft: 'gray', ready: 'ok', preached: '' };
@@ -176,6 +176,7 @@ function Editor({ id, onBack, onDelete }: { id: string; onBack: () => void; onDe
 
         <div className="stack">
           <BiblePane lookup={lookup} passage={d.passage} translation={d.translation} onTranslation={(t) => set({ translation: t })} onAdd={d.points.length ? (ref) => setPoint(d.points.length - 1, { refs: [...d.points[d.points.length - 1].refs.filter(Boolean), ref] }) : undefined} />
+          <CommentsPanel prep={prep} onChange={setPrep} />
           {d.passage.trim() && <StudyHelper passage={d.passage} translation={d.translation} onRef={(r) => setLookup({ ref: r, at: Date.now() })} />}
           <Field label="Study notes" hint="Only for you and the office. Never shown to members."><textarea rows={12} value={d.study} onChange={(e) => set({ study: e.target.value })} placeholder="Background, word studies, commentary quotes, questions" /></Field>
           {prep.sermonId && <Link className="small" to={`/admin/sermons?open=${prep.sermonId}`}><ExternalLink size={13} /> Open it in the sermon library</Link>}

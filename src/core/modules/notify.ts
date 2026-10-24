@@ -45,6 +45,7 @@ export const CATALOG: Record<NotificationKind, Entry> = {
   'rental.new': { label: 'Hall hire request', description: 'An outsider asks to hire the hall or ground, pays, or withdraws.', audience: 'Staff with the events permission', rule: { email: true, push: true, whatsapp: false } },
   'asset.due': { label: 'Asset service or AMC due', description: 'A week before an asset is due a service, and a month before an AMC or warranty ends.', audience: 'Staff who keep the asset register', rule: { email: true, push: true, whatsapp: false } },
   'kit.ready': { label: 'Cell-group kit', description: "The week's discussion kit from Sunday's sermon: questions, a memory verse and a prayer focus.", audience: 'Cell group leaders', rule: { email: true, push: true, whatsapp: true } },
+  'sermon.feedback': { label: 'Sermon feedback', description: 'A preacher asks for comments on a sermon draft, or someone comments on it.', audience: 'The staff asked, and the preacher', rule: { email: true, push: true, whatsapp: false } },
   'task.assigned': { label: 'Task given', description: 'A task on the team hub is given to someone.', audience: 'The person it is given to', rule: { email: true, push: true, whatsapp: false } },
 };
 export const KINDS = Object.keys(CATALOG) as NotificationKind[];
