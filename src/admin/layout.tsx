@@ -1,4 +1,4 @@
-import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -46,6 +46,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/people', label: 'People', icon: Users, perm: ['people.view'], feature: 'people' },
         { to: '/admin/lists', label: 'Smart lists', icon: Filter, perm: ['people.view'], feature: 'lists' },
         { to: '/admin/zones', label: 'Zones & visits', icon: MapPin, perm: ['people.view'], feature: 'zones' },
+        { to: '/admin/registrations', label: 'Registrations', icon: UserPlus, perm: ['people.view'], feature: 'registration' },
         { to: '/admin/import', label: 'Import', icon: Upload, perm: ['people.edit'], feature: 'import' },
       ] },
       one({ to: '/admin/groups', label: 'Groups', icon: UsersRound, perm: ['groups'], feature: 'groups' }),

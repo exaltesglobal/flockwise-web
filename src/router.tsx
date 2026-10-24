@@ -98,6 +98,8 @@ import { MemberOccasionsPage } from '@/member/pages/occasions';
 import { SkillsPage } from '@/admin/pages/skills';
 import { MemberSkillsPage } from '@/member/pages/skills';
 import { CampsPage } from '@/admin/pages/camps';
+import { RegistrationsPage } from '@/admin/pages/registrations';
+import { RegisterPage } from '@/public/register';
 import { MemberCampsPage } from '@/member/pages/camps';
 import { MemberMentoringPage } from '@/member/pages/mentoring';
 import { MemberVigilsPage } from '@/member/pages/vigils';
@@ -169,6 +171,7 @@ const routes = [
       { path: 'occasions', element: <OccasionsPage /> },
       { path: 'skills', element: <SkillsPage /> },
       { path: 'camps', element: <CampsPage /> },
+      { path: 'registrations', element: <RegistrationsPage /> },
       { path: 'recap', element: <RecapPage /> },
       { path: 'video-greetings', element: <VideoGreetingsPage /> },
       { path: 'annual-return', element: <AnnualReturnPage /> },
@@ -198,6 +201,7 @@ const routes = [
   { path: '/r/:id', element: <PublicRecapPage /> },
   { path: '/g/:token', element: <GreetingPage /> },
   { path: '/qr/:id', element: <PublicQrPage /> },
+  { path: '/register', element: <RegisterPage /> },
   { path: '/pray', element: <PrayPage /> },
   { path: '/pray/wall', element: <PrayerWallPage /> },
   { path: '/verify', element: <VerifyCertificatePage /> },

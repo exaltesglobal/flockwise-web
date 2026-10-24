@@ -9,6 +9,7 @@ import type { OfferingQrHub, OfferingQrView, PublicOfferingQr, BankAccountId, Ba
 import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
+import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
 import type { Camp, CampDetail, CampSignup, CampView, MyCamp } from '@/core/types';
@@ -448,6 +449,9 @@ export const PublicApi = {
   livePing: (streamId: string, viewer: string) => m.post<{ ok: boolean; status: LiveStatus; watching: number }>(`/public/live/${streamId}/ping`, { viewer }),
   /** Hall, ground and room hire by outsiders: the spaces, a request, and the renter's own page by token. */
   /** Prayer cards and the lobby kiosk: anyone can send a request; the wall needs the kiosk key. */
+  registrationForm: () => m.get<PublicRegistrationForm>('/public/registration'),
+  register: (input: { householdName?: string; phone: string; email: string; address: string; area: string; previousChurch?: string; howHeard?: string; note?: string; wantsMembership: boolean; agree: boolean; website?: string; consent: { whatsapp: boolean; email: boolean; directory: boolean }; members: Partial<RegistrationMember>[] }) =>
+    m.post<{ ok: true; householdName?: string; count?: number }>('/public/registration', input),
   prayerInfo: () => m.get<PublicPrayerInfo>('/public/prayer'),
   sendPrayer: (input: { text: string; name?: string; phone?: string; share?: boolean; source?: 'card' | 'kiosk' }) => m.post<{ ok: true; id: string; message: string }>('/public/prayer', input),
   prayerWall: (k: string, device: string) => m.get<PrayerWall>(`/public/prayer/wall${qs({ k, device })}`),
@@ -563,6 +567,13 @@ export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
 
 export const AdminApi = {
+  registrations: {
+    get: () => a.get<RegistrationsHub>('/admin/registrations'),
+    settings: (input: Partial<RegistrationSettings>) => a.put<RegistrationSettings>('/admin/registration-settings', input),
+    approve: (id: string, input: { status?: 'visitor' | 'regular' | 'member'; link?: Record<number, string>; note?: string }) => a.post<RegistrationView>(`/admin/registrations/${id}/approve`, input),
+    decline: (id: string, note?: string) => a.post<RegistrationView>(`/admin/registrations/${id}/decline`, { note }),
+    remove: (id: string) => m.del<{ ok: true }>(`/admin/registrations/${id}`),
+  },
   auth: authApi(adminSession),
   me: () => a.get<{ staff: StaffMember; permissions: Permission[]; roles: RoleInfo[] }>('/admin/me'),
   dashboard: () => a.get<Dashboard>('/admin/dashboard'),
