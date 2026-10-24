@@ -40,7 +40,7 @@ export function OutreachPage() {
       />
       <div className="card card-pad stack" style={{ gap: 10, marginBottom: 16 }}>
         <div className="row between wrap" style={{ gap: 8 }}>
-          <b>{d.givers} {d.givers === 1 ? 'member gives' : 'members give'} their skills to the neighbourhood</b>
+          <b>{d.givers === 0 ? 'No members have offered their skills yet' : `${d.givers} ${d.givers === 1 ? 'member gives' : 'members give'} their skills to the neighbourhood`}</b>
           {d.helped > 0 && <span className="badge green">{d.helped.toLocaleString('en-IN')} people helped so far</span>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
@@ -52,7 +52,7 @@ export function OutreachPage() {
             </div>
           ))}
         </div>
-        {d.givers === 0 && <span className="small muted">Members add their skills in the app under Help our neighbourhood. You can also share this page's idea in a notice: "Doctor, teacher, lawyer? Give two hours a month."</span>}
+        {d.givers === 0 && <span className="small muted">Members add their skills in the member app under Help our neighbourhood. To get started, put a notice in the bulletin, for example: "Doctor, teacher, lawyer? Give two hours a month."</span>}
       </div>
       <h3 style={{ margin: '0 0 8px' }}>Coming up</h3>
       {!upcoming.length ? <Empty title="No outreach planned" body="Start with one: a free health check-up after the Sunday service, or a tuition evening in the church hall." action={<button className="btn primary" onClick={() => setPlanning('new')}><Plus size={15} /> Plan an outreach</button>} /> : (
