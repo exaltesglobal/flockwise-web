@@ -10,7 +10,7 @@ import type { BankLineInput } from '@/core/bank-presets';
 import type { SafeguardCheck, SafeguardHub, SafeguardPersonView, SafeguardSettings } from '@/core/types';
 import type { CanvaExportFormat, CanvaExportResult } from '@/core/types';
 import type { MorningCallOutcome, MorningListView } from '@/core/types';
-import type { BibleBookInfo, BibleChapter, BibleTranslationInfo } from '@/core/types';
+import type { BibleBookInfo, BibleChapter, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
 import type { PublicRegistrationForm, RegistrationMember, RegistrationSettings, RegistrationView, RegistrationsHub } from '@/core/types';
 import type { LibraryBook, LibraryHub, MyLibrary } from '@/core/types';
 import type { MySkills, SkillsHub } from '@/core/types';
@@ -252,6 +252,8 @@ function authApi(store: SessionStore) {
 const m = createApi(memberSession);
 
 export const MemberApi = {
+  bibleMarks: (book?: string, chapter?: number) => m.get<BibleMark[]>(`/me/bible/marks${qs({ book, chapter: chapter ? String(chapter) : undefined })}`),
+  bibleMark: (book: string, chapter: number, verse: number, patch: { color?: BibleMarkColor | null; bookmark?: boolean; note?: string }) => m.put<{ mark: BibleMark | null }>(`/me/bible/marks/${book}/${chapter}/${verse}`, patch),
   auth: authApi(memberSession),
   me: {
     get: () => m.get<Member>('/me'),

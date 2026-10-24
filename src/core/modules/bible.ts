@@ -7,7 +7,7 @@ import { BOOKS } from '../bible.js';
 import { BOOK_CODES, bookIndex, chapterUrl, FEATURED_BIBLES, indexUrl, parseEbibleChapter, parseEbibleIndex, parseReference } from '../bible-texts.js';
 import type { Ctx, Router } from '../engine.js';
 import { ApiError } from '../errors.js';
-import type { BibleBookInfo, BibleChapter, BiblePassage, BibleTranslationInfo } from '../types.js';
+import type { BibleBookInfo, BibleChapter, BibleMark, BibleMarkColor, BiblePassage, BibleTranslationInfo } from '../types.js';
 
 /** The two translations the projector offered before the reader; old saved choices map onto eBible.org. */
 const LEGACY: Record<string, string> = { kjv: 'eng-kjv2006', web: 'engwebp' };
@@ -123,7 +123,36 @@ export async function lookupPassage(ctx: Ctx, ref: string, tr: Translation = 'kj
 /** One verse per paragraph, so each verse gets its own slide. */
 export const passageText = (p: BiblePassage) => p.verses.map((v) => `${v.verse} ${v.text}`).join('\n\n');
 
+const COLORS: BibleMarkColor[] = ['yellow', 'green', 'blue', 'pink', 'orange'];
+const markId = (personId: string, book: string, chapter: number, verse: number) => `bm_${personId}_${book}_${chapter}_${verse}`;
+
+/** Saves a member's highlight, bookmark and note on one verse; clearing all three removes it. */
+function saveMark(ctx: Ctx, book: string, chapter: number, verse: number): BibleMark | null {
+  const i = bookIndex(book);
+  if (i < 0 || !Number.isInteger(chapter) || chapter < 1 || chapter > BOOKS[i].chapters + 1 || !Number.isInteger(verse) || verse < 1 || verse > 200) throw new ApiError(422, 'invalid', 'That verse is not in the Bible.');
+  const me = ctx.me();
+  const id = markId(me, BOOK_CODES[i], chapter, verse);
+  const old = ctx.db.get('bibleMarks', id);
+  const b = ctx.body as { color?: unknown; bookmark?: unknown; note?: unknown };
+  const color = b.color === undefined ? old?.color ?? null : COLORS.includes(b.color as BibleMarkColor) ? (b.color as BibleMarkColor) : null;
+  const bookmark = b.bookmark === undefined ? old?.bookmark ?? false : !!b.bookmark;
+  const note = b.note === undefined ? old?.note ?? '' : String(b.note ?? '').trim().slice(0, 4000);
+  if (!color && !bookmark && !note) { if (old) ctx.db.del('bibleMarks', id); return null; }
+  const mark: BibleMark = { id, personId: me, book: BOOK_CODES[i], chapter, verse, color, bookmark, note, updatedAt: ctx.now.toISOString() };
+  ctx.db.put('bibleMarks', mark);
+  return mark;
+}
+
 export function registerBible(r: Router) {
+  r.get('/me/bible/marks', {}, (ctx) => {
+    const book = ctx.query.book ? String(ctx.query.book).toUpperCase() : null;
+    const chapter = ctx.query.chapter ? Number(ctx.query.chapter) : null;
+    const me = ctx.me();
+    return ctx.db.all('bibleMarks').filter((m) => m.personId === me && (!book || m.book === book) && (!chapter || m.chapter === chapter))
+      .sort((a, b) => (book ? a.verse - b.verse : b.updatedAt.localeCompare(a.updatedAt))).slice(0, 1000);
+  });
+  r.put('/me/bible/marks/:book/:chapter/:verse', {}, (ctx) => ({ mark: saveMark(ctx, ctx.params[0].toUpperCase(), Number(ctx.params[1]), Number(ctx.params[2])) }));
+
   r.get('/public/bible/translations', { public: true }, (ctx) => ({ featured: FEATURED_BIBLES.map((t) => t.id), translations: bibleList(ctx) }));
   r.get('/public/bible/:tr/books', { public: true }, (ctx) => bibleBooks(ctx, decodeURIComponent(ctx.params[0])));
   r.get('/public/bible/:tr/:book/:chapter', { public: true }, (ctx) => bibleChapter(ctx, decodeURIComponent(ctx.params[0]), ctx.params[1], Number(ctx.params[2])));

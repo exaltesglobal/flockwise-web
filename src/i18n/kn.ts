@@ -677,6 +677,14 @@ export const kn: Strings = {
   bibleRefHint: 'ಹೋಗಿ, ಉದಾ. ಯೋಹಾನ 3:16',
   bibleNtOnly: 'ಹೊಸ ಒಡಂಬಡಿಕೆ ಮಾತ್ರ',
   bibleReadHere: 'ಇಲ್ಲೇ ಓದಿ',
+  bibleMarks: 'ನನ್ನ ಟಿಪ್ಪಣಿಗಳು',
+  bibleBookmark: 'ಬುಕ್\u200cಮಾರ್ಕ್',
+  bibleNote: 'ಟಿಪ್ಪಣಿ',
+  bibleNoteHint: 'ಈ ವಚನದ ಮೇಲೆ ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ. ನಿಮಗೆ ಮಾತ್ರ ಕಾಣುತ್ತದೆ.',
+  bibleSave: 'ಉಳಿಸಿ',
+  bibleSaved: 'ಉಳಿಸಲಾಗಿದೆ',
+  bibleMarksNone: 'ವಚನವನ್ನು ಸ್ಪರ್ಶಿಸಿ ಹೈಲೈಟ್ ಮಾಡಿ, ಬುಕ್\u200cಮಾರ್ಕ್ ಮಾಡಿ ಅಥವಾ ಟಿಪ್ಪಣಿ ಬರೆಯಿರಿ.',
+  bibleAllMarks: 'ಎಲ್ಲಾ',
 };
 
 export default kn;

@@ -677,6 +677,14 @@ export const te: Strings = {
   bibleRefHint: 'వెళ్ళండి, ఉదా. యోహాను 3:16',
   bibleNtOnly: 'కొత్త నిబంధన మాత్రమే',
   bibleReadHere: 'ఇక్కడే చదవండి',
+  bibleMarks: 'నా నోట్స్',
+  bibleBookmark: 'బుక్\u200cమార్క్',
+  bibleNote: 'నోట్',
+  bibleNoteHint: 'ఈ వచనంపై నోట్ రాయండి. మీకు మాత్రమే కనిపిస్తుంది.',
+  bibleSave: 'సేవ్',
+  bibleSaved: 'సేవ్ అయింది',
+  bibleMarksNone: 'వచనాన్ని తాకి హైలైట్ చేయండి, బుక్\u200cమార్క్ చేయండి లేదా నోట్ రాయండి.',
+  bibleAllMarks: 'అన్నీ',
 };
 
 export default te;

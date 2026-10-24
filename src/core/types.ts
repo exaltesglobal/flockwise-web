@@ -1205,6 +1205,9 @@ export type BibleTranslationInfo = { id: string; lang: string; language: string;
 /** One verse in the reader. Poetry lines are split by "\n"; `heading` is the section heading above it; `para` starts a paragraph. */
 export type BibleVerse = { n: number; text: string; label?: string; heading?: string; para?: boolean; poetry?: boolean };
 export type BibleChapterNote = { verse: number; text: string };
+export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
+/** A member's own highlight, bookmark or note on one verse. Private to them; not in the office export. */
+export type BibleMark = { id: string; personId: string; book: string; chapter: number; verse: number; color: BibleMarkColor | null; bookmark: boolean; note: string; updatedAt: string };
 export type BibleBookInfo = { code: string; name: string; en: string; chapters: number; testament: 'ot' | 'nt' };
 export type BibleChapter = {
   translation: BibleTranslationInfo; book: string; bookName: string; en: string; chapter: number;
@@ -1713,6 +1716,7 @@ export type Collections = {
   camps: Camp;
   campSignups: CampSignup;
   registrations: Registration;
+  bibleMarks: BibleMark;
   captions: CaptionsLog;
   ballots: Ballot;
   ballotStubs: BallotStub;
@@ -1811,7 +1815,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

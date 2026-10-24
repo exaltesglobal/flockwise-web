@@ -674,6 +674,14 @@ export const en = {
   bibleRefHint: 'Go to, e.g. John 3:16',
   bibleNtOnly: 'New Testament only',
   bibleReadHere: 'Read it here',
+  bibleMarks: 'My notes',
+  bibleBookmark: 'Bookmark',
+  bibleNote: 'Note',
+  bibleNoteHint: 'Write a note on this verse. Only you can see it.',
+  bibleSave: 'Save',
+  bibleSaved: 'Saved',
+  bibleMarksNone: 'Tap a verse to highlight it, bookmark it or write a note.',
+  bibleAllMarks: 'All',
 };
 
 export type Strings = typeof en;

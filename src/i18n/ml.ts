@@ -677,6 +677,14 @@ export const ml: Strings = {
   bibleRefHint: 'പോകുക, ഉദാ. യോഹന്നാൻ 3:16',
   bibleNtOnly: 'പുതിയ നിയമം മാത്രം',
   bibleReadHere: 'ഇവിടെ വായിക്കുക',
+  bibleMarks: 'എന്റെ കുറിപ്പുകൾ',
+  bibleBookmark: 'ബുക്ക്മാർക്ക്',
+  bibleNote: 'കുറിപ്പ്',
+  bibleNoteHint: 'ഈ വാക്യത്തിൽ ഒരു കുറിപ്പ് എഴുതുക. നിങ്ങൾക്ക് മാത്രമേ കാണാനാകൂ.',
+  bibleSave: 'സേവ് ചെയ്യുക',
+  bibleSaved: 'സേവ് ചെയ്തു',
+  bibleMarksNone: 'ഒരു വാക്യം തൊട്ട് ഹൈലൈറ്റ് ചെയ്യുക, ബുക്ക്മാർക്ക് ചെയ്യുക അല്ലെങ്കിൽ കുറിപ്പ് എഴുതുക.',
+  bibleAllMarks: 'എല്ലാം',
 };
 
 export default ml;

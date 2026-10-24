@@ -179,3 +179,9 @@ input.switch:checked::after { transform: translateX(18px); }
   .bib-hide-sm { display: none; }
 }
 @media (min-width: 900px) { .bib-actions { bottom: 24px; } }
+.bib-icons { display: inline-flex; gap: 2px; color: var(--primary); margin-inline-end: 3px; vertical-align: 0.1em; }
+.hl-yellow { --hl: #f6d74a; } .hl-green { --hl: #6fcf7f; } .hl-blue { --hl: #6fb3f2; } .hl-pink { --hl: #f28ab8; } .hl-orange { --hl: #f5a25a; }
+.bib-v[class*='hl-'], .bib-cols[class*='hl-'] .bib-v, .bib-tr[class*='hl-'] { background: color-mix(in srgb, var(--hl) 38%, transparent); }
+.bib-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; background: var(--hl); cursor: pointer; padding: 0; }
+.bib-dot.on { border-color: var(--text); }
+.bib-v.on { outline: 2px solid color-mix(in srgb, var(--primary) 60%, transparent); outline-offset: 1px; }

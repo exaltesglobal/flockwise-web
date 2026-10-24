@@ -677,6 +677,14 @@ export const hi: Strings = {
   bibleRefHint: 'जाएँ, जैसे यूहन्ना 3:16',
   bibleNtOnly: 'केवल नया नियम',
   bibleReadHere: 'यहीं पढ़ें',
+  bibleMarks: 'मेरे नोट्स',
+  bibleBookmark: 'बुकमार्क',
+  bibleNote: 'नोट',
+  bibleNoteHint: 'इस पद पर नोट लिखें। केवल आप इसे देख सकते हैं।',
+  bibleSave: 'सहेजें',
+  bibleSaved: 'सहेजा गया',
+  bibleMarksNone: 'किसी पद पर टैप करके उसे हाइलाइट करें, बुकमार्क करें या नोट लिखें।',
+  bibleAllMarks: 'सभी',
 };
 
 export default hi;

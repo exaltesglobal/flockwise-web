@@ -677,6 +677,14 @@ export const ta: Strings = {
   bibleRefHint: 'செல்ல, உதா. யோவான் 3:16',
   bibleNtOnly: 'புதிய ஏற்பாடு மட்டும்',
   bibleReadHere: 'இங்கேயே வாசியுங்கள்',
+  bibleMarks: 'என் குறிப்புகள்',
+  bibleBookmark: 'புத்தகக்குறி',
+  bibleNote: 'குறிப்பு',
+  bibleNoteHint: 'இந்த வசனத்தில் குறிப்பு எழுதுங்கள். உங்களுக்கு மட்டுமே தெரியும்.',
+  bibleSave: 'சேமி',
+  bibleSaved: 'சேமிக்கப்பட்டது',
+  bibleMarksNone: 'வசனத்தைத் தொட்டு வண்ணமிடுங்கள், குறியிடுங்கள் அல்லது குறிப்பு எழுதுங்கள்.',
+  bibleAllMarks: 'அனைத்தும்',
 };
 
 export default ta;
