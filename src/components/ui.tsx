@@ -55,7 +55,7 @@ export function ErrorState({ error, onRetry }: { error: ApiError; onRetry?: () =
         <h3 style={{ color: 'var(--text)' }}>{errorTitle(error)}</h3>
         <p className="small">{error.message}</p>
       </div>
-      {onRetry && (
+      {onRetry && ![401, 402, 403, 404].includes(error.status) && error.code !== 'offline' && (
         <button className="btn" onClick={onRetry}>
           Try again
         </button>
