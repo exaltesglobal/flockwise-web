@@ -1355,3 +1355,19 @@ All need the services or comms permission.
 **Study helper.** `POST /admin/ai/study { passage, translation?, question, history? }` (services or comms; counts against the AI allowance) answers a question about the passage with the verses it rests on: `{ answer (Markdown), refs: string[] }`. `history` is the earlier `{ role, content }` turns, last six kept.
 
 **Preparing together.** `POST /admin/sermon-prep/:id/share { staffIds, message? }` asks other staff for feedback (notification `sermon.feedback`, and email for staff without a person record), linking to `/admin/sermon-prep?open={id}`. `POST /admin/sermon-prep/:id/comments { text, pointId? }` adds a comment (`comments` on the prep: `{ id, by, staffId, text, pointId, at, resolved }`) and tells the preacher; `PUT …/comments/:cid { resolved }`; `DELETE …/comments/:cid` (only its writer). Copies start without comments or kits.
+
+## Leaders: meetings, leadership pipeline, counselling notes
+
+Meetings (permission `care`, feature `meetings`):
+- `GET /admin/meetings` → `{ meetings, actions }` (newest first; `actions` = every open action item).
+- `POST /admin/meetings` `{ kind, title?, date, time?, place?, attendeeIds?, agenda? }`. Without `attendeeIds`, the people from the last meeting of that kind are copied.
+- `GET|PUT|DELETE /admin/meetings/:id`. PUT takes any of `agenda [{id?, title, minutes, notes}]`, `minutes`, `decisions [string]`, `actions [{id?, text, ownerId, due, done}]`, `apologyIds`, `status`.
+- Each meeting view has `carried`: open actions from earlier meetings of the same kind.
+- `PUT /admin/meetings/:id/actions/:aid` `{ done }`.
+- `POST /admin/meetings/:id/send` `{ what: 'agenda' | 'minutes' }` notifies the attendees (`meeting.agenda` / `meeting.minutes`); sending minutes marks it held. The day before an action is due its owner gets `meeting.action`.
+
+Leadership pipeline (feature `leader-pipeline`): `GET /admin/leader-pipeline` → `{ tracks, counts, suggestions, defaultSteps }`; `POST` `{ personId, aim, stage?, mentorId?, steps? }`; `PUT|DELETE /admin/leader-pipeline/:id`. Stages: spotted, training, apprentice, ready, leading.
+
+Counselling notes (feature `counselling`): encrypted in the browser (PBKDF2-SHA256 → AES-GCM) with the pastor's passphrase; the server stores only base64 ciphertext and each staff login sees only its own notes, whatever its role.
+- `GET /admin/counsel/key` → `{ salt, iv, check } | null`; `PUT /admin/counsel/key` `{ salt, iv, check, reset? }` (reset removes the old notes).
+- `GET|POST /admin/counsel/notes`, `PUT|DELETE /admin/counsel/notes/:id` with `{ iv, data, followUp? }`. Follow-ups send `counsel.followup` without saying who it is about. Not included in exports.

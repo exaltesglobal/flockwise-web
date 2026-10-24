@@ -785,3 +785,39 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 .sp-study summary::-webkit-details-marker { display: none; }
 .sp-comment { border-left: 3px solid var(--primary); padding: 4px 0 4px 10px; display: grid; gap: 2px; }
 .sp-comment.done { border-left-color: var(--border); opacity: 0.65; }
+
+/* Meetings & minutes */
+.mt-actions { display: flex; flex-direction: column; gap: 2px; }
+.mt-action { display: flex; align-items: flex-start; gap: 10px; padding: 6px 4px; border-radius: 8px; cursor: pointer; }
+.mt-action:hover { background: var(--tint); }
+.mt-action input[type=checkbox] { margin-top: 3px; }
+.mt-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; }
+.mt-grid > :last-child { grid-column: 1 / -1; }
+@media (max-width: 700px) { .mt-grid { grid-template-columns: 1fr 1fr; } .mt-grid > :first-child { grid-column: 1 / -1; } }
+.mt-agenda { display: flex; gap: 10px; align-items: flex-start; }
+.mt-num { width: 24px; height: 24px; border-radius: 50%; background: var(--tint); color: var(--primary); display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; margin-top: 6px; }
+.mt-action-edit { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mt-action-edit > .grow { min-width: 180px; }
+.mt-owner { width: 200px; max-width: 100%; }
+.mt-carried { background: var(--warn-tint); }
+.mt-chip-name, .mt-chip-x { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.mt-chip-x { margin-left: 6px; display: inline-flex; opacity: .6; }
+.chip:has(.mt-chip-name) { display: inline-flex; align-items: center; padding: 4px 10px; }
+
+/* Leadership pipeline */
+.lp-board { display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.lp-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.lp-col > header { padding: 0 2px 4px; }
+@media (max-width: 700px) { .lp-board { grid-template-columns: 1fr; overflow: visible; } }
+.lp-card { display: flex; flex-direction: column; gap: 4px; padding: 12px; text-align: left; border: 1px solid var(--border); cursor: pointer; font: inherit; color: inherit; background: var(--card); }
+.lp-card:hover { border-color: var(--primary); }
+.lp-bar { height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; margin: 4px 0 2px; }
+.lp-bar > span { display: block; height: 100%; background: var(--primary); }
+.lp-stages { display: flex; flex-wrap: wrap; gap: 6px; }
+.lp-stages .chip { cursor: pointer; padding: 5px 12px; border: 0; font: inherit; }
+
+/* Counselling notes */
+.cn-lock { max-width: 440px; margin: 24px auto; align-items: stretch; text-align: left; }
+.cn-lock-icon { color: var(--primary); }
+.cn-note { display: flex; flex-direction: column; gap: 4px; text-align: left; border: 1px solid var(--border); font: inherit; color: inherit; cursor: pointer; background: var(--card); }
+.cn-snippet { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

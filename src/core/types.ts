@@ -1222,6 +1222,72 @@ export type SermonPoint = { id: string; heading: string; body: string; refs: str
 export type SermonPrepStatus = 'draft' | 'ready' | 'preached';
 /** A note on a sermon draft from someone helping prepare it; `pointId` ties it to one point. */
 export type SermonComment = { id: string; by: string; staffId: string | null; text: string; pointId: string | null; at: string; resolved: boolean };
+
+// ----- Leaders: meetings and minutes, the leadership pipeline, private counselling notes -----
+export type MeetingKind = 'elders' | 'deacons' | 'committee' | 'staff' | 'ministry' | 'other';
+export type MeetingAgendaItem = { id: string; title: string; minutes: number; notes: string };
+export type MeetingAction = { id: string; text: string; ownerId: string | null; due: string | null; doneAt: string | null };
+export type Meeting = {
+  id: string;
+  title: string;
+  kind: MeetingKind;
+  date: string;
+  time: string;
+  place: string;
+  /** People (not logins): elders and committee members are people in the church. */
+  attendeeIds: string[];
+  apologyIds: string[];
+  agenda: MeetingAgendaItem[];
+  /** Free notes taken during the meeting. */
+  minutes: string;
+  decisions: string[];
+  actions: MeetingAction[];
+  status: 'planned' | 'held';
+  agendaSentAt: string | null;
+  minutesSentAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
+export type OpenMeetingAction = MeetingAction & { meetingId: string; meetingTitle: string; meetingDate: string; ownerName: string | null; overdue: boolean };
+export type MeetingView = Meeting & {
+  attendees: { id: string; name: string }[];
+  apologies: { id: string; name: string }[];
+  openActions: number;
+  /** Actions still open from earlier meetings of the same kind, to review first. */
+  carried: OpenMeetingAction[];
+};
+export type MeetingsHub = { meetings: MeetingView[]; actions: OpenMeetingAction[] };
+
+export type LeaderStage = 'spotted' | 'training' | 'apprentice' | 'ready' | 'leading';
+export type LeaderStep = { id: string; title: string; doneOn: string | null };
+export type LeaderTrack = {
+  id: string;
+  personId: string;
+  /** What they are growing into, like "Cell group leader". */
+  aim: string;
+  stage: LeaderStage;
+  mentorId: string | null;
+  steps: LeaderStep[];
+  notes: string;
+  startedOn: string;
+  stageSince: string;
+  createdAt: string;
+  updatedAt: string;
+};
+export type LeaderTrackView = LeaderTrack & { name: string; phone: string | null; mentorName: string | null; done: number; leads: string[]; daysInStage: number };
+export type LeaderPipeline = {
+  tracks: LeaderTrackView[];
+  counts: Record<LeaderStage, number>;
+  /** People who may be ready to start: in a leadership mentoring pair, or helping lead a group, and not on the pipeline yet. */
+  suggestions: { personId: string; name: string; reason: string }[];
+  defaultSteps: string[];
+};
+
+/** A counselling note, encrypted in the pastor's browser with their passphrase. The server only keeps ciphertext. */
+export type CounselNote = { id: string; staffId: string; iv: string; data: string; followUp: string | null; followUpNotified: string | null; createdAt: string; updatedAt: string };
+/** Per pastor: the salt for the passphrase and a known text encrypted with it, to check the passphrase. */
+export type CounselKey = { id: string; staffId: string; salt: string; iv: string; check: string; createdAt: string };
 /** One Greek or Hebrew word behind a verse (STEPBible.org, CC BY). */
 export type BibleWord = { word: string; translit: string; gloss: string; strong: string; grammar: string; parsing: string };
 export type BibleWords = { book: string; chapter: number; verse: number; language: 'greek' | 'hebrew'; words: BibleWord[]; source: string };
@@ -1528,7 +1594,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1798,6 +1864,10 @@ export type Collections = {
   sermonSeries: SermonSeries;
   illustrations: Illustration;
   sermonFills: SermonFill;
+  meetings: Meeting;
+  leaderTracks: LeaderTrack;
+  counselNotes: CounselNote;
+  counselKeys: CounselKey;
   captions: CaptionsLog;
   ballots: Ballot;
   ballotStubs: BallotStub;
@@ -1896,7 +1966,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];

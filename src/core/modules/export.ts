@@ -5,7 +5,7 @@ import { KINDS, type ExportBundle, type ExportFile, type ExportSummary, type Kin
 import { church } from '../util.js';
 
 /** Never exported: members' private Bible notes, credentials, sessions, sealed keys, device tokens, secret ballots and the WhatsApp bot's scratch space. */
-const PRIVATE: Kind[] = ['bibleMarks', 'sermonFills', 'otps', 'refreshTokens', 'teamLogins', 'devices', 'apiKeys', 'integrations', 'kycFiles', 'meta', 'ballots', 'ballotStubs', 'botMessages', 'live', 'presentations', 'captions', 'streamViews', 'media', 'canvaDesigns', 'calendarFeeds', 'greetingLinks', 'settings', 'automations'];
+const PRIVATE: Kind[] = ['bibleMarks', 'sermonFills', 'counselNotes', 'counselKeys', 'otps', 'refreshTokens', 'teamLogins', 'devices', 'apiKeys', 'integrations', 'kycFiles', 'meta', 'ballots', 'ballotStubs', 'botMessages', 'live', 'presentations', 'captions', 'streamViews', 'media', 'canvaDesigns', 'calendarFeeds', 'greetingLinks', 'settings', 'automations'];
 
 /** The files most churches actually open, with names people recognise. */
 const FRIENDLY: Partial<Record<Kind, string>> = {

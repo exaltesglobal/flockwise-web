@@ -1,4 +1,4 @@
-import { Armchair, NotebookPen, BarChart3, BookMarked, Clapperboard, Video, BookOpen, BookOpenCheck, CookingPot, Cake, Car, ChevronDown, Search, ShieldCheck, GraduationCap, Hourglass, Footprints, Library, Church, Handshake, Tent, UserPlus, Sunrise, CalendarDays, CalendarRange, ClipboardList, FileSpreadsheet, FileText, Filter, GitBranch, Gift, Globe, HandCoins, HandHeart, HeartHandshake, Images, KeyRound, Landmark, LayoutDashboard, LogOut, MapPin, Megaphone, Menu, MessageSquare, MicVocal, MessagesSquare, Music2, Newspaper, PhoneMissed, Radio, Scale, ScanLine, School, Settings, Sparkles, Upload, Users, UsersRound, Vote, Wheat, X } from 'lucide-react';
+import { Armchair, BarChart3, BookMarked, BookOpen, BookOpenCheck, Cake, CalendarDays, CalendarRange, Car, ChevronDown, Church, Clapperboard, ClipboardList, CookingPot, FileSpreadsheet, FileText, Filter, Footprints, Gift, GitBranch, Globe, GraduationCap, HandCoins, HandHeart, Handshake, HeartHandshake, Hourglass, Images, KeyRound, Landmark, LayoutDashboard, Library, LogOut, MapPin, Megaphone, Menu, MessageSquare, MessagesSquare, MicVocal, Music2, Newspaper, NotebookPen, PhoneMissed, Radio, Scale, ScanLine, School, Search, Settings, ShieldCheck, Sparkles, Sprout, Sunrise, Tent, Upload, UserPlus, Users, UsersRound, Video, Vote, Wheat, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router';
 
@@ -61,9 +61,12 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
         { to: '/admin/vigils', label: 'Prayer vigils', icon: Hourglass, perm: ['care'], feature: 'vigils' },
         { to: '/admin/benevolence', label: 'Benevolence', icon: HandCoins, perm: ['care'], feature: 'benevolence' },
         { to: '/admin/occasions', label: 'Weddings & funerals', icon: Church, perm: ['care', 'people.view'], feature: 'occasions' },
+        { to: '/admin/counselling', label: 'Counselling notes', icon: NotebookPen, perm: ['care'], feature: 'counselling' },
+        { to: '/admin/meetings', label: 'Meetings & minutes', icon: ClipboardList, perm: ['care'], feature: 'meetings' },
       ] },
       { label: 'Grow', icon: GraduationCap, pages: [
         { to: '/admin/discipleship', label: 'Discipleship', icon: Footprints, perm: ['care', 'people.view'], feature: 'discipleship' },
+        { to: '/admin/leader-pipeline', label: 'Leadership pipeline', icon: Sprout, perm: ['care', 'people.view'], feature: 'leader-pipeline' },
         { to: '/admin/courses', label: 'Classes & courses', icon: GraduationCap, perm: ['people.view'], feature: 'courses' },
         { to: '/admin/library', label: 'Library', icon: Library, perm: ['people.view'], feature: 'library' },
         { to: '/admin/skills', label: 'Skills & board', icon: Handshake, perm: ['people.view', 'volunteers'], feature: 'skills' },

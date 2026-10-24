@@ -94,6 +94,9 @@ import { SafeguardingPage } from '@/admin/pages/safeguarding';
 import { CoursesPage } from '@/admin/pages/courses';
 import { VigilsPage } from '@/admin/pages/vigils';
 import { DiscipleshipPage } from '@/admin/pages/discipleship';
+import { CounsellingPage } from '@/admin/pages/counselling';
+import { LeaderPipelinePage } from '@/admin/pages/leader-pipeline';
+import { MeetingsPage } from '@/admin/pages/meetings';
 import { LibraryPage } from '@/admin/pages/library';
 import { MemberLibraryPage } from '@/member/pages/library';
 import { OccasionsPage } from '@/admin/pages/occasions';
@@ -172,6 +175,9 @@ const routes = [
       { path: 'courses', element: <CoursesPage /> },
       { path: 'vigils', element: <VigilsPage /> },
       { path: 'discipleship', element: <DiscipleshipPage /> },
+      { path: 'leader-pipeline', element: <LeaderPipelinePage /> },
+      { path: 'meetings', element: <MeetingsPage /> },
+      { path: 'counselling', element: <CounsellingPage /> },
       { path: 'library', element: <LibraryPage /> },
       { path: 'occasions', element: <OccasionsPage /> },
       { path: 'skills', element: <SkillsPage /> },
