@@ -697,6 +697,10 @@ export const en = {
   liveVerseOpen: "Open in my Bible",
   liveVerseMore: "Show all",
   liveVerseLess: "Show less",
+  bibleWordStudy: "Word study",
+  bibleWordUses: "Used in {count} verses",
+  bibleWordBack: "Back to the verse",
+  bibleWordNone: "No Greek or Hebrew words for this verse.",
 };
 
 export type Strings = typeof en;

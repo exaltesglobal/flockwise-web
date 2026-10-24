@@ -700,6 +700,10 @@ export const kn: Strings = {
   liveVerseOpen: "ನನ್ನ ಬೈಬಲ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ",
   liveVerseMore: "ಎಲ್ಲವನ್ನೂ ತೋರಿಸಿ",
   liveVerseLess: "ಕಡಿಮೆ ತೋರಿಸಿ",
+  bibleWordStudy: "ಪದ ಅಧ್ಯಯನ",
+  bibleWordUses: "{count} ವಚನಗಳಲ್ಲಿ ಬಳಸಲಾಗಿದೆ",
+  bibleWordBack: "ವಚನಕ್ಕೆ ಹಿಂತಿರುಗಿ",
+  bibleWordNone: "ಈ ವಚನಕ್ಕೆ ಗ್ರೀಕ್ ಅಥವಾ ಹೀಬ್ರೂ ಪದಗಳಿಲ್ಲ.",
 };
 
 export default kn;

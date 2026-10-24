@@ -700,6 +700,10 @@ export const hi: Strings = {
   liveVerseOpen: "मेरी बाइबल में खोलें",
   liveVerseMore: "पूरा दिखाएँ",
   liveVerseLess: "कम दिखाएँ",
+  bibleWordStudy: "शब्द अध्ययन",
+  bibleWordUses: "{count} पदों में प्रयुक्त",
+  bibleWordBack: "पद पर वापस",
+  bibleWordNone: "इस पद के लिए यूनानी या इब्रानी शब्द नहीं।",
 };
 
 export default hi;

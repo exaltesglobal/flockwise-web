@@ -1317,3 +1317,10 @@ When the screen shows a reading whose title is a Bible reference (plan readings 
 
 - `GET /me/live-verse?tr=` (signed-in member) returns `{live: null}` or `{live: {eventTitle, reference, book, chapter, verse, passage: {reference, translation, verses} | null, at}}` for the service whose presentation changed in the last three hours.
 - The presentation view has `phoneVerse` (what phones show now). Presenter action `{action: 'phones', on}` turns it off and on for the service.
+
+## Word study (public)
+
+Greek and Hebrew behind every verse, from STEPBible.org's open data (CC BY 4.0) shipped in `data/interlinear/*.tsv.gz` (rebuild with `node scripts/build-interlinear.mjs`). Verse numbers follow English Bibles.
+
+- `GET /public/bible/words/:book/:chapter/:verse` returns `{book, chapter, verse, language: greek|hebrew, words: [{word, translit, gloss, strong, grammar, parsing}], source}`. `parsing` is the grammar in plain English ("Verb · aorist active indicative · 3rd person singular").
+- `GET /public/bible/strongs/:id` (G25, G0025, H7462B…) returns `{entry: {strong, lemma, translit, gloss, definition, language}, total, uses: [{book, chapter, verse, gloss}] (first 300), books: [{book, count}], source}`.

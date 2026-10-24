@@ -700,6 +700,10 @@ export const te: Strings = {
   liveVerseOpen: "నా బైబిల్‌లో తెరవండి",
   liveVerseMore: "అంతా చూపించు",
   liveVerseLess: "తక్కువ చూపించు",
+  bibleWordStudy: "పద అధ్యయనం",
+  bibleWordUses: "{count} వచనాల్లో వాడబడింది",
+  bibleWordBack: "వచనానికి తిరిగి",
+  bibleWordNone: "ఈ వచనానికి గ్రీకు లేదా హీబ్రూ పదాలు లేవు.",
 };
 
 export default te;

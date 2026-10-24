@@ -1211,6 +1211,12 @@ export type BibleMarkColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
 /** One main point of a sermon outline, with its verses and the minutes planned for it. */
 export type SermonPoint = { id: string; heading: string; body: string; refs: string[]; minutes: number };
 export type SermonPrepStatus = 'draft' | 'ready' | 'preached';
+/** One Greek or Hebrew word behind a verse (STEPBible.org, CC BY). */
+export type BibleWord = { word: string; translit: string; gloss: string; strong: string; grammar: string; parsing: string };
+export type BibleWords = { book: string; chapter: number; verse: number; language: 'greek' | 'hebrew'; words: BibleWord[]; source: string };
+/** A Strong's dictionary entry and every verse that uses the word. */
+export type StrongsEntry = { strong: string; lemma: string; translit: string; gloss: string; definition: string; language: 'greek' | 'hebrew' };
+export type StrongsStudy = { entry: StrongsEntry; total: number; uses: { book: string; chapter: number; verse: number; gloss: string }[]; books: { book: string; count: number }[]; source: string };
 /** The scripture on the church's screen right now, for members following on their phones. */
 export type LiveVerse = { eventTitle: string; reference: string; book: string; chapter: number; verse: number | null; passage: BiblePassage | null; at: string };
 export type SermonPrep = {

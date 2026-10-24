@@ -700,6 +700,10 @@ export const ta: Strings = {
   liveVerseOpen: "என் வேதாகமத்தில் திற",
   liveVerseMore: "முழுவதும் காட்டு",
   liveVerseLess: "குறைவாகக் காட்டு",
+  bibleWordStudy: "சொல் ஆய்வு",
+  bibleWordUses: "{count} வசனங்களில் வருகிறது",
+  bibleWordBack: "வசனத்திற்குத் திரும்பு",
+  bibleWordNone: "இந்த வசனத்திற்கு கிரேக்க அல்லது எபிரெய சொற்கள் இல்லை.",
 };
 
 export default ta;

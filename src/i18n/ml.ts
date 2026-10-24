@@ -700,6 +700,10 @@ export const ml: Strings = {
   liveVerseOpen: "എന്റെ ബൈബിളിൽ തുറക്കുക",
   liveVerseMore: "മുഴുവൻ കാണിക്കുക",
   liveVerseLess: "കുറച്ച് കാണിക്കുക",
+  bibleWordStudy: "പദപഠനം",
+  bibleWordUses: "{count} വാക്യങ്ങളിൽ ഉപയോഗിച്ചു",
+  bibleWordBack: "വാക്യത്തിലേക്ക് മടങ്ങുക",
+  bibleWordNone: "ഈ വാക്യത്തിന് ഗ്രീക്ക് അല്ലെങ്കിൽ എബ്രായ വാക്കുകളില്ല.",
 };
 
 export default ml;
