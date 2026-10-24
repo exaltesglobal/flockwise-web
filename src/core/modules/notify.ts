@@ -54,6 +54,7 @@ export const CATALOG: Record<NotificationKind, Entry> = {
   'hospital.checkin': { label: 'Home from hospital', description: 'Two days after someone is discharged, a short message to them asking how they are.', audience: 'The person who was in hospital', rule: { email: false, push: true, whatsapp: true } },
   'move.new': { label: 'A member is moving', description: 'A member says in the app that they are moving to another city, or a church introduces someone moving to yours.', audience: 'Pastors and care team', rule: { email: true, push: true, whatsapp: false } },
   'grief.nudge': { label: 'Grief anniversary coming up', description: 'A few days before the yearly anniversary of a death (and 40 days after it), a reminder to call or visit the family.', audience: 'Pastoral care team', rule: { email: true, push: true, whatsapp: false } },
+  'altar.week': { label: 'Family altar for the week', description: 'Monday: this week’s ten-minute family devotion is ready.', audience: 'Families', rule: { email: false, push: true, whatsapp: false } },
   'devotion.today': { label: "Leaders' devotional", description: "Each morning when the day's devotional for the leadership team is ready.", audience: 'Office staff', rule: { email: false, push: true, whatsapp: false } },
   'task.assigned': { label: 'Task given', description: 'A task on the team hub is given to someone.', audience: 'The person it is given to', rule: { email: true, push: true, whatsapp: false } },
 };

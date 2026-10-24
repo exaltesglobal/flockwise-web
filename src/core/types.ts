@@ -1656,7 +1656,7 @@ export type CanvaExportResult = { design: CanvaDesign; media: MediaItem[]; urls:
 export type Device = { id: string; personId: string; token: string; platform: 'android' | 'ios' | 'web'; app: 'member' | 'team'; createdAt: string; lastSeenAt: string };
 
 /** Things Flockwise can tell people about on its own. The office picks the channels for each. */
-export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge';
+export type NotificationKind = 'rota.assigned' | 'event.changed' | 'announcement.published' | 'prayer.new' | 'prayer.chain' | 'care.assigned' | 'visitor.new' | 'door.scanned' | 'team.notice' | 'team.message' | 'task.assigned' | 'carol.visit' | 'tithe.reminder' | 'ride.update' | 'aid.new' | 'aid.update' | 'asset.due' | 'reading.today' | 'rental.new' | 'practice.reminder' | 'verse.week' | 'election.open' | 'election.result' | 'recap.ready' | 'greeting.video' | 'vigil.reminder' | 'mentor.nudge' | 'library.due' | 'library.request' | 'occasion.request' | 'occasion.scheduled' | 'occasion.reminder' | 'camp.signup' | 'registration.new' | 'morning.list' | 'kit.ready' | 'sermon.feedback' | 'meeting.agenda' | 'meeting.minutes' | 'meeting.action' | 'counsel.followup' | 'devotion.today' | 'hospital.admitted' | 'hospital.checkin' | 'move.new' | 'grief.nudge' | 'altar.week';
 
 // ---------- Christmas carol rounds ----------
 
@@ -1942,6 +1942,8 @@ export type Collections = {
   storyListeners: StoryListener;
   storySends: StorySend;
   journeyMarks: JourneyMark;
+  altarWeeks: AltarWeek;
+  altarDone: AltarDone;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2046,7 +2048,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3529,3 +3531,31 @@ export type JourneyStuck = { stage: JourneyStageKey; label: string; next: string
 export type JourneyHelp = { text: string; withRate: number; withoutRate: number; withCount: number; withoutCount: number };
 export type JourneyHub = { stages: JourneyStage[]; stuck: JourneyStuck[]; helps: JourneyHelp[]; people: number };
 export type MyJourney = { steps: JourneyStep[]; next: { label: string; link: string } | null };
+
+/** Family altar: a ten-minute devotion a family does together once a week. id is the Monday it starts (YYYY-MM-DD). */
+export type AltarWeek = {
+  id: string;
+  title: string;
+  passage: string;
+  /** A short Bible story told for children. */
+  story: string;
+  songTitle: string;
+  songUrl: string;
+  question: string;
+  prayer: string;
+  status: 'draft' | 'published';
+  by: string;
+  updatedAt: string;
+};
+/** A family ticked the week as done. id is `${weekId}:${householdKey}`. */
+export type AltarDone = { id: string; weekId: string; household: string; personId: string; at: string };
+export type AltarWeekView = AltarWeek & { families: number; builtIn: boolean };
+export type AltarHub = { current: AltarWeekView; weeks: AltarWeekView[]; activeFamilies: number; streaks: { household: string; weeks: number }[] };
+export type MyAltar = {
+  week: AltarWeek;
+  done: boolean;
+  /** Weeks in a row the family has done it, counting this week if done. */
+  streak: number;
+  best: number;
+  kids: { name: string; className: string; lesson: { title: string; scripture: string; memoryVerse: string; date: string } | null }[];
+};

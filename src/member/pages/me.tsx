@@ -1,9 +1,10 @@
-import { ChevronRight, Download, Footprints, LogOut, MapPinned, Pencil, QrCode as QrIcon, UsersRound } from 'lucide-react';
+import { ChevronRight, Download, Flame, Footprints, LogOut, MapPinned, Pencil, QrCode as QrIcon, UsersRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { memberSession } from '@/api/client';
 import { MemberApi } from '@/api/endpoints';
+import { featureOn } from '@/core/features';
 import type { Consent, DataRequestKind, DataRequestStatus } from '@/api/admin-types';
 import type { LanguageCode } from '@/api/types';
 import { QrCode } from '@/components/qr';
@@ -21,6 +22,7 @@ export function MemberMePage() {
   const { t } = useT();
   const session = useSession(memberSession)!;
   const m = session.member;
+  const on = (f: string) => featureOn(session.church.features, f);
   const code = useApi(MemberApi.me.checkinCode);
   const prefs = useApi(MemberApi.me.preferences);
   const campuses = useApi(MemberApi.campuses);
@@ -74,22 +76,36 @@ export function MemberMePage() {
         </div>
         <ChevronRight size={18} className="muted" />
       </Link>
-      <Link to="/app/journey" className="card card-pad row" style={{ gap: 12 }}>
-        <Footprints size={22} className="muted" />
-        <div className="grow" style={{ minWidth: 0 }}>
-          <b>{t('journeyCard')}</b>
-          <div className="small muted">{t('journeyCardBody')}</div>
-        </div>
-        <ChevronRight size={18} className="muted" />
-      </Link>
-      <Link to="/app/moving" className="card card-pad row" style={{ gap: 12 }}>
-        <MapPinned size={22} className="muted" />
-        <div className="grow" style={{ minWidth: 0 }}>
-          <b>{t('moveCard')}</b>
-          <div className="small muted">{t('moveCardBody')}</div>
-        </div>
-        <ChevronRight size={18} className="muted" />
-      </Link>
+      {on('family-altar') && (
+        <Link to="/app/altar" className="card card-pad row" style={{ gap: 12 }}>
+          <Flame size={22} className="muted" />
+          <div className="grow" style={{ minWidth: 0 }}>
+            <b>{t('altarCard')}</b>
+            <div className="small muted">{t('altarCardBody')}</div>
+          </div>
+          <ChevronRight size={18} className="muted" />
+        </Link>
+      )}
+      {on('journey-map') && (
+        <Link to="/app/journey" className="card card-pad row" style={{ gap: 12 }}>
+          <Footprints size={22} className="muted" />
+          <div className="grow" style={{ minWidth: 0 }}>
+            <b>{t('journeyCard')}</b>
+            <div className="small muted">{t('journeyCardBody')}</div>
+          </div>
+          <ChevronRight size={18} className="muted" />
+        </Link>
+      )}
+      {on('migrant-link') && (
+        <Link to="/app/moving" className="card card-pad row" style={{ gap: 12 }}>
+          <MapPinned size={22} className="muted" />
+          <div className="grow" style={{ minWidth: 0 }}>
+            <b>{t('moveCard')}</b>
+            <div className="small muted">{t('moveCardBody')}</div>
+          </div>
+          <ChevronRight size={18} className="muted" />
+        </Link>
+      )}
 
       <div id="qr" className="card card-pad qr-card">
         <div className="stack" style={{ gap: 6 }}>

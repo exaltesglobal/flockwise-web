@@ -1505,3 +1505,16 @@ Each person's timeline, worked out from their records (first visit, third servic
 | POST | /admin/people/:id/journey | people.edit | `{ kind: faith\|custom, label?, date }` | JourneyStep[] |
 | DELETE | /admin/journey-marks/:id | people.edit | | JourneyStep[] |
 | GET | /me/journey | member | | MyJourney `{ steps, next }` |
+
+## Family altar (feature `family-altar`)
+
+A ten-minute family devotion each week (id = the Monday, YYYY-MM-DD): story for children, song, question, prayer. When the church has not published a week, a built-in one is shown (`builtIn: true`). Families tick done once per household per week and build a streak. On Mondays, families who ticked in the last four weeks and parents of Sunday school children get the `altar.week` notification.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/altar | comms | | AltarHub `{ current, weeks, activeFamilies, streaks }` |
+| PUT | /admin/altar/:monday | comms | `{ title, passage, story, songTitle, songUrl?, question, prayer, status: draft\|published }` | AltarHub |
+| DELETE | /admin/altar/:monday | comms | | AltarHub |
+| POST | /admin/altar/draft | comms | `{ passage, language? }` | `{ title, passage, story, question, prayer, songTitle, songUrl }` (AI) |
+| GET | /me/altar | member | | MyAltar `{ week, done, streak, best, kids[{ name, className, lesson }] }` |
+| POST/DELETE | /me/altar/done | member | | MyAltar |

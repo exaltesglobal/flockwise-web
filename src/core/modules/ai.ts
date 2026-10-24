@@ -240,6 +240,27 @@ export async function writeDevotion(ctx: Ctx, passage: string, text: string): Pr
   return { title: str(out.title, 120), thought, question: str(out.question, 400), prayer: str(out.prayer, 500) };
 }
 
+/** A ten-minute family devotion for the week: a story for children, a question and a prayer. */
+export async function writeFamilyAltar(ctx: Ctx, passage: string, language: string): Promise<{ title: string; story: string; question: string; prayer: string; songTitle: string }> {
+  const schema = {
+    type: 'object',
+    properties: { title: { type: 'string' }, story: { type: 'string' }, question: { type: 'string' }, prayer: { type: 'string' }, songTitle: { type: 'string' } },
+    required: ['title', 'story', 'question', 'prayer', 'songTitle'],
+    additionalProperties: false,
+  };
+  const res = await run(ctx, {
+    system: `${churchContext(ctx)}\n\nYou write a weekly family devotion for Indian Christian homes: parents and children together for ten minutes. Retell the passage as a story a six-to-ten-year-old can follow, in about 180 words, faithful to the text, with no added doctrine. Then one question the whole family can talk about (children and adults), and a short prayer the family can say together. Suggest one well-known, simple song or chorus that fits (title only). Write in ${LANGS[language] ?? 'English'}. Reply with JSON only.`,
+    messages: [{ role: 'user', content: `Passage: ${passage}\nWrite: title (a few words), story, question, prayer, songTitle.` }],
+    schema,
+    maxTokens: 1500,
+    effort: 'low',
+  });
+  const out = json<{ title: string; story: string; question: string; prayer: string; songTitle: string }>(res.content);
+  const story = str(out.story, 3000);
+  if (!story) throw new ApiError(502, 'ai_error', 'The devotion came back empty. Try again.');
+  return { title: str(out.title, 120), story, question: str(out.question, 400), prayer: str(out.prayer, 600), songTitle: str(out.songTitle, 120) };
+}
+
 /**
  * A summary, chapters and shareable moments for a preached sermon, from its transcript. Lines are
  * given numbered; chapters and clips point back at line numbers so the app can jump to them.

@@ -14,6 +14,7 @@ import type { HospitalStayView, MemberHospitalStay } from '@/core/types';
 import type { MoveStatus, MovesHub, MyMove, OwnPartnerChurch, PartnerChurch } from '@/core/types';
 import type { GriefDate, GriefHub, GriefSettings } from '@/core/types';
 import type { JourneyHub, JourneyStep, MyJourney } from '@/core/types';
+import type { AltarHub, AltarWeek, MyAltar } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -434,6 +435,11 @@ export const MemberApi = {
   sermonTranscript: (id: string) => m.get<SermonTranscript>(`/sermons/${id}/transcript`),
   liveSong: (lang: string) => m.get<{ live: LiveSong | null }>(`/me/live-song?lang=${encodeURIComponent(lang)}`),
   journey: () => m.get<MyJourney>('/me/journey'),
+  altar: {
+    get: () => m.get<MyAltar>('/me/altar'),
+    done: () => m.post<MyAltar>('/me/altar/done', {}),
+    undo: () => m.del<MyAltar>('/me/altar/done'),
+  },
   move: {
     get: (city?: string) => m.get<MyMove>(`/me/move${city ? `?city=${encodeURIComponent(city)}` : ''}`),
     save: (body: { toCity: string; movingOn?: string; note?: string; partnerRef?: string; consent?: boolean }) => m.post<MyMove>('/me/move', body),
@@ -647,9 +653,17 @@ export type CampusView = Campus & { people: number };
 export type Assignee = { id: string; name: string; role: StaffRole };
 export type AdminPrayer = PrayerView & { name: string };
 export type BlockoutView = Blockout & { name: string };
+export type AltarInput = Pick<AltarWeek, 'title' | 'passage' | 'story' | 'songTitle' | 'songUrl' | 'question' | 'prayer' | 'status'>;
+export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  altar: {
+    get: () => a.get<AltarHub>('/admin/altar'),
+    save: (monday: string, body: AltarInput) => a.put<AltarHub>(`/admin/altar/${monday}`, body),
+    remove: (monday: string) => a.del<AltarHub>(`/admin/altar/${monday}`),
+    draft: (passage: string, language: string) => a.post<AltarDraft>('/admin/altar/draft', { passage, language }),
+  },
   journey: {
     get: () => a.get<JourneyHub>('/admin/journey'),
     person: (id: string) => a.get<JourneyStep[]>(`/admin/people/${id}/journey`),

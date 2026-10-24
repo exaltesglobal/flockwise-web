@@ -1,4 +1,4 @@
-import { ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
+import { ChevronUp, Gift, LayoutGrid, BookOpen, BookOpenCheck, BookText, BookUser, Library, Church, Handshake, Tent, GraduationCap, Hourglass, Flame, Footprints, Cake, Car, Clapperboard, ClipboardList, PlayCircle, HandCoins, HandHeart, Heart, Music2, Newspaper, QrCode, Radio, ScanLine, Sparkles, MicVocal, Star, Vote } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -102,6 +102,7 @@ const MORE_LINKS = [
   { to: '/app/forms', key: 'tabForms', icon: ClipboardList, feature: 'forms' },
   { to: '/app/directory', key: 'tabDirectory', icon: BookUser },
   { to: '/app/reading', key: 'readTitle', icon: BookOpenCheck, feature: 'reading' },
+  { to: '/app/altar', key: 'altarTitle', icon: Flame, feature: 'family-altar' },
   { to: '/app/courses', key: 'courseTitle', icon: GraduationCap, feature: 'courses' },
   { to: '/app/vigils', key: 'vigilTitle', icon: Hourglass, feature: 'vigils' },
   { to: '/app/mentoring', key: 'mentorTitle', icon: Footprints, feature: 'discipleship' },
