@@ -168,11 +168,22 @@ img { max-width: 100%; }
 .field .err { font-size: 12.5px; color: var(--danger); }
 .input, .select, .textarea {
   width: 100%; height: 40px; padding: 0 12px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--card); outline: none;
+  border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; outline: none;
 }
 .textarea { height: auto; min-height: 96px; padding: 10px 12px; resize: vertical; }
 .input:focus, .select:focus, .textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
 .input.invalid { border-color: var(--danger); }
+/* Fields written without the .input class still follow the theme. :where keeps this at zero
+   specificity, so any page or component rule (e.g. transparent search boxes) still wins. */
+:where(input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file], [type=hidden], [type=submit], [type=button], [type=reset], [type=image]), select, textarea) {
+  min-height: 40px; padding: 8px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; outline: none;
+}
+:where(input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file], [type=hidden], [type=submit], [type=button], [type=reset], [type=image]), select, textarea):focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+:where(input, textarea)::placeholder { color: var(--muted); opacity: 0.8; }
+:where(.field) > :where(input, select, textarea) { width: 100%; }
 .check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
 .check input { margin-top: 3px; accent-color: var(--primary); width: 16px; height: 16px; }
 .search { position: relative; }

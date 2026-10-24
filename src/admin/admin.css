@@ -730,7 +730,7 @@ button.nav-find:hover { color: var(--sidebar-strong); border-color: var(--sideba
 
 /* Office language */
 .lang-button { position: relative; }
-.lang-pop { position: absolute; bottom: calc(100% + 8px); right: -40px; width: 260px; padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 40; color: var(--text); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2); }
+.lang-pop { position: fixed; left: 12px; bottom: 76px; width: min(260px, calc(100vw - 24px)); padding: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 40; color: var(--text); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2); }
 .lang-pop p { margin: 0; }
 
 /* Seasonal nudge on the dashboard */
