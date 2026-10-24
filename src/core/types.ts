@@ -1948,6 +1948,7 @@ export type Collections = {
   altarDone: AltarDone;
   outreaches: Outreach;
   outreachSignups: OutreachSignup;
+  annualReports: AnnualReportDraft;
   meetings: Meeting;
   leaderTracks: LeaderTrack;
   counselNotes: CounselNote;
@@ -2052,7 +2053,7 @@ export const KINDS = [
   'forms', 'formResponses', 'resources', 'bookings', 'customFields', 'smartLists', 'workflows', 'workflowCards', 'live', 'headcounts',
   'batches', 'groupPosts', 'groupResources', 'sermons', 'greetings', 'presentations', 'integrations', 'apiKeys', 'roles', 'hubChannels', 'hubPosts', 'carolSeasons', 'carolNights', 'carolRequests', 'rideRequests', 'rideOffers', 'aidRequests', 'assets', 'readingPlans', 'readingProgress', 'feasts', 'rentalOffers', 'rentals', 'practices',
   'registers', 'zones', 'visits', 'accountHeads', 'expenses', 'kycFiles', 'recurring', 'botMessages', 'campaigns', 'envelopes', 'inKind', 'auctionLots', 'consentLog', 'dataRequests', 'parentPages', 'bulletins',
-  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
+  'ssClasses', 'ssLessons', 'ssAttendance', 'ssExams', 'ssMarks', 'verseGames', 'elections', 'ballots', 'ballotStubs', 'recaps', 'videoGreetings', 'greetingLinks', 'annualReturns', 'missedCalls', 'captions', 'qrCodes', 'bankStatements', 'bankLines', 'safeguarding', 'courses', 'courseEnrollments', 'vigils', 'vigilSignups', 'mentorships', 'mentorMeetings', 'libraryBooks', 'libraryLoans', 'occasions', 'skillProfiles', 'boardPosts', 'camps', 'campSignups', 'registrations', 'bibleMarks', 'sermonPreps', 'sermonSeries', 'illustrations', 'sermonFills', 'sermonTranscripts', 'askSessions', 'askQuestions', 'askPolls', 'festivalFamilies', 'festivalCare', 'hospitalStays', 'moves', 'griefDates', 'stories', 'storyListeners', 'storySends', 'journeyMarks', 'altarWeeks', 'altarDone', 'outreaches', 'outreachSignups', 'annualReports', 'meetings', 'leaderTracks', 'counselNotes', 'counselKeys', 'devotions', 'devotionCheckins',
   'missionaries', 'missionSupport', 'missionReports', 'missionPayouts',
   'streams', 'streamViews', 'teamLogins', 'devices', 'media', 'canvaDesigns', 'calendarFeeds',
 ] as const satisfies readonly Kind[];
@@ -3610,3 +3611,33 @@ export type VoiceAction =
 export type AiVoiceReply = { answer: string; actions: VoiceAction[]; toolsUsed: string[] };
 export type VoiceDone = { text: string; link: string | null };
 export type GivingTotals = { from: string; to: string; total: number; count: number; currency: string; byFund: { fundId: string; fundName: string; amount: number; count: number }[]; byMethod: { method: string; amount: number }[] };
+
+/** The annual general body report. What the office writes for the year (id = the financial year label, e.g. 2025-26). */
+export type AnnualReportSection = 'letter' | 'membership' | 'attendance' | 'rites' | 'giving' | 'expenses' | 'ministries' | 'highlights' | 'photos' | 'thanks';
+export type AnnualReportDraft = {
+  id: string;
+  /** The pastor's letter to the congregation. */
+  letter: string;
+  highlights: string[];
+  thanks: string;
+  photos: { url: string; caption: string }[];
+  /** Sections left out of the printed report and deck. */
+  hide: AnnualReportSection[];
+  /** Read out the names of those baptised (off keeps only the count). */
+  baptismNames: boolean;
+  by: string;
+  updatedAt: string;
+};
+export type AnnualReport = {
+  year: { label: string; from: string; to: string; previousLabel: string; complete: boolean };
+  church: { name: string; city: string; logoUrl: string | null; logoDarkUrl: string | null; tagline: string; brand: BrandKit | null };
+  currency: string;
+  membership: { total: number; members: number; families: number; joinedMembers: number; newVisitors: number; startMembers: number; byMonth: { month: string; joined: number }[] };
+  attendance: { average: number; previousAverage: number; highest: { date: string; count: number } | null; byMonth: { month: string; average: number }[] };
+  rites: { baptisms: number; marriages: number; burials: number; dedications: number; baptismNames: string[] };
+  giving: { total: number; previous: number; givers: number; byFund: { fund: string; amount: number }[]; byMonth: { month: string; amount: number }[] } | null;
+  expenses: { total: number; previous: number; byHead: { head: string; amount: number }[] } | null;
+  ministries: { groups: number; groupMeetings: number; sundaySchoolClasses: number; sundaySchoolChildren: number; volunteers: number; coursesCompleted: number; outreachDays: number; outreachHelped: number; events: number; sermons: number; prayers: number; visits: number };
+  draft: AnnualReportDraft;
+  preparedAt: string;
+};

@@ -159,4 +159,5 @@ export const OFFICE_PHRASES = [
   "Journey map",
   "Family altar",
   "Talent bank",
+  "Annual report",
 ];

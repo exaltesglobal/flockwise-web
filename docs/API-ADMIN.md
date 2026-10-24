@@ -1549,3 +1549,13 @@ The browser turns speech into text (Web Speech API, `te-IN`, `hi-IN`…); no aud
 | GET | /admin/giving/totals | giving.view | `?from&to&fundId` (default this month) | GivingTotals `{ from, to, total, count, currency, byFund, byMethod }` |
 
 VoiceAction kinds (gift amount in rupees; stored in paise): `add_family { householdName, area, status, members[{ firstName, lastName, relation, gender, birthDate, phone }] }` (POST /admin/people for each), `record_gift { donorName, donorId, fundId, fundName, amount, method, date }` (POST /admin/giving/donations), `care { title, personId, personName, note }` (POST /admin/care).
+
+## Annual report (feature `annual-report`)
+
+The general body meeting pack for a financial year (India: April to March; label like `2025-26`). Figures come from the records; giving and expenses only for staff with giving.view. The office adds the letter, highlights, thanks and up to 12 photos, and can hide sections. Until the current year is half done, the default year is the last one.
+
+| Method | Path | Perm | Body | Returns |
+| --- | --- | --- | --- | --- |
+| GET | /admin/annual-report | insights or settings | `?year=2025` (start year) | AnnualReport `{ year, church, currency, membership, attendance, rites, giving, expenses, ministries, draft, preparedAt }` |
+| PUT | /admin/annual-report/:year | insights or settings | `{ letter?, highlights?, thanks?, photos?[{ url, caption }], hide?: AnnualReportSection[], baptismNames? }` | AnnualReport |
+| POST | /admin/annual-report/:year/letter | insights or settings | `{ language? }` | `{ letter }` (AI draft from the figures) |

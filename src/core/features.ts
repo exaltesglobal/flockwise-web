@@ -95,6 +95,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'bulletin', label: 'Bulletin', body: 'A printable Sunday bulletin made from the plan and notices.', group: 'comms', on: false },
   { key: 'insights', label: 'Reports', body: 'Attendance, giving and growth over time.', group: 'comms', on: true, core: true },
   { key: 'monthly-report', label: 'Monthly report', body: 'One page for the board or the denomination: attendance, new people, baptisms, giving, care and decisions for the month.', group: 'comms', on: true },
+  { key: 'annual-report', label: 'Annual report', body: 'The general body meeting pack in one tap: membership growth, attendance, baptisms, giving by fund, expenses, ministries and photos, with the pastor’s letter. Print it as a PDF or show it as slides in your church colours.', group: 'comms', on: true },
   // Seasonal and occasional
   { key: 'celebrations', label: 'Celebrations', body: 'Birthdays and anniversaries with a greeting in one tap.', group: 'seasonal', on: true },
   { key: 'video-greetings', label: 'Video greetings', body: 'Short video wishes recorded by the pastor.', group: 'seasonal', on: false },

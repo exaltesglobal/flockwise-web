@@ -1,0 +1,63 @@
+/* Annual report: an A4 report that prints as a PDF, and a 16:9 deck in the church's colours. */
+.ar { --ar-primary: var(--brand-primary, var(--primary)); --ar-accent: var(--accent, #8fd3c1); }
+.ar-doc { display: flex; flex-direction: column; gap: 16px; }
+.ar-page { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: clamp(18px, 4vw, 40px); display: flex; flex-direction: column; gap: 14px; }
+.ar-page h2 { margin: 0; font-size: 22px; color: var(--ar-primary); }
+.ar-cover { background: linear-gradient(140deg, var(--ar-primary), color-mix(in srgb, var(--ar-primary) 60%, #000)); color: #fff; border: 0; min-height: 300px; justify-content: center; align-items: flex-start; }
+.ar-cover h1 { color: #fff; font-size: clamp(30px, 5vw, 48px); margin: 0; line-height: 1.05; text-wrap: balance; }
+.ar-cover .ar-year { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ar-accent); font-weight: 700; }
+.ar-cover img { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; background: #fff; }
+.ar-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.ar-kpi { border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ar-kpi b { font-size: 26px; line-height: 1.1; color: var(--ar-primary); }
+.ar-kpi span { font-size: 13px; color: var(--muted); }
+.ar-bars { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; align-items: end; height: 140px; }
+.ar-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; min-width: 0; }
+.ar-bar i { display: block; width: 100%; border-radius: 4px 4px 0 0; background: var(--ar-primary); min-height: 2px; }
+.ar-bar small { font-size: 10px; color: var(--muted); }
+.ar-rows { display: flex; flex-direction: column; gap: 8px; }
+.ar-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.ar-row .track { height: 10px; border-radius: 5px; background: var(--border); overflow: hidden; }
+.ar-row .track i { display: block; height: 100%; background: var(--ar-primary); }
+.ar-letter { white-space: pre-wrap; line-height: 1.7; max-width: 68ch; font-size: 15px; }
+.ar-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.ar-photos figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.ar-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; max-width: 100%; }
+.ar-photos figcaption { font-size: 12px; color: var(--muted); }
+.ar-highlights { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.ar-names { columns: 3 160px; font-size: 14px; }
+.ar-edit-photo { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.ar-edit-photo img { width: 72px; height: 54px; object-fit: cover; border-radius: 6px; }
+
+/* The deck */
+.ar-deck { position: fixed; inset: 0; z-index: 60; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; }
+.ar-slide { width: min(100%, calc((100vh - 90px) * 16 / 9)); aspect-ratio: 16 / 9; max-width: 100%; background: #fff; color: #1b2522; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; padding: 5% 6%; gap: 3%; position: relative; font-size: clamp(12px, 1.6vw, 22px); }
+.ar-slide h2 { margin: 0; color: var(--ar-primary); font-size: 2.1em; line-height: 1.1; }
+.ar-slide.dark { background: linear-gradient(140deg, var(--ar-primary), color-mix(in srgb, var(--ar-primary) 55%, #000)); color: #fff; justify-content: center; }
+.ar-slide.dark h1, .ar-slide.dark h2 { color: #fff; }
+.ar-slide h1 { margin: 0; font-size: 3.2em; line-height: 1.05; }
+.ar-slide .big { display: grid; grid-template-columns: repeat(auto-fit, minmax(22%, 1fr)); gap: 4%; flex: 1; align-content: center; }
+.ar-slide .big div { display: flex; flex-direction: column; gap: 0.2em; }
+.ar-slide .big b { font-size: 2.6em; color: var(--ar-primary); line-height: 1; }
+.ar-slide .ribbon { position: absolute; left: 0; right: 0; bottom: 0; height: 1.4%; background: var(--ar-accent); }
+.ar-slide .foot { position: absolute; left: 6%; bottom: 3%; font-size: 0.6em; opacity: 0.7; display: flex; gap: 0.6em; align-items: center; }
+.ar-slide .foot img { width: 1.6em; height: 1.6em; border-radius: 0.3em; object-fit: cover; }
+.ar-slide .ar-bars { height: auto; flex: 1; }
+.ar-slide .ar-photos { grid-template-columns: repeat(3, 1fr); flex: 1; }
+.ar-slide .ar-photos img { aspect-ratio: 16 / 10; }
+.ar-slide .ar-letter { font-size: 0.8em; max-width: none; columns: 2; column-gap: 5%; line-height: 1.5; }
+.ar-deck-bar { display: flex; gap: 8px; align-items: center; color: #fff; }
+
+@media print {
+  .ar-page { border: 0; border-radius: 0; break-after: page; padding: 0 0 12px; }
+  .ar-cover { min-height: 90vh; padding: 48px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .ar-bar i, .ar-row .track i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  body.ar-print-deck .admin-main > *:not(.ar-deck) { display: none !important; }
+  body.ar-print-deck .ar-deck { position: static; background: #fff; padding: 0; display: block; }
+  body.ar-print-deck .ar-deck-bar { display: none !important; }
+  body.ar-print-deck .ar-slide { width: 100%; border-radius: 0; break-after: page; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
+@page ar-landscape { size: A4 landscape; }
+body.ar-print-deck { page: ar-landscape; }
+.ar-deck .ar-slide:not(.on) { display: none; }
+@media print { body.ar-print-deck .ar-deck .ar-slide { display: flex !important; } }

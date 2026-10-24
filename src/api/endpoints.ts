@@ -17,6 +17,7 @@ import type { JourneyHub, JourneyStep, MyJourney } from '@/core/types';
 import type { AltarHub, AltarWeek, MyAltar } from '@/core/types';
 import type { AiVoiceReply, VoiceAction, VoiceDone } from '@/core/types';
 import type { MyOutreachInvite, OutreachDetail, OutreachKind, PublicOutreach, TalentBank } from '@/core/types';
+import type { AnnualReport, AnnualReportDraft } from '@/core/types';
 import type { LanguageCode, StoryLineHub, StoryLineSettings, StoryListen, StoryListener } from '@/core/types';
 import type { FestivalCareAction, FestivalCareHub, FestivalCareSettings, FestivalHome } from '@/core/types';
 import type { CuePad, WorshipCueKind, LiveSong, AskAdmin, AskPollView, AskPublic, AskQuestionStatus, AskQuestionView, AskSession, AskSessionSummary, AskStage, SermonTranscript, SermonTranscriptAdmin, TranscriptSource, AtlasEvent, AtlasPerson, AtlasPlace, ChapterAtlas, DictionaryEntry, DictionaryHit, BibleBookInfo, BibleChapter, BibleCommentary, BibleCommentaryInfo, BibleCrossRef, BibleSearch, BibleWords, StrongsStudy, BibleMark, BibleMarkColor, BibleTranslationInfo } from '@/core/types';
@@ -667,6 +668,11 @@ export type AltarDraft = Omit<AltarInput, 'status'>;
 export type GriefInput = Pick<GriefDate, 'lovedOne' | 'date'> & Partial<Pick<GriefDate, 'relation' | 'personId' | 'familyIds' | 'note' | 'sendMessage' | 'message'>>;
 
 export const AdminApi = {
+  annualReport: {
+    get: (year?: string) => a.get<AnnualReport>(`/admin/annual-report${year ? `?year=${encodeURIComponent(year)}` : ''}`),
+    save: (year: string, body: Partial<Omit<AnnualReportDraft, 'id' | 'by' | 'updatedAt'>>) => a.put<AnnualReport>(`/admin/annual-report/${encodeURIComponent(year)}`, body),
+    letter: (year: string, language: string) => a.post<{ letter: string }>(`/admin/annual-report/${encodeURIComponent(year)}/letter`, { language }),
+  },
   outreach: {
     get: () => a.get<TalentBank>('/admin/outreach'),
     one: (id: string) => a.get<OutreachDetail>(`/admin/outreach/${id}`),

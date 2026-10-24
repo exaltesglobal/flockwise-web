@@ -98,6 +98,7 @@ import { CounsellingPage } from '@/admin/pages/counselling';
 import { LeaderPipelinePage } from '@/admin/pages/leader-pipeline';
 import { MeetingsPage } from '@/admin/pages/meetings';
 import { MonthlyReportPage } from '@/admin/pages/monthly-report';
+import { AnnualReportPage } from '@/admin/pages/annual-report';
 import { MyDayPage } from '@/admin/pages/my-day';
 import { DevotionsPage } from '@/admin/pages/devotions';
 import { AskLivePage } from '@/admin/pages/ask-live';
@@ -204,6 +205,7 @@ const routes = [
       { path: 'devotions', element: <DevotionsPage /> },
       { path: 'ask', element: <AskLivePage /> },
       { path: 'monthly-report', element: <MonthlyReportPage /> },
+      { path: 'annual-report', element: <AnnualReportPage /> },
       { path: 'library', element: <LibraryPage /> },
       { path: 'occasions', element: <OccasionsPage /> },
       { path: 'skills', element: <SkillsPage /> },

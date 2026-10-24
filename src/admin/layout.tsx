@@ -157,6 +157,7 @@ const NAV: { title: string | null; hubs: NavHub[] }[] = [
       { label: 'Reports', icon: BarChart3, pages: [
         { to: '/admin/insights', label: 'Reports', icon: BarChart3, perm: ['insights'], feature: 'insights' },
         { to: '/admin/monthly-report', label: 'Monthly report', icon: FileText, perm: ['insights'], feature: 'monthly-report' },
+        { to: '/admin/annual-report', label: 'Annual report', icon: FileText, perm: ['insights', 'settings'], feature: 'annual-report' },
       ] },
       one({ to: '/admin/settings', label: 'Settings', icon: Settings, perm: ['settings', 'staff'] }),
     ],
