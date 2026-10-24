@@ -35,7 +35,7 @@ export function StoryLinePage() {
   const recorded = d.stories.filter((x) => Object.keys(x.recordings).length).length;
   const actions = <>
     <button className="btn" onClick={() => setSettings(true)}><Settings2 size={15} /> Settings and phone line</button>
-    <button className="btn" disabled={sendAll.busy || !d.listeners.some((l) => l.active)} onClick={() => void sendAll.run()}><Send size={15} /> Send the next story now</button>
+    {d.listeners.some((l) => l.active) && <button className="btn" disabled={sendAll.busy} onClick={() => void sendAll.run()}><Send size={15} /> Send the next story now</button>}
     <button className="btn primary" onClick={() => setAdding(true)}><Plus size={15} /> Add a story</button>
   </>;
   const current = open ? d.stories.find((x) => x.id === open.id) ?? null : null;
@@ -108,7 +108,7 @@ function Listeners({ d, onChange }: { d: StoryLineHub; onChange: (h: StoryLineHu
         <select className="input" style={{ width: 'auto' }} value={lang} onChange={(e) => setLang(e.target.value as LanguageCode)} aria-label="Language">{CODES.map((c) => <option key={c} value={c}>{english(c)}</option>)}</select>
       </div>
       <FormError error={add.error} />
-      {!d.listeners.length ? <span className="small muted">No listeners yet.</span> : d.listeners.map((l) => <ListenerRow key={l.id} l={l} onChange={onChange} />)}
+      {!d.listeners.length ? <span className="small muted">No listeners yet. Type a name above and pick the language they listen in.</span> : d.listeners.map((l) => <ListenerRow key={l.id} l={l} onChange={onChange} />)}
     </section>
   );
 }
