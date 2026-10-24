@@ -4,6 +4,7 @@ import { LANGUAGE_CODES } from '../languages.js';
 import { ApiError } from '../errors.js';
 import { hasIndic, transliterateLines } from '../transliterate.js';
 import type { Ctx, Router } from '../engine.js';
+import { offeringChoices, offeringScreen, pickOffering } from './offering-screen.js';
 import type { AddedItem, BandItem, CaptionsSettings, CaptionsView, Collections, LanguageCode, LiveVerse, LowerThird, ObsSettings, PlanItem, PresentationState, PresentationTheme, PresentationView, Slide, Song, SongStats, WorshipCue } from '../types.js';
 import { OBS_MOMENTS } from '../types.js';
 import { church, DAY, find, pick, settings } from '../util.js';
@@ -292,6 +293,8 @@ function view(ctx: Ctx, ev: Collections['events'], staff = true): PresentationVi
     ...(staff ? { screenKey: screenKey(ctx) } : {}),
     captions: captionsOf(ctx, state, ev.id, staff),
     phoneVerse: verseOnScreen(state, items, slides),
+    offering: offeringScreen(ctx, state.offering),
+    ...(staff ? { offeringChoices: offeringChoices(ctx) } : {}),
   };
 }
 
@@ -411,6 +414,7 @@ export function registerPresent(r: Router) {
         s.mode = 'countdown';
         break;
       }
+      case 'offering': s.offering = pickOffering(ctx, (ctx.body.offering ?? {}) as Record<string, unknown>); s.mode = 'offering'; break;
       case 'lower': s.lowerThird = cleanLower(ctx.body.lowerThird, ctx.id('lt')); break;
       case 'lowerClear': s.lowerThird = null; break;
       case 'queue': s.lowerThirds = (Array.isArray(ctx.body.lowerThirds) ? ctx.body.lowerThirds : []).slice(0, 40).map((l: unknown, i: number) => cleanLower(l, `q${i}`)).filter((l: LowerThird | null): l is LowerThird => !!l); break;

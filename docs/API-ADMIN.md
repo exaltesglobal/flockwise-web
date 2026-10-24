@@ -1429,3 +1429,7 @@ Feature `worship-cues`. The worship leader taps a cue on a phone; the band view,
 - `GET /me/services/:eventId/cues` (people serving at the service, or staff): `CuePad` with the event, the item on the screen and its sections, and the live cue.
 - `POST /me/services/:eventId/cues` `{kind}` where kind is chorus, again, bridge, verse, keyup, softer, build, instrumental, end, stop, next; or `{kind:'custom', text}` (40 characters); or `{clear:true}`.
 - `POST /admin/services/:eventId/cues` the same for office staff with services or checkin.
+
+## Offering on the big screen
+
+Feature `offering-screen`. `POST /admin/services/:eventId/presentation {action:'offering', offering:{campaignId?, fundId?, qrId?, title?}}` puts the screens in mode `offering`. A campaign brings its fund, a fund brings its active QR code. `PresentationView.offering` (`OfferingScreen`) carries the title, goal, raised, percent, givers, today's total and gift count, and the QR (`imageUrl`, `payload`, public `url`). Totals only, never names. Staff views also get `offeringChoices` (active QR codes, active campaigns, funds).

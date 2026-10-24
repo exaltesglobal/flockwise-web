@@ -6,7 +6,9 @@ import { ArrowLeft, BookOpen, Smartphone, Captions, ChevronLeft, ChevronRight, C
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router';
 
-import type { WorshipCue, WorshipCueKind } from '@/core/types';
+import type { OfferingScreen, WorshipCue, WorshipCueKind } from '@/core/types';
+import { QrCode } from '@/components/qr';
+import { formatMoneyShort } from '@/lib/format';
 import type { BiblePassage, CaptionsView, LanguageCode, LowerThird, ObsMoment, PresentationTheme, PresentationView, Slide, SongView } from '@/api/admin-types';
 import { canDictate, useDictation } from '@/admin/components/dictate';
 import { adminSession } from '@/api/client';
@@ -93,6 +95,45 @@ function CountdownFace({ until, announcements }: { until: string; announcements:
   );
 }
 
+/** The offering moment: the UPI QR code and a bar toward the goal. Totals only, never names. */
+function OfferingFace({ offering: o }: { offering: OfferingScreen }) {
+  const money = (n: number) => formatMoneyShort(n, o.currency);
+  // When a gift lands, the new amount pops up beside the bar for a few seconds.
+  const last = useRef(o.raised);
+  const [pop, setPop] = useState<{ id: number; amount: number } | null>(null);
+  useEffect(() => {
+    if (o.raised > last.current) { const p = { id: Date.now(), amount: o.raised - last.current }; setPop(p); const t = setTimeout(() => setPop((x) => (x?.id === p.id ? null : x)), 4000); last.current = o.raised; return () => clearTimeout(t); }
+    last.current = o.raised;
+  }, [o.raised]);
+  const width = o.percent !== null ? Math.min(100, o.percent) : null;
+  return (
+    <div className={`pres-offering ${o.qr ? '' : 'no-qr'}`}>
+      {o.qr && (
+        <div className="of-qr">
+          {o.qr.payload ? <QrCode value={o.qr.payload} size={400} label="UPI QR code" /> : o.qr.imageUrl ? <img src={o.qr.imageUrl} alt="UPI QR code" /> : <QrCode value={o.qr.url} size={400} label="Give online" />}
+          <span>Scan with any UPI app</span>
+        </div>
+      )}
+      <div className="of-body">
+        <div className="of-title">{o.title}</div>
+        {o.subtitle && <div className="of-sub">{o.subtitle}</div>}
+        {o.goal ? (
+          <>
+            <div className="of-amount"><b>{money(o.raised)}</b> of {money(o.goal)}</div>
+            <div className="of-bar"><span style={{ width: `${width}%` }} />{pop && <em key={pop.id}>+{money(pop.amount)}</em>}</div>
+            <div className="of-meta">{o.percent}%{o.givers ? ` · ${o.givers} ${o.givers === 1 ? 'giver' : 'givers'}` : ''}{o.today ? ` · ${money(o.today)} today` : ''}</div>
+          </>
+        ) : (
+          <>
+            <div className="of-amount"><b>{money(o.today)}</b> given today{pop && <em className="of-pop" key={pop.id}>+{money(pop.amount)}</em>}</div>
+            {o.todayGifts > 0 && <div className="of-meta">{o.todayGifts} {o.todayGifts === 1 ? 'gift' : 'gifts'}</div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** One slide drawn at any size: the frame is a container, so text scales with it. */
 /** The last caption line as the screen shows it: the translation, with the original under it when asked. */
 export function captionText(c: CaptionsView | undefined): { main: string; sub: string | null } | null {
@@ -110,7 +151,7 @@ function Backdrop({ url, still }: { url: string; still?: boolean }) {
   return <div className="pres-bg" style={{ backgroundImage: `url("${url}")` }} />;
 }
 
-export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo, captions, still }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null; captions?: CaptionsView; still?: boolean }) {
+export function SlideFrame({ view, slide, mode = 'live', message, className = '', countdownTo, captions, still, offering }: { view: Pick<PresentationView, 'theme' | 'churchName' | 'logoUrl'> & Partial<Pick<PresentationView, 'announcements' | 'event'>>; slide: Slide | undefined; mode?: string; message?: string; className?: string; countdownTo?: string | null; captions?: CaptionsView; still?: boolean; offering?: OfferingScreen | null }) {
   const cap = mode === 'blank' ? null : captionText(captions);
   const t = view.theme;
   const bg = mode === 'blank' ? '' : (slide?.bg || t.imageUrl || '');
@@ -122,7 +163,9 @@ export function SlideFrame({ view, slide, mode = 'live', message, className = ''
       <div key={mode === 'live' ? slide?.id ?? 'none' : mode} className={`pres-content ${fade ? 'fade' : ''}`}>
       {mode === 'blank' || mode === 'clear' ? null : mode === 'countdown' ? (
         <CountdownFace until={countdownTo || view.event?.startsAt || new Date().toISOString()} announcements={view.announcements ?? []} />
-      ) : mode === 'logo' || !slide ? (
+      ) : mode === 'offering' && offering ? (
+        <OfferingFace offering={offering} />
+      ) : mode === 'logo' || mode === 'offering' || !slide ? (
         <div className="pres-logo">{view.logoUrl ? <img src={view.logoUrl} alt="" /> : null}<div>{view.churchName}</div></div>
       ) : slide.kind === 'title' ? (
         <div className="pres-title"><div className="main">{slide.lines[0]}</div>{slide.lines[1] && <div className="sub">{slide.lines[1]}</div>}</div>
@@ -195,7 +238,7 @@ function Presenter() {
         <Link className="btn ghost sm" to="/admin/services"><ArrowLeft size={15} /> <span className="hide-sm">Services</span></Link>
         <div className="grow" style={{ minWidth: 0 }}>
           <div className="ellipsis" style={{ fontWeight: 700 }}>{data.event.title}</div>
-          <div className="small muted">{state.mode === 'live' ? `Slide ${state.index + 1} of ${slides.length}` : state.mode === 'blank' ? 'Screens blank' : state.mode === 'clear' ? 'Words cleared' : state.mode === 'countdown' ? 'Countdown showing' : 'Showing logo'}</div>
+          <div className="small muted">{state.mode === 'live' ? `Slide ${state.index + 1} of ${slides.length}` : state.mode === 'blank' ? 'Screens blank' : state.mode === 'clear' ? 'Words cleared' : state.mode === 'countdown' ? 'Countdown showing' : state.mode === 'offering' ? 'Offering on screen' : 'Showing logo'}</div>
         </div>
         <button className="btn sm" onClick={() => open('screen')}><Tv size={15} /> <span className="hide-sm">Projector</span></button>
         <button className="btn sm" onClick={() => open('stage')}><Monitor size={15} /> <span className="hide-sm">Stage display</span></button>
@@ -232,7 +275,7 @@ function Presenter() {
         <aside className="pres-side">
           {state.cue && <CueFlash cue={state.cue} inline jump={control ? cueTarget(slides, state.index, state.cue) : null} onJump={(i) => void act('goto', { index: i })} />}
           <div className="small muted lbl-now">On screen</div>
-          <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} captions={data.captions} />
+          <SlideFrame view={data} slide={slide} mode={state.mode} message={state.message} countdownTo={state.countdownTo} captions={data.captions} offering={data.offering} />
           <div className="small muted lbl-next">Next</div>
           <SlideFrame view={data} slide={next} className="dim pres-next-frame" still />
           {control && (
@@ -245,6 +288,7 @@ function Presenter() {
           <p className="small muted">Keys: → or space next, ← back, C clear words, B blank, L logo.</p>
           {control && <AddLivePanel act={act} />}
           {control && <StagePanel view={data} act={act} onCue={async (kind) => { try { await AdminApi.presentation.cue(eventId, { kind }); void reload(); } catch (e) { toast((e as Error).message, 'error'); } }} />}
+          {control && data.offeringChoices && <OfferingPanel view={data} act={act} />}
           {control && <PhonesPanel view={data} act={act} />}
           {control && <CaptionsPanel view={data} act={act} eventId={eventId} onChanged={() => void reload()} />}
           {control && <MediaPanel view={data} act={act} />}
@@ -259,6 +303,7 @@ function Presenter() {
           <button className={`btn ${state.mode === 'clear' ? 'on' : ''}`} onClick={() => void act(state.mode === 'clear' ? 'live' : 'clear')} title="Clear the words, keep the background (C)"><Eraser size={16} /> {state.mode === 'clear' ? 'Words' : 'Clear'}</button>
           <button className={`btn ${state.mode === 'logo' ? 'on' : ''}`} onClick={() => void act(state.mode === 'logo' ? 'live' : 'logo')}><Image size={16} /> Logo</button>
           <button className={`btn hide-sm ${state.mode === 'countdown' ? 'on' : ''}`} onClick={() => void act(state.mode === 'countdown' ? 'live' : 'countdown')}><Clock size={16} /> Countdown</button>
+          {state.offering && <button className={`btn hide-sm ${state.mode === 'offering' ? 'on' : ''}`} onClick={() => void act(state.mode === 'offering' ? 'live' : 'offering', state.mode === 'offering' ? {} : { offering: state.offering! })} title="UPI QR and the goal on the screens">₹ Offering</button>}
           <button className="btn big primary" onClick={() => void act('next')} aria-label="Next slide"><ChevronRight size={26} /></button>
         </footer>
       )}
@@ -414,6 +459,40 @@ export function CueFlash({ cue, inline = false, jump = null, onJump }: { cue: Wo
       <span className="cue-text">{cue.text}</span>
       {cue.by && <span className="cue-by">{cue.by}</span>}
       {jump !== null && onJump && <button className="btn sm" onClick={() => onJump(jump)}>Go there</button>}
+    </div>
+  );
+}
+
+/** Put the offering on the screens: pick a campaign or fund; its QR code comes with it. */
+function OfferingPanel({ view, act }: { view: PresentationView; act: Act }) {
+  const ch = view.offeringChoices!;
+  const cur = view.state.offering;
+  const [pick, setPick] = useState(() => cur ? (cur.campaignId ? `c:${cur.campaignId}` : cur.fundId ? `f:${cur.fundId}` : '') : ch.campaigns[0] ? `c:${ch.campaigns[0].id}` : ch.funds[0] ? `f:${ch.funds[0].id}` : '');
+  const fundId = pick.startsWith('c:') ? ch.campaigns.find((c) => `c:${c.id}` === pick)?.fundId : pick.startsWith('f:') ? pick.slice(2) : undefined;
+  const codes = ch.codes.filter((q) => !fundId || q.fundId === fundId);
+  const [qrId, setQrId] = useState(cur?.qrId ?? '');
+  const [title, setTitle] = useState(cur && cur.title !== (ch.campaigns.find((c) => c.id === cur.campaignId)?.name ?? ch.funds.find((f) => f.id === cur.fundId)?.name) ? cur.title : '');
+  const on = view.state.mode === 'offering';
+  const show = () => void act('offering', { offering: { campaignId: pick.startsWith('c:') ? pick.slice(2) : null, fundId: pick.startsWith('f:') ? pick.slice(2) : null, qrId: codes.some((q) => q.id === qrId) ? qrId : null, title: title.trim() || undefined } });
+  return (
+    <div className="pres-panel stack" style={{ gap: 8 }}>
+      <b className="small">Offering on screen</b>
+      <select className="select" value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Campaign or fund">
+        {ch.campaigns.length > 0 && <optgroup label="Campaigns">{ch.campaigns.map((c) => <option key={c.id} value={`c:${c.id}`}>{c.name}</option>)}</optgroup>}
+        <optgroup label="Funds">{ch.funds.map((f) => <option key={f.id} value={`f:${f.id}`}>{f.name}{f.goal ? '' : ' (today only)'}</option>)}</optgroup>
+      </select>
+      {codes.length > 1 && (
+        <select className="select" value={qrId} onChange={(e) => setQrId(e.target.value)} aria-label="QR code">
+          <option value="">Any QR code for this fund</option>
+          {codes.map((q) => <option key={q.id} value={q.id}>{q.name}</option>)}
+        </select>
+      )}
+      {codes.length === 0 && <span className="small muted">No QR code for this fund yet. Make one in Giving › QR codes; the bar still shows.</span>}
+      <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title on screen (optional), e.g. Roof fund" maxLength={80} aria-label="Title on screen" />
+      <div className="row" style={{ gap: 6 }}>
+        <button className={`btn sm ${on ? '' : 'primary'}`} onClick={show}>{on ? 'Update screen' : 'Show on screen'}</button>
+        {on && <button className="btn sm ghost" onClick={() => void act('live')}>Back to slides</button>}
+      </div>
     </div>
   );
 }
@@ -596,6 +675,7 @@ function LinksModal({ eventId, screenKey, canReset, onClose, onReset }: { eventI
 function momentOf(view: PresentationView): ObsMoment | null {
   const { state, slides, charts } = view;
   if (state.mode === 'countdown') return 'countdown';
+  if (state.mode === 'offering') return 'offering';
   if (state.mode === 'blank') return 'blank';
   if (state.mode !== 'live') return null;
   const slide = slides[state.index];
@@ -707,7 +787,7 @@ function Screen({ screenKey }: { screenKey?: string }) {
   if (!data) return <div className="pres-screen" />;
   return (
     <div className="pres-screen" onDoubleClick={fullscreen} title="Double-click for full screen">
-      <SlideFrame view={data} slide={data.slides[data.state.index]} mode={data.state.mode} message={data.state.message} countdownTo={data.state.countdownTo} className="full" captions={data.captions} />
+      <SlideFrame view={data} slide={data.slides[data.state.index]} mode={data.state.mode} message={data.state.message} countdownTo={data.state.countdownTo} className="full" captions={data.captions} offering={data.offering} />
       {!document.fullscreenElement && <button className="pres-fs" onClick={fullscreen}><Maximize size={16} /> Full screen</button>}
     </div>
   );
@@ -744,7 +824,7 @@ function Stage({ screenKey }: { screenKey?: string }) {
         {itemLeft !== null && <span className={`left ${itemLeft < 0 ? 'over' : itemLeft < 60_000 ? 'soon' : ''}`}>{countdown(itemLeft)}</span>}
         <span className="grow" />
         {st && stLeft !== null && <span className={`left big-timer ${st.endsAt && stLeft < 0 ? 'over' : st.endsAt && stLeft < 60_000 ? 'soon' : ''}`} title={st.label}>{st.label} {st.endsAt ? countdown(stLeft) : countdown(-stLeft).replace('+', '')}</span>}
-        {state.mode !== 'live' && <span className="mode">{state.mode === 'blank' ? 'SCREEN BLANK' : state.mode === 'clear' ? 'WORDS CLEARED' : state.mode === 'countdown' ? 'COUNTDOWN' : 'LOGO'}</span>}
+        {state.mode !== 'live' && <span className="mode">{state.mode === 'blank' ? 'SCREEN BLANK' : state.mode === 'clear' ? 'WORDS CLEARED' : state.mode === 'countdown' ? 'COUNTDOWN' : state.mode === 'offering' ? 'OFFERING' : 'LOGO'}</span>}
         <button className={`btn sm ${chords ? 'on' : ''}`} onClick={() => setChords(!chords)}><Music2 size={14} /> Chords</button>
       </div>
       {state.cue && <CueFlash cue={state.cue} />}

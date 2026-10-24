@@ -1219,7 +1219,7 @@ export type PresentationTheme = {
   transition?: 'fade' | 'cut';
 };
 /** live: the slide; clear: background only (words cleared); blank: black; logo; countdown. */
-export type PresentationMode = 'live' | 'clear' | 'blank' | 'logo' | 'countdown';
+export type PresentationMode = 'live' | 'clear' | 'blank' | 'logo' | 'countdown' | 'offering';
 /** Something the operator put up during the service: a Bible passage, a song from the library or a few lines of text. */
 export type AddedItem = { id: string; kind: 'reading' | 'song' | 'announcement'; title: string; text?: string; songId?: string | null };
 /** A countdown (endsAt) or a stopwatch (startedAt) shown big on the stage display. */
@@ -1426,6 +1426,8 @@ export type PresentationState = {
   phones?: boolean;
   /** The last silent cue from the worship leader. Screens show it for 20 seconds (see modules/worship-cues.ts). */
   cue?: WorshipCue | null;
+  /** What the offering screen shows (mode 'offering'). */
+  offering?: OfferingOnScreen | null;
 };
 /** Live captions: the preacher's words, heard by the media desk's browser, translated for the screen. */
 export type CaptionsSettings = {
@@ -1510,6 +1512,10 @@ export type PresentationView = {
   screenKey?: string;
   /** Live sermon captions: the last few lines for the screens, more for the presenter. */
   captions: CaptionsView;
+  /** The offering screen, while the operator has one set up. */
+  offering?: OfferingScreen | null;
+  /** QR codes, campaigns and funds the operator can put on the offering screen. Office logins only. */
+  offeringChoices?: OfferingChoices;
 };
 export type SongStats = {
   top: { songId: string; title: string; uses: number; lastUsedAt: string | null }[];
@@ -3287,4 +3293,25 @@ export type CuePad = {
   /** The song or item on the screen now, and its sections, so the leader can send "Go to Bridge". */
   item: { title: string; key: string | null; sections: string[] } | null;
   cue: WorshipCue | null;
+};
+/** The offering moment on the projector: the UPI QR code and a progress bar toward a goal. Never names. */
+export type OfferingOnScreen = { qrId: string | null; campaignId: string | null; fundId: string | null; title: string };
+export type OfferingScreen = {
+  title: string;
+  /** The fund's or campaign's name when the title says something else. */
+  subtitle: string | null;
+  currency: Currency;
+  goal: number | null;
+  raised: number;
+  percent: number | null;
+  givers: number;
+  /** Given to this fund today (the church's own date), and how many gifts. */
+  today: number;
+  todayGifts: number;
+  qr: { imageUrl: string | null; payload: string | null; url: string } | null;
+};
+export type OfferingChoices = {
+  codes: { id: string; name: string; fundId: string; fundName: string }[];
+  campaigns: { id: string; name: string; fundId: string; goal: number | null }[];
+  funds: { id: string; name: string; goal: number | null }[];
 };

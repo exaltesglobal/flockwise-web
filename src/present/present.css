@@ -289,3 +289,21 @@ html.pres-transparent, html.pres-transparent body, html.pres-transparent #root {
 @keyframes cue-in { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes cue-pulse { 50% { filter: brightness(1.25); } }
 @media (prefers-reduced-motion: reduce) { .cue-flash { animation: none; } }
+
+/* Offering on the big screen: UPI QR beside a progress bar. Totals only, never names. */
+.pres-offering { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6cqw; padding: 6cqh 7cqw; width: 100%; text-transform: none; text-align: left; }
+.pres-offering.no-qr { grid-template-columns: minmax(0, 1fr); text-align: center; }
+.of-qr { display: grid; gap: 1.6cqh; justify-items: center; }
+.of-qr svg, .of-qr img { width: 46cqh; height: 46cqh; border-radius: 2cqh; background: #fff; padding: 1.4cqh; box-sizing: border-box; }
+.of-qr span { font-size: 3cqh; opacity: .8; }
+.of-body { display: grid; gap: 2.2cqh; min-width: 0; }
+.of-title { font-size: calc(8cqh * var(--pres-scale)); font-weight: 800; line-height: 1.1; text-wrap: balance; }
+.of-sub { font-size: 3.6cqh; opacity: .7; margin-top: -1cqh; }
+.of-amount { font-size: 5cqh; }
+.of-amount b { font-size: 9cqh; font-weight: 800; font-variant-numeric: tabular-nums; }
+.of-bar { position: relative; height: 5cqh; border-radius: 99px; background: color-mix(in srgb, var(--pres-fg) 18%, transparent); }
+.of-bar span { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: #f5b83d; transition: width 1.2s cubic-bezier(.2, .8, .2, 1); min-width: 5cqh; }
+.of-bar em, .of-pop { position: absolute; right: 0; top: -6cqh; font-style: normal; font-weight: 800; font-size: 4cqh; color: #f5b83d; animation: of-pop 4s ease-out forwards; }
+.of-pop { position: static; margin-left: 2cqw; display: inline-block; }
+.of-meta { font-size: 3.6cqh; opacity: .8; }
+@keyframes of-pop { 0% { opacity: 0; transform: translateY(2cqh); } 10%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; } }

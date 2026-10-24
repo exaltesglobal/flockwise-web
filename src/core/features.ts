@@ -64,6 +64,7 @@ export const FEATURES: FeatureInfo[] = [
   { key: 'ask-live', label: 'Ask the pastor, live', body: 'A QR code on the screen: people send questions or answer a poll from their phones, with or without their name. Questions are grouped on the stage display.', group: 'sundays', on: true },
   { key: 'sing-along', label: 'Sing in my language', body: 'Phones show the song on the screen as it changes, in the language each person picks, in English letters, or translated for its meaning.', group: 'sundays', on: true },
   { key: 'worship-cues', label: 'Silent worship cues', body: 'The worship leader taps "Repeat chorus", "Key up" or "Ending" on a phone, and the band view and stage display flash it.', group: 'sundays', on: true },
+  { key: 'offering-screen', label: 'Offering on the big screen', body: 'During the offering the projector shows the UPI QR code and a live progress bar toward a goal, like "Roof fund: ₹3.2L of ₹5L". Never names.', group: 'sundays', on: true },
   { key: 'livestream', label: 'Livestream', body: 'Go live to YouTube or Facebook from the service plan.', group: 'sundays', on: true },
   { key: 'practice', label: 'Choir practice', body: 'Rehearsal attendance and part recordings for singers.', group: 'sundays', on: false },
   { key: 'recap', label: 'Sunday in 60 seconds', body: 'A short recap of the service to send out on Sunday evening.', group: 'sundays', on: false },

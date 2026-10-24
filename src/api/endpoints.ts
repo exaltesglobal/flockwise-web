@@ -1340,9 +1340,9 @@ export const AdminApi = {
   presentation: {
     get: (eventId: string) => a.get<PresentationView>(`/admin/services/${eventId}/presentation`),
     cue: (eventId: string, body: { kind: WorshipCueKind; text?: string } | { clear: true }) => a.post<CuePad>(`/admin/services/${eventId}/cues`, body),
-    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background' | 'phones',
+    act: (eventId: string, action: 'next' | 'prev' | 'goto' | 'item' | 'blank' | 'logo' | 'live' | 'clear' | 'message' | 'countdown' | 'lower' | 'lowerClear' | 'queue' | 'overlay' | 'captions' | 'add' | 'removeAdded' | 'stageMessage' | 'timer' | 'background' | 'phones' | 'offering',
       extra: { index?: number; message?: string; until?: string; lowerThird?: Partial<LowerThird>; lowerThirds?: Partial<LowerThird>[]; on?: boolean; captions?: Partial<CaptionsSettings>;
-        added?: Partial<AddedItem>; live?: boolean; id?: string; minutes?: number; label?: string; stopwatch?: boolean; clear?: boolean; itemId?: string; url?: string } = {}) =>
+        added?: Partial<AddedItem>; live?: boolean; id?: string; minutes?: number; label?: string; stopwatch?: boolean; clear?: boolean; itemId?: string; url?: string; offering?: { campaignId?: string | null; fundId?: string | null; qrId?: string | null; title?: string } } = {}) =>
       a.post<PresentationView>(`/admin/services/${eventId}/presentation`, { action, ...extra }),
     caption: (eventId: string, text: string) => a.post<{ line: CaptionLine; count: number }>(`/admin/services/${eventId}/captions`, { text }),
     captions: (eventId: string) => a.get<{ lines: CaptionLine[]; count: number }>(`/admin/services/${eventId}/captions`),
