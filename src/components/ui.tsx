@@ -223,20 +223,27 @@ export const useToast = () => useContext(ToastCtx);
  * Delete with Undo instead of "Are you sure?": the row disappears at once, a toast offers Undo for
  * 8 seconds, and only then is the delete sent. `hide`/`show` hide and bring back the row on the page.
  */
+// Deletes still waiting out their Undo window. If the page is closed or reloaded first, they run
+// straight away, so a removed item does not come back on the next visit.
+const pendingDeletes = new Set<() => void>();
+if (typeof window !== 'undefined') window.addEventListener('pagehide', () => { for (const run of [...pendingDeletes]) run(); });
+
 export function useUndoableDelete() {
   const toast = useToast();
   return useCallback(
     (o: { text: string; run: () => Promise<unknown>; hide: () => void; show: () => void; done?: () => void; undoLabel?: string; failText?: string }) => {
       o.hide();
-      let undone = false;
-      toast(o.text, 'ok', { label: o.undoLabel ?? 'Undo', onClick: () => { undone = true; o.show(); } });
-      setTimeout(() => {
-        if (undone) return;
+      const go = () => {
+        pendingDeletes.delete(go);
+        clearTimeout(timer);
         o.run().then(
           () => o.done?.(),
           () => { o.show(); toast(o.failText ?? 'Could not delete that. It is back.', 'error'); },
         );
-      }, 8000);
+      };
+      const timer = setTimeout(go, 8000);
+      pendingDeletes.add(go);
+      toast(o.text, 'ok', { label: o.undoLabel ?? 'Undo', onClick: () => { pendingDeletes.delete(go); clearTimeout(timer); o.show(); } });
     },
     [toast],
   );

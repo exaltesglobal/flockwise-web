@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { AdminApi } from '@/api/endpoints';
 import type { LeaderStage, LeaderStep, LeaderTrackView } from '@/core/types';
-import { Empty, ErrorState, Field, FormError, Loading, Modal, useToast, useUndoableDelete } from '@/components/ui';
+import { Empty, ErrorState, Field, FormError, Loading, Modal, useHiddenRows, useToast, useUndoableDelete } from '@/components/ui';
 import { formatDate } from '@/lib/format';
 import { useCan } from '@/lib/perms';
 import { useAction, useApi } from '@/lib/use-api';
@@ -33,12 +33,14 @@ export function LeaderPipelinePage() {
   const toast = useToast();
   const [adding, setAdding] = useState<PickedPerson | null | undefined>(undefined);
   const [open, setOpen] = useState<string | null>(null);
+  const removed = useHiddenRows();
   useNewParam(() => setAdding(null));
   useOpenParam('open', (id) => { if (!q.data) return false; setOpen(id); return true; }, [q.data]);
   if (q.error) return <><PageHeader title="Leadership pipeline" /><ErrorState error={q.error} onRetry={q.reload} /></>;
   if (!q.data) return <><PageHeader title="Leadership pipeline" /><Loading /></>;
   const d = q.data;
-  const track = d.tracks.find((t) => t.id === open);
+  const tracks = d.tracks.filter((t) => !removed.hidden.has(t.id));
+  const track = tracks.find((t) => t.id === open);
 
   return (
     <>
@@ -61,14 +63,14 @@ export function LeaderPipelinePage() {
             </div>
           </div>
         )}
-        {!d.tracks.length ? (
+        {!tracks.length ? (
           <Empty icon={<Sprout size={28} />} title="Nobody on the pipeline yet" body={editable && d.suggestions.length > 0 ? 'Start with one of the people suggested above, or add someone else you see growing.' : 'Add the people you see growing: a faithful cell member, a young person who serves, an apprentice leader.'} action={editable && <button className="btn primary" onClick={() => setAdding(null)}>Add the first person</button>} />
         ) : (
           <div className="lp-board">
             {STAGES.map((s) => (
               <section key={s} className="lp-col">
                 <header><b>{STAGE[s].label}</b> <span className="muted small">{d.counts[s]}</span><div className="small muted">{STAGE[s].hint}</div></header>
-                {d.tracks.filter((t) => t.stage === s).map((t) => (
+                {tracks.filter((t) => t.stage === s).map((t) => (
                   <button key={t.id} className="card lp-card" onClick={() => setOpen(t.id)}>
                     <b>{t.name}</b>
                     <span className="small muted">{t.aim}</span>
@@ -84,7 +86,7 @@ export function LeaderPipelinePage() {
         )}
       </div>
       {adding !== undefined && <AddPerson person={adding} onClose={() => setAdding(undefined)} onDone={(t) => { setAdding(undefined); toast(`${t.name} is on the pipeline.`); q.reload(); }} />}
-      {track && <TrackEditor track={track} editable={editable} onClose={() => setOpen(null)} onChange={() => q.reload()} />}
+      {track && <TrackEditor track={track} editable={editable} onClose={() => setOpen(null)} onChange={() => q.reload()} onHide={removed.hide} onShow={removed.show} />}
     </>
   );
 }
@@ -112,7 +114,7 @@ function AddPerson({ person: initial, onClose, onDone }: { person: PickedPerson 
   );
 }
 
-function TrackEditor({ track, editable, onClose, onChange }: { track: LeaderTrackView; editable: boolean; onClose: () => void; onChange: () => void }) {
+function TrackEditor({ track, editable, onClose, onChange, onHide, onShow }: { track: LeaderTrackView; editable: boolean; onClose: () => void; onChange: () => void; onHide: (id: string) => void; onShow: (id: string) => void }) {
   const [aim, setAim] = useState(track.aim);
   const [stage, setStage] = useState(track.stage);
   const [mentor, setMentor] = useState<PickedPerson | null>(track.mentorId ? { id: track.mentorId, name: track.mentorName ?? 'Mentor' } : null);
@@ -131,7 +133,7 @@ function TrackEditor({ track, editable, onClose, onChange }: { track: LeaderTrac
       title={track.name}
       onClose={onClose}
       footer={editable && <>
-        <button className="btn ghost grow" style={{ justifyContent: 'flex-start' }} onClick={() => { onClose(); undoable({ text: `${track.name} taken off the pipeline.`, hide: () => undefined, show: onChange, run: () => AdminApi.leaderPipeline.remove(track.id), done: onChange }); }}><Trash2 size={14} /> Take off the pipeline</button>
+        <button className="btn ghost grow" style={{ justifyContent: 'flex-start' }} onClick={() => { onClose(); undoable({ text: `${track.name} taken off the pipeline.`, hide: () => onHide(track.id), show: () => onShow(track.id), run: () => AdminApi.leaderPipeline.remove(track.id), done: onChange }); }}><Trash2 size={14} /> Take off the pipeline</button>
         <button className="btn ghost" onClick={onClose}>Cancel</button>
         <button className="btn primary" onClick={() => void save.run()} disabled={save.busy}>Save</button>
       </>}
